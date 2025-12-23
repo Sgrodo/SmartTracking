@@ -23,6 +23,11 @@ repositories {
 }
 
 dependencies {
+     // Cucumber
+    testImplementation 'io.cucumber:cucumber-java:7.31.0'
+    testImplementation 'io.cucumber:cucumber-spring:7.31.0'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.31.0'
+    //Già presenti
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
@@ -42,6 +47,7 @@ tasks.named('test') {
 
 
 test {
+     useJUnitPlatform()           // cucumber
     finalizedBy jacocoTestReport // report is always generated after tests run
 }
 jacocoTestReport {
