@@ -3,6 +3,7 @@ package it.univr.track.controller.web;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+//TODO changed endpoints, is it OK? (//list devices)
 @Controller
 public class DeviceWebController {
 
@@ -19,7 +20,7 @@ public class DeviceWebController {
     }
 
     //list devices
-    @RequestMapping("/web/devices")
+    @RequestMapping("/web/devices/list")
     public String devices() {
         return "devices";
     }
