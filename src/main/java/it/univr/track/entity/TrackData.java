@@ -17,5 +17,4 @@ import java.util.List;
 @Setter
 public class TrackData extends UserRegistered {
 
-
 }

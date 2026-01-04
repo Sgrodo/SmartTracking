@@ -8,7 +8,7 @@
 1. L’utente accede alla sezione **Gestione spedizioni**.
 2. Seleziona **Crea spedizione**.
 3. Inserisce:
-   - ID spedizione
+   - ID spedizione (automatico)
    - descrizione della merce
    - data di inizio
    - specifiche di trasporto
