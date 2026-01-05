@@ -1,8 +1,39 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title></head>
+    <meta charset="UTF-8" />
+    <title>Shipments</title>
+    <a th:href="@{/shipments/new}">
+        <button>Create new shipment</button>
+    </a>
+</head>
 <body>
+<h1>Shipments</h1>
+
+<p><a th:href="@{/shipments/new}">Create new shipment</a></p>
+
+<table border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Description</th>
+        <th>Start date</th>
+        <th>Devices</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="s : ${shipments}">
+        <td th:text="${s.id}">1</td>
+        <td th:text="${s.description}">desc</td>
+        <td th:text="${s.startDate}">date</td>
+        <td th:text="${#lists.size(s.devices)}">0</td>
+        <td>
+            <a th:href="@{/shipments/{id}(id=${s.id})}">Details</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
 
 </body>
 </html>

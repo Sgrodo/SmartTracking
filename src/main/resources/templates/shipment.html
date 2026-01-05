@@ -1,8 +1,113 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title></head>
+    <meta charset="UTF-8" />
+    <title>Shipment</title>
+</head>
 <body>
+
+<p><a th:href="@{/shipments}">← Back to shipments</a></p>
+
+<h1>Shipment details</h1>
+<p style="margin-top:-10px;">
+    <small>
+        ID: <span th:text="${shipment.id}">1</span>
+        <span th:if="${shipment.startDate != null}">
+      | Start: <span th:text="${shipment.startDate}">date</span>
+    </span>
+        <span th:if="${shipment.description != null && !#strings.isEmpty(shipment.description)}">
+      | Description: <span th:text="${shipment.description}">desc</span>
+    </span>
+    </small>
+</p>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<h2>Devices</h2>
+
+<table border="1" cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Origin</th>
+        <th>Connected</th>
+        <th>Calibrated</th>
+        <th>State</th>
+        <th>Price</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="d : ${devices}">
+        <td th:text="${d.id}">1</td>
+        <td th:text="${d.origin}">FORMULA</td>
+        <td th:text="${d.isConnected}">true</td>
+        <td th:text="${d.isCalibrated}">true</td>
+        <td th:text="${d.state}">true</td>
+        <td th:text="${d.price}">0.00</td>
+        <td>
+            <form th:action="@{/shipments/{shipmentId}/devices/{deviceId}/remove(shipmentId=${shipment.id},deviceId=${d.id})}"
+                  method="post" style="display:inline;">
+                <button type="submit">Remove</button>
+            </form>
+        </td>
+    </tr>
+
+    <!-- Empty state -->
+    <tr th:if="${devices == null || #lists.isEmpty(devices)}">
+        <td colspan="7">
+            No devices associated.
+            <a href="#add-device"><button type="button">Add device</button></a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<hr/>
+
+<h2 id="add-device">Add device</h2>
+
+<form th:action="@{/shipments/{shipmentId}/devices(shipmentId=${shipment.id})}" method="post">
+    <div>
+        <label>Origin:</label>
+        <input type="text" name="origin" required />
+    </div>
+
+    <div>
+        <label>Price:</label>
+        <input type="number" step="0.01" name="price" required />
+    </div>
+
+    <div>
+        <label>Connected:</label>
+        <input type="checkbox" name="isConnected" />
+        <label>Calibrated:</label>
+        <input type="checkbox" name="isCalibrated" />
+        <label>State:</label>
+        <input type="checkbox" name="state" />
+    </div>
+
+    <button type="submit">Add</button>
+</form>
+
+<hr/>
+
+<h2>Sendings</h2>
+
+<ul>
+    <li th:each="x : ${shipment.sendings}">
+        <span th:text="${x.timestamp}">ts</span>
+        - deviceId: <span th:text="${x.deviceId}">1</span>
+        - secure: <span th:text="${x.secureChannel}">true</span>
+        - integrity: <span th:text="${x.dataIntegrity}">true</span>
+    </li>
+</ul>
+
+<p th:if="${shipment.sendings == null || #lists.isEmpty(shipment.sendings)}">
+    No sendings yet.
+</p>
 
 </body>
 </html>
+
