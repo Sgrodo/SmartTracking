@@ -22,7 +22,7 @@ import java.util.Set;
 
  */
 @Service
-public final class ShipmentService {
+public class ShipmentService {
     private final DeviceService deviceService;
     private final ShipmentRepository shipmentRepository;
 
