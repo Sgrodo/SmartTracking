@@ -3,6 +3,7 @@ package it.univr.track.service;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.Shipment;
 import it.univr.track.entity.data.Sending;
+import it.univr.track.repository.DeviceRepository;
 import it.univr.track.repository.ShipmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,61 +22,63 @@ class DeviceServiceTest {
     private ShipmentRepository shipmentRepository;
     private SendingFactory sendingFactory;
     private DeviceService deviceService;
+    private DeviceRepository deviceRepository;
 
     @BeforeEach
     void setUp() {
         shipmentRepository = mock(ShipmentRepository.class);
+        deviceRepository = mock(DeviceRepository.class);
         sendingFactory = mock(SendingFactory.class);
-        deviceService = new DeviceService(shipmentRepository, sendingFactory);
+        deviceService = new DeviceService(shipmentRepository, deviceRepository, sendingFactory);
     }
 
     // ---------- addDevice ----------
 
     @Test
-    void addDevice_registersDeviceId() {
+    void addDevice_registersDeviceToShipmentId() {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
         ReflectionTestUtils.setField(d, "id", 10L);
 
-        assertDoesNotThrow(() -> deviceService.addDevice(5L, d));
+        assertDoesNotThrow(() -> deviceService.addDeviceToShipment(5L, d.getId()));
     }
 
     @Test
-    void addDevice_throws_whenDeviceIdNull() {
+    void addDevice_throws_whenDeviceToShipmentIdNull() {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
 
         assertThrows(IllegalArgumentException.class, () ->
-                deviceService.addDevice(1L, d)
+                deviceService.addDeviceToShipment(1L, d.getId())
         );
     }
 
     // ---------- removeDevice ----------
 
     @Test
-    void removeDevice_removesRegisteredDevice() {
+    void removeDevice_removesRegisteredDeviceFromShipment() {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
         ReflectionTestUtils.setField(d, "id", 7L);
 
-        deviceService.addDevice(3L, d);
+        deviceService.addDeviceToShipment(3L, d.getId());
 
-        assertDoesNotThrow(() -> deviceService.removeDevice(d));
+        assertDoesNotThrow(() -> deviceService.removeDeviceFromShipment(d.getId()));
     }
 
     @Test
-    void removeDevice_throws_whenDeviceNotRegistered() {
+    void removeDevice_throws_whenDeviceFromShipmentNotRegistered() {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
         ReflectionTestUtils.setField(d, "id", 99L);
 
         assertThrows(IllegalStateException.class, () ->
-                deviceService.removeDevice(d)
+                deviceService.removeDeviceFromShipment(d.getId())
         );
     }
 
     @Test
-    void removeDevice_throws_whenDeviceIdNull() {
+    void removeDevice_throws_whenDeviceFromShipmentIdNull() {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
 
         assertThrows(IllegalArgumentException.class, () ->
-                deviceService.removeDevice(d)
+                deviceService.removeDeviceFromShipment(d.getId())
         );
     }
 
@@ -91,7 +94,7 @@ class DeviceServiceTest {
 
         Shipment shipment = new Shipment("x", ZonedDateTime.now(), null);
 
-        deviceService.addDevice(shipmentId, d);
+        deviceService.addDeviceToShipment(shipmentId, d.getId());
 
         Sending fakeSending = new Sending(deviceId, Instant.now(), true, true);
 
@@ -122,7 +125,7 @@ class DeviceServiceTest {
         Device d = new Device(true, true, true, BigDecimal.ONE, "FORMULA");
         ReflectionTestUtils.setField(d, "id", 1L);
 
-        deviceService.addDevice(99L, d);
+        deviceService.addDeviceToShipment(99L, d.getId());
         when(shipmentRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class, () ->

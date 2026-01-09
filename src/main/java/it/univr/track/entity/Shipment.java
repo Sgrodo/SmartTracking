@@ -1,10 +1,13 @@
 package it.univr.track.entity;
 
 import it.univr.track.entity.data.Sending;
+import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import it.univr.track.service.DeviceService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -17,6 +20,10 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 public class Shipment extends AbstractEntity {
+
+    @Setter
+    @Column(nullable = false)
+    private TrackingState trackingState;
 
     @Column(nullable = false)
     private ZonedDateTime startDate;
@@ -44,6 +51,7 @@ public class Shipment extends AbstractEntity {
         if (startDate == null) throw new IllegalArgumentException("startDate is required");
         this.startDate = startDate;
         this.description = description;
+        this.trackingState = TrackingState.INACTIVE;
 
         if (physicalConstraints != null) {
             for (PhysicalConstraint c : physicalConstraints){
@@ -52,18 +60,18 @@ public class Shipment extends AbstractEntity {
         }
     }
 
+    //DEVICE SECTION
+
     public void addDevice(Device device) {
         if (device == null) throw new IllegalArgumentException("device is null");
         devices.add(device);
         device.setShipment(this);
     }
 
-    public void removeDevice(Device device) {
+    public boolean removeDevice(Device device) {
         if (device == null) throw new IllegalArgumentException("device is null");
-        boolean removed = devices.remove(device);
-        if (removed) {
-            device.setShipment(null);
-        }
+        return devices.remove(device);
+
     }
 
 

@@ -4,6 +4,7 @@ import it.univr.track.entity.Device;
 import it.univr.track.entity.Shipment;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import it.univr.track.repository.DeviceRepository;
 import it.univr.track.repository.ShipmentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,23 +23,25 @@ class ShipmentServiceTest {
     private ShipmentRepository shipmentRepository;
     private DeviceService deviceService;
     private ShipmentService shipmentService;
+    private DeviceRepository deviceRepository;
 
     @BeforeEach
     void setUp() {
         shipmentRepository = mock(ShipmentRepository.class);
+        deviceRepository = mock(DeviceRepository.class);
         deviceService = mock(DeviceService.class);
-        shipmentService = new ShipmentService(shipmentRepository, deviceService);
+        shipmentService = new ShipmentService(shipmentRepository, deviceRepository, deviceService);
     }
 
     @Test
-    void generateShipment_savesAndReturnsShipment() {
+    void createShipment_savesAndReturnsShipment() {
         ZonedDateTime start = ZonedDateTime.now();
         Set<PhysicalConstraint> constraints = Set.of(new HumidityConstraint(60.0));
 
         // ritorna lo stesso oggetto salvato (semplifico)
         when(shipmentRepository.save(any(Shipment.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        Shipment created = shipmentService.generateShipment("desc", start, constraints);
+        Shipment created = shipmentService.createShipment("desc", start, constraints);
 
         assertNotNull(created);
         assertEquals("desc", created.getDescription());
@@ -52,9 +55,9 @@ class ShipmentServiceTest {
     }
 
     @Test
-    void generateShipment_throws_whenStartDateNull() {
+    void createShipment_throws_whenStartDateNull() {
         assertThrows(IllegalArgumentException.class, () ->
-                shipmentService.generateShipment("desc", null, Set.of())
+                shipmentService.createShipment("desc", null, Set.of())
         );
 
         verify(shipmentRepository, never()).save(any());
@@ -70,14 +73,14 @@ class ShipmentServiceTest {
 
         when(shipmentRepository.findById(shipmentId)).thenReturn(Optional.of(s));
 
-        shipmentService.associateDevice(shipmentId, d);
+        shipmentService.associateDevice(shipmentId, d.getId());
 
         // lato dominio: device associato
         assertTrue(s.getDevices().contains(d));
         assertEquals(s, d.getShipment());
 
         // lato collaborazione: chiamata a DeviceService
-        verify(deviceService).addDevice(shipmentId, d);
+        verify(deviceService).addDeviceToShipment(shipmentId, d.getId());
     }
 
     @Test
@@ -87,10 +90,10 @@ class ShipmentServiceTest {
         Device d = new Device(true, true, true, new BigDecimal("10.00"), "FORMULA");
 
         assertThrows(IllegalArgumentException.class, () ->
-                shipmentService.associateDevice(99L, d)
+                shipmentService.associateDevice(99L, d.getId())
         );
 
-        verify(deviceService, never()).addDevice(anyLong(), any());
+        verify(deviceService, never()).addDeviceToShipment(anyLong(), any());
     }
 
     @Test
@@ -104,12 +107,12 @@ class ShipmentServiceTest {
 
         when(shipmentRepository.findById(shipmentId)).thenReturn(Optional.of(s));
 
-        shipmentService.deAssociateDevice(shipmentId, d);
+        shipmentService.deAssociateDevice(shipmentId, d.getId());
 
         assertFalse(s.getDevices().contains(d));
         assertNull(d.getShipment());
 
-        verify(deviceService).removeDevice(d);
+        verify(deviceService).removeDeviceFromShipment(s.getId(), d.getId());
     }
 
     @Test
@@ -119,10 +122,10 @@ class ShipmentServiceTest {
         Device d = new Device(true, true, true, new BigDecimal("10.00"), "FORMULA");
 
         assertThrows(IllegalArgumentException.class, () ->
-                shipmentService.deAssociateDevice(99L, d)
+                shipmentService.deAssociateDevice(99L, d.getId())
         );
 
-        verify(deviceService, never()).removeDevice(any());
+        verify(deviceService, never()).removeDeviceFromShipment(any(),any());
     }
 
     @Test

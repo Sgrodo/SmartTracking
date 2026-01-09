@@ -1,5 +1,6 @@
 package it.univr.track.entity;
 
+import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,9 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 public class Device extends AbstractEntity {
+
+    @Column(nullable = false)
+    private TrackingState trackingState;
 
     @Column(nullable = false)
     private Boolean isConnected;
@@ -56,6 +60,7 @@ public class Device extends AbstractEntity {
         this.isCalibrated = isCalibrated;
         this.price = price;
         this.origin = origin;
+        this.trackingState = TrackingState.INACTIVE;
     }
 
 }
