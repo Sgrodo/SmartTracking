@@ -110,7 +110,14 @@ public class ShipmentController {
 
     // deallocate a device to a shipment
     @PostMapping("/api/shipment/deallocate")
-    public boolean deallocateDevice() {
+    public boolean deallocateDevice(@RequestParam Long deviceId, @RequestParam Long shipmentId) {
+        try{
+            shipmentService.deAssociateDevice(shipmentId,deviceId);
+        }catch (IllegalArgumentException e ){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Shipment of id"+ shipmentId + "does not have this device: "+ deviceId);
+        }catch (Exception e ){
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Request rejected");
+        }
         return true;
     }
 }

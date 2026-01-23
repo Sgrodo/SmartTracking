@@ -1,5 +1,6 @@
 package it.univr.track.entity;
 
+import it.univr.track.entity.enumeration.TrackingState;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -68,5 +69,14 @@ class DeviceTest {
         assertTrue(d.getIsCalibrated());
         assertEquals(new BigDecimal("99.99"), d.getPrice());
         assertEquals("FORMULA_Y", d.getOrigin());
+    }
+
+    @Test
+    void consistentTrackingState(){
+        Device d = new Device();
+        d.setTrackingState(TrackingState.ACTIVE);
+        assertEquals(TrackingState.ACTIVE, d.getTrackingState());
+        d.setTrackingState(TrackingState.INACTIVE);
+        assertEquals(TrackingState.INACTIVE, d.getTrackingState());
     }
 }

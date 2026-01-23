@@ -112,7 +112,7 @@ class ShipmentServiceTest {
         assertFalse(s.getDevices().contains(d));
         assertNull(d.getShipment());
 
-        verify(deviceService).removeDeviceFromShipment(s.getId(), d.getId());
+        verify(deviceService).removeDeviceFromShipment(d.getId());
     }
 
     @Test
@@ -125,7 +125,7 @@ class ShipmentServiceTest {
                 shipmentService.deAssociateDevice(99L, d.getId())
         );
 
-        verify(deviceService, never()).removeDeviceFromShipment(any(),any());
+        verify(deviceService, never()).removeDeviceFromShipment(any());
     }
 
     @Test

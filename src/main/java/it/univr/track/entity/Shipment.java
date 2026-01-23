@@ -3,7 +3,6 @@ package it.univr.track.entity;
 import it.univr.track.entity.data.Sending;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.PhysicalConstraint;
-import it.univr.track.service.DeviceService;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,7 +27,7 @@ public class Shipment extends AbstractEntity {
     @Column(nullable = false)
     private ZonedDateTime startDate;
 
-    // decidi tu se obbligatoria
+    // obbligatoria?
     @Column
     private String description;
 
@@ -68,9 +67,9 @@ public class Shipment extends AbstractEntity {
         device.setShipment(this);
     }
 
-    public boolean removeDevice(Device device) {
+    public void removeDevice(Device device) {
         if (device == null) throw new IllegalArgumentException("device is null");
-        return devices.remove(device);
+        devices.remove(device);
 
     }
 

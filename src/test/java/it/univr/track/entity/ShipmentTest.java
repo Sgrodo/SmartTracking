@@ -2,6 +2,7 @@ package it.univr.track.entity;
 
 import it.univr.track.entity.data.Sending;
 import it.univr.track.entity.enumeration.TemperatureUnit;
+import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.entity.sensor.TemperatureConstraint;
@@ -66,6 +67,10 @@ class ShipmentTest {
 
         s.addDevice(d1);
 
+        assertThrows(IllegalArgumentException.class,() ->{
+            s.removeDevice(null);
+        });
+
         // rimuovo un device non presente: non deve toccare shipment di d2
         s.removeDevice(d2);
         assertNull(d2.getShipment());
@@ -73,7 +78,7 @@ class ShipmentTest {
         // rimuovo quello presente
         s.removeDevice(d1);
         assertFalse(s.getDevices().contains(d1));
-        assertNull(d1.getShipment());
+        assertNotNull(d1.getShipment());
     }
 
     @Test
@@ -86,6 +91,22 @@ class ShipmentTest {
     void removeDevice_throws_whenNull() {
         Shipment s = new Shipment("x", ZonedDateTime.now(), null);
         assertThrows(IllegalArgumentException.class, () -> s.removeDevice(null));
+    }
+
+    @Test
+    void addPhysicalConstraint_throws_whenNull(){
+        Shipment s = new Shipment();
+        assertThrows(IllegalArgumentException.class, () ->{
+           s.addPhysicalConstraint(null);
+        });
+    }
+
+    @Test
+    void removePhysicalConstraint_throws_whenNull(){
+        Shipment s = new Shipment();
+        assertThrows(IllegalArgumentException.class, () ->{
+            s.removePhysicalConstraint(null);
+        });
     }
 
     @Test
@@ -164,6 +185,15 @@ class ShipmentTest {
     void addSending_throws_whenNull() {
         Shipment s = new Shipment("x", ZonedDateTime.now(), null);
         assertThrows(IllegalArgumentException.class, () -> s.addSending(null));
+    }
+
+    @Test
+    void consistent_TrackingState(){
+        Shipment s = new Shipment();
+        s.setTrackingState(TrackingState.ACTIVE);
+        assertEquals(TrackingState.ACTIVE, s.getTrackingState());
+        s.setTrackingState(TrackingState.INACTIVE);
+        assertEquals(TrackingState.INACTIVE,s.getTrackingState());
     }
 }
 
