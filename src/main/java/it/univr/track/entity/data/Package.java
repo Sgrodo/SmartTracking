@@ -14,7 +14,7 @@ import java.util.Set;
  * possono essere propagate alle UnitLoad contenute.
  */
 @Entity
-@Table(name = "package")
+@Table(name = "package_tbl")
 @NoArgsConstructor
 @Getter
 public class Package extends Trackable {

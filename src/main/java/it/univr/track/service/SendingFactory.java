@@ -1,41 +1,45 @@
 package it.univr.track.service;
 
-import it.univr.track.repository.ShipmentRepository;
-import it.univr.track.entity.Shipment;
+import it.univr.track.entity.Device;
+import it.univr.track.entity.data.Trackable;
+import it.univr.track.repository.DeviceRepository;
 import it.univr.track.entity.data.Sending;
+import it.univr.track.repository.TrackableRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 /**
  * Gestisce la generazione dei Sending
  */
 @Service
+@RequiredArgsConstructor
 public class SendingFactory {
 
-    private final ShipmentRepository shipmentRepository;
-
-    public SendingFactory(ShipmentRepository shipmentRepository) {
-        this.shipmentRepository = shipmentRepository;
-    }
+    private final DeviceRepository deviceRepository;
+    private final DeviceAssignmentService deviceAssignmentService;
+    private final TrackableRepository trackableRepository;
 
     @Transactional
-    public void ingestSending(Long shipmentId, Long deviceId) {
-        Shipment shipment = shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Shipment not found"));
+    public Sending ingestSending(Long deviceId) {
+        ZonedDateTime now = ZonedDateTime.now();
 
-        Sending sending = new Sending(deviceId, Instant.now(), true, true);
-        shipment.addSending(sending);
-    }
+        Device device = deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
 
-    public Sending create() {
-        // TODO vedere se fare un random con valori preimpostati o qualcosa del genere
-        return new Sending(
-                10L,
-                Instant.now(),
-                true,
-                true
-        );
+        Trackable target = deviceAssignmentService.getActiveTarget(deviceId, now);
+
+        // crea sending (editable...)
+        Sending sending = new Sending(device, now, true, true);
+
+        // salva “sul target” (UnitLoad o Package, uguale)
+        target.addSending(sending);
+
+        // siccome target è entity gestita, basta salvarla (o lasciare che la transazione flushi)
+        trackableRepository.save(target);
+        return sending;
     }
 }
+
 

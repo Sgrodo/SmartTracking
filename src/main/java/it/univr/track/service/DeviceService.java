@@ -1,112 +1,85 @@
 package it.univr.track.service;
 
 import it.univr.track.entity.Device;
-import it.univr.track.entity.Shipment;
 import it.univr.track.entity.data.Sending;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.repository.DeviceRepository;
-import jakarta.transaction.Transactional;
-import it.univr.track.repository.ShipmentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 @Service
 public class DeviceService {
 
-    private final ShipmentRepository shipmentRepository;
     private final DeviceRepository deviceRepository;
+    private final DeviceAssignmentService deviceAssignmentService;
     private final SendingFactory sendingFactory;
 
-    public DeviceService(ShipmentRepository shipmentRepository, DeviceRepository deviceRepository, SendingFactory sendingFactory) {
-        this.shipmentRepository = shipmentRepository;
+    public DeviceService(DeviceRepository deviceRepository,
+                         DeviceAssignmentService deviceAssignmentService,
+                         SendingFactory sendingFactory) {
         this.deviceRepository = deviceRepository;
+        this.deviceAssignmentService = deviceAssignmentService;
         this.sendingFactory = sendingFactory;
     }
 
+    /**
+     * Prima era addDeviceToShipment(shipmentId, deviceId).
+     * Ora il binding si fa verso un Trackable (UnitLoad o Package).
+     */
     @Transactional
-    public void addDeviceToShipment(Long shipmentId, Long deviceId) {
-        Shipment shipment = shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Shipment not found: " + shipmentId));
+    public void bindDeviceToTrackable(Long deviceId, Long trackableId) {
+        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
+        if (trackableId == null) throw new IllegalArgumentException("trackableId is null");
 
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
-
-        shipment.addDevice(device);
+        deviceAssignmentService.bind(deviceId, trackableId);
     }
 
-
+    /**
+     * Scollega il device chiudendo l'assignment attivo (toTs valorizzato).
+     */
     @Transactional
-    public void removeDeviceFromShipment(Long deviceId) {
-        if (deviceId == null) {
-            throw new IllegalArgumentException("deviceId is null");
-        }
-
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Device not found: " + deviceId)
-                );
-
-        if (device.getShipment() == null) {
-            throw new IllegalStateException(
-                    "Device " + deviceId + " is not associated to any shipment"
-            );
-        }
-
-        // rompe l'associazione (owning side)
-        device.setShipment(null);
-
-        // persiste la modifica
-        deviceRepository.save(device);
+    public void unbindDevice(Long deviceId) {
+        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
+        deviceAssignmentService.unbind(deviceId);
     }
 
-
+    /**
+     * Setta lo stato di tracking dei device (se ti serve ancora).
+     * Nota: qui conviene salvare, oppure assicurarsi che i Device siano managed.
+     */
     @Transactional
-    public void setDeviceTrackingState(Set<Device> devices, TrackingState state){
-        for( Device d : devices){
+    public void setDeviceTrackingState(Set<Device> devices, TrackingState state) {
+        if (devices == null) throw new IllegalArgumentException("devices is null");
+        if (state == null) throw new IllegalArgumentException("state is null");
+
+        for (Device d : devices) {
+            if (d == null) continue;
             d.setTrackingState(state);
         }
+        deviceRepository.saveAll(devices);
     }
 
-    // Questo simula "il device invia un report"
+    /**
+     * Simula "il device invia un report".
+     * Ora NON esiste più shipmentId: il target si risolve tramite DeviceAssignment attivo.
+     */
     @Transactional
     public Sending ingestMockSending(Long deviceId) {
-        Long shipmentId = deviceRepository.findById(deviceId).orElseThrow(()->
-                new IllegalArgumentException("Device not found: " + deviceId)).getId();
-        if (shipmentId == null) throw new IllegalStateException("Device not associated to any shipment");
+        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
 
-        Shipment shipment = shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Shipment not found"));
+        // opzionale: fail fast se device non esiste
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
 
-        Sending sending = sendingFactory.create();  // genera un sending fake coerente
-        shipment.addSending(sending);               // lo salvi dentro shipment (relazione JPA)
-
-        return sending;
-    }
-
-    private void validateDevice(Device device) {
-        if (device == null) {
-            throw new IllegalArgumentException("Device is null");
-        }
-        if (device.getId() == null) {
-            throw new IllegalArgumentException("Device id is null");
-        }
+        // la factory deve: (1) risolvere target attivo, (2) creare sending, (3) salvarlo sul Trackable
+        return sendingFactory.ingestSending(deviceId);
     }
 
     public Device getDeviceById(Long deviceId) {
-        if (deviceId == null) {
-            throw new IllegalArgumentException("deviceId is null");
-        }
-
+        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
         return deviceRepository.findById(deviceId)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Device not found: " + deviceId)
-                );
+                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
     }
-
-
-
 }
-
