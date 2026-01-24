@@ -1,5 +1,6 @@
 package it.univr.track.entity;
 
+import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -40,8 +41,8 @@ public class Device extends AbstractEntity {
      * Molti device possono appartenere a una shipment
      */
     @ManyToOne
-    @JoinColumn(name = "shipment_id", nullable = true)
-    private Shipment shipment;
+    @JoinColumn(name = "unit load_id")
+    private UnitLoad unitLoad;
 
     public Device(
             Boolean isConnected,

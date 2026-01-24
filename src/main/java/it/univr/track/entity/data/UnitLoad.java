@@ -1,0 +1,131 @@
+package it.univr.track.entity.data;
+
+import it.univr.track.entity.PhysicalConstraintEmbeddable;
+import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.entity.sensor.PhysicalConstraint;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.ZonedDateTime;
+import java.util.*;
+
+@Entity
+@Table(name = "unit_load")
+@NoArgsConstructor
+@Getter
+public class UnitLoad extends Trackable {
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TrackingState trackingState = TrackingState.INACTIVE;
+
+    @Column(nullable = false)
+    private ZonedDateTime startDate;
+
+    @Column
+    private String description;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "package_id")
+    private Package pkg;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipment_id")
+    private Shipment shipment;
+
+    protected void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+    }
+
+    protected void setPackage(Package pkg) {
+        this.pkg = pkg;
+    }
+
+
+    // --- CONTENT (Products) ---
+
+    @OneToMany(mappedBy = "unitLoad", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LoadItem> products = new HashSet<>();
+
+    // --- CONSTRAINTS ---
+
+    @ElementCollection
+    @CollectionTable(
+            name = "unitload_physical_constraints",
+            joinColumns = @JoinColumn(name = "unitload_id")
+    )
+    private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
+
+    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints) {
+        if (startDate == null) throw new IllegalArgumentException("startDate is required");
+        this.startDate = startDate;
+        this.description = description;
+
+        if (constraints != null) {
+            for (PhysicalConstraint c : constraints) {
+                this.physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(c));
+            }
+        }
+    }
+
+    // -------- PRODUCTS SECTION --------
+
+    /**
+     * Crea e aggiunge un LoadItem come contenuto di questa UnitLoad.
+     * LoadItem non è standalone nel dominio: nasce con UnitLoad.
+     */
+    public LoadItem addProduct(String name, String qrCode, String description) {
+        LoadItem p = new LoadItem(this, name, qrCode, description);
+        products.add(p);
+        return p;
+    }
+
+    public boolean removeProductByQrCode(String qrCode) {
+        if (qrCode == null || qrCode.isBlank()) throw new IllegalArgumentException("qrCode is blank");
+        return products.removeIf(p -> qrCode.equals(p.getQrCode()));
+    }
+
+    public boolean hasProducts() {
+        return !products.isEmpty();
+    }
+
+    // -------- CONSTRAINTS SECTION --------
+
+    public void addPhysicalConstraint(PhysicalConstraint c) {
+        if (c == null) throw new IllegalArgumentException("constraint is null");
+        physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(c));
+    }
+
+    public boolean removePhysicalConstraint(PhysicalConstraint constraint) {
+        if (constraint == null) throw new IllegalArgumentException("constraint is null");
+        return physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(constraint));
+    }
+
+    public void editPhysicalConstraint(PhysicalConstraint oldConstraint, PhysicalConstraint newConstraint) {
+        if (oldConstraint == null) throw new IllegalArgumentException("oldConstraint is null");
+        if (newConstraint == null) throw new IllegalArgumentException("newConstraint is null");
+
+        boolean removed = physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(oldConstraint));
+        if (!removed) throw new IllegalArgumentException("Constraint to edit not found: " + oldConstraint);
+
+        physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(newConstraint));
+    }
+
+    /**
+     * non puoi attivare se non hai almeno un product.
+     * (Se vuoi la metti nel service invece che qui)
+     */
+    public void activateTracking() {
+        if (products.isEmpty()) {
+            throw new IllegalStateException("UnitLoad must contain at least one product before activation");
+        }
+        this.trackingState = TrackingState.ACTIVE;
+    }
+
+    public void deactivateTracking(){
+        this.trackingState = TrackingState.INACTIVE;
+    }
+}
