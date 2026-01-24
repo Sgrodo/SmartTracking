@@ -1,4 +1,0 @@
-- edit transazioni di associazione e deassociazione
-- edit Shipment, bisogna poter mettere editPhysicalCondition
-- SendingFactory transazionale
-- rivedere physicalCondition al livello di DB

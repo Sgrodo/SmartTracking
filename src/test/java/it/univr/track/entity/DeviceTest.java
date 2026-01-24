@@ -24,7 +24,7 @@ class DeviceTest {
         assertFalse(d.getIsCalibrated());
         assertEquals(new BigDecimal("12.50"), d.getPrice());
         assertEquals("FORMULA_X", d.getOrigin());
-        assertNull(d.getShipment()); // non settata dal costruttore
+        assertNull(d.getUnitLoad()); // non settata dal costruttore
     }
 
     @Test
