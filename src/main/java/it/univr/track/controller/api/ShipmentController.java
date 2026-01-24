@@ -11,6 +11,7 @@ import it.univr.track.entity.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.Set;
 
 @Controller
@@ -51,7 +52,7 @@ public class ShipmentController {
     //TODO
     // update a shipment
     @PutMapping("/api/shipment")
-    public boolean editShipment() {
+    public boolean editShipment(@RequestParam Optional<String> descri) {
         return true;
     }
 
@@ -62,7 +63,7 @@ public class ShipmentController {
      */
     // update a shipment
     @DeleteMapping("/api/shipment")
-    public boolean deleteShipment(Long shipmentId) {
+    public boolean deleteShipment(@RequestParam Long shipmentId) {
         return shipmentService.deleteShipmentById(shipmentId);
     }
 

@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class Device extends AbstractEntity {
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TrackingState trackingState;
 
     @Column(nullable = false)
