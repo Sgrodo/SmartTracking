@@ -11,12 +11,12 @@
 <h1>Shipment details</h1>
 <p style="margin-top:-10px;">
     <small>
-        ID: <span th:text="${shipment.id}">1</span>
-        <span th:if="${shipment.startDate != null}">
-      | Start: <span th:text="${shipment.startDate}">date</span>
+        ID: <span th:text="${unitLoad.id}">1</span>
+        <span th:if="${unitLoad.startDate != null}">
+      | Start: <span th:text="${unitLoad.startDate}">date</span>
     </span>
-        <span th:if="${shipment.description != null && !#strings.isEmpty(shipment.description)}">
-      | Description: <span th:text="${shipment.description}">desc</span>
+        <span th:if="${unitLoad.description != null && !#strings.isEmpty(unitLoad.description)}">
+      | Description: <span th:text="${unitLoad.description}">desc</span>
     </span>
     </small>
 </p>
@@ -47,7 +47,7 @@
         <td th:text="${d.state}">true</td>
         <td th:text="${d.price}">0.00</td>
         <td>
-            <form th:action="@{/shipments/{shipmentId}/devices/{deviceId}/remove(shipmentId=${shipment.id},deviceId=${d.id})}"
+            <form th:action="@{/shipments/{shipmentId}/devices/{deviceId}/remove(shipmentId=${unitLoad.id},deviceId=${d.id})}"
                   method="post" style="display:inline;">
                 <button type="submit">Remove</button>
             </form>
@@ -68,7 +68,7 @@
 
 <h2 id="add-device">Add device</h2>
 
-<form th:action="@{/shipments/{shipmentId}/devices(shipmentId=${shipment.id})}" method="post">
+<form th:action="@{/shipments/{shipmentId}/devices(shipmentId=${unitLoad.id})}" method="post">
     <div>
         <label>Origin:</label>
         <input type="text" name="origin" required />
@@ -96,7 +96,7 @@
 <h2>Sendings</h2>
 
 <ul>
-    <li th:each="x : ${shipment.sendings}">
+    <li th:each="x : ${unitLoad.sendings}">
         <span th:text="${x.timestamp}">ts</span>
         - deviceId: <span th:text="${x.deviceId}">1</span>
         - secure: <span th:text="${x.secureChannel}">true</span>
@@ -104,7 +104,7 @@
     </li>
 </ul>
 
-<p th:if="${shipment.sendings == null || #lists.isEmpty(shipment.sendings)}">
+<p th:if="${unitLoad.sendings == null || #lists.isEmpty(unitLoad.sendings)}">
     No sendings yet.
 </p>
 
