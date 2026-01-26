@@ -25,11 +25,6 @@ public class PackageService {
     }
 
 
-    public Package createPackage() {
-        Package pkg = new Package();
-        return packageRepository.save(pkg);
-    }
-
     @Transactional(readOnly = true)
     public Package getPackageById(Long packageId) {
         if (packageId == null) throw new IllegalArgumentException("packageId is null");
@@ -113,4 +108,11 @@ public class PackageService {
         if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
         deviceAssignmentService.unbind(deviceId);
     }
+
+    @Transactional
+    public Package createPackage(Set<UnitLoad> unitLoads) {
+        Package pkg = new Package(unitLoads);
+        return packageRepository.save(pkg); // così ha l'id
+    }
+
 }

@@ -45,12 +45,12 @@ public class UnitLoad extends Trackable {
     }
 
 
-    // --- CONTENT (Products) ---
+    // CONTENT (LoadItem)
 
     @OneToMany(mappedBy = "unitLoad", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LoadItem> products = new HashSet<>();
 
-    // --- CONSTRAINTS ---
+    // CONSTRAINTS
 
     @ElementCollection
     @CollectionTable(
@@ -59,7 +59,7 @@ public class UnitLoad extends Trackable {
     )
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
-    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints) {
+    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, List<LoadItem> loadItems) {
         if (startDate == null) throw new IllegalArgumentException("startDate is required");
         this.startDate = startDate;
         this.description = description;

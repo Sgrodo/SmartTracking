@@ -48,7 +48,7 @@ public class Shipment extends AbstractEntity {
         this.description = description;
     }
 
-    // ---- DOMAIN METHODS ----
+    // DOMAIN METHODS
 
     public void addPackage(Package pkg) {
         if (pkg == null) throw new IllegalArgumentException("package is null");
@@ -82,4 +82,11 @@ public class Shipment extends AbstractEntity {
         this.endDate = endDate;
         this.state = ShipmentState.COMPLETED;
     }
+
+    public void edit(String description, ShipmentState state, ZonedDateTime endDate) {
+        if (description != null) this.description = description;
+        if (state != null) this.state = state;
+        if (endDate != null) this.endDate = endDate;
+    }
+
 }

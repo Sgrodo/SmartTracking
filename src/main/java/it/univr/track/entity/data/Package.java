@@ -2,10 +2,12 @@ package it.univr.track.entity.data;
 
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -15,7 +17,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "package_tbl")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Package extends Trackable {
 
@@ -25,6 +27,15 @@ public class Package extends Trackable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
+
+    public Package(Set<UnitLoad> unitLoads){
+        if (unitLoads.isEmpty()){
+            throw new RuntimeException("List of UnitLoads is empty");
+        }
+        for( UnitLoad u : unitLoads){
+            this.addUnitLoad(u);
+        }
+    }
 
     protected void setShipment(Shipment shipment) {
         this.shipment = shipment;

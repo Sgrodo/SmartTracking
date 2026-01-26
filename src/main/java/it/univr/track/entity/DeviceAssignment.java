@@ -37,6 +37,7 @@ public class DeviceAssignment extends AbstractEntity {
         if (device == null) throw new IllegalArgumentException("device is null");
         if (target == null) throw new IllegalArgumentException("target is null");
         if (fromTs == null) throw new IllegalArgumentException("fromTs is null");
+
         this.device = device;
         this.target = target;
         this.fromTs = fromTs;

@@ -2,6 +2,7 @@ package it.univr.track.service;
 
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
+import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.TrackingState;
@@ -41,8 +42,9 @@ public class UnitLoadService {
 
     public UnitLoad createUnitLoad(String description,
                                    ZonedDateTime startDate,
-                                   Set<PhysicalConstraint> physicalConstraints) {
-        UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints);
+                                   Set<PhysicalConstraint> physicalConstraints,
+                                   List< LoadItem > loadItems) {
+        UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints, loadItems );
         return unitLoadRepository.save(unitLoad);
     }
 
@@ -82,7 +84,6 @@ public class UnitLoadService {
         // fail-fast: unitload deve esistere
         getUnitLoadById(unitLoadId);
 
-        deviceAssignmentService.bind(deviceId, unitLoadId);
     }
 
     /**
@@ -151,4 +152,20 @@ public class UnitLoadService {
         ul.setTrackingState(state);
         unitLoadRepository.save(ul);
     }
+
+    @Transactional
+    public void addLoadItem(Long unitLoadId, String name, String qrCode, String description) {
+        UnitLoad ul = getUnitLoadById(unitLoadId);
+        ul.addProduct(name, qrCode, description);
+        unitLoadRepository.save(ul);
+    }
+
+    @Transactional
+    public boolean removeLoadItemByQrCode(Long unitLoadId, String qrCode) {
+        UnitLoad ul = getUnitLoadById(unitLoadId);
+        boolean removed = ul.removeProductByQrCode(qrCode);
+        unitLoadRepository.save(ul);
+        return removed;
+    }
+
 }
