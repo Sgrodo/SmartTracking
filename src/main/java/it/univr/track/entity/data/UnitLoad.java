@@ -47,7 +47,12 @@ public class UnitLoad extends Trackable {
 
     // CONTENT (LoadItem)
 
-    @OneToMany(mappedBy = "unitLoad", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "unitload_product",
+            joinColumns = @JoinColumn(name = "unitload_id"),
+            inverseJoinColumns = @JoinColumn(name = "loaditem_id")
+    )
     private Set<LoadItem> products = new HashSet<>();
 
     // CONSTRAINTS
@@ -78,8 +83,10 @@ public class UnitLoad extends Trackable {
      * LoadItem non è standalone nel dominio: nasce con UnitLoad.
      */
     public LoadItem addProduct(String name, String qrCode, String description) {
-        LoadItem p = new LoadItem(this, name, qrCode, description);
+        LoadItem p = new LoadItem(name, qrCode, description);
+
         products.add(p);
+
         return p;
     }
 

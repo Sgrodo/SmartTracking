@@ -1,6 +1,8 @@
 package it.univr.track.controller.api.dto;
 
+import it.univr.track.entity.enumeration.PhysicalConstraintType;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Set;
+
 
 /***
  * Questa classe rappresenta l'oggetto trasportato da una UnitLoad, non è StandAlone
@@ -13,14 +15,16 @@ import lombok.NoArgsConstructor;
  * che viene trasportato all'interno di una UnitLoad.
  */
 @Entity
-@Table(name = "unitload_product")
+@Table(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class LoadItem extends AbstractEntity {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "unitload_id", nullable = false)
-    private UnitLoad unitLoad;
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinTable(name = "unitload_product",
+        joinColumns = @JoinColumn(name = "loaditem_id"),
+        inverseJoinColumns = @JoinColumn(name = "unitload_id"))
+    private Set<UnitLoad> unitLoads;
 
     @Column(nullable = false)
     private String name; // oppure productLabel
@@ -31,11 +35,10 @@ public class LoadItem extends AbstractEntity {
     @Column
     private String description;
 
-    public LoadItem(UnitLoad unitLoad, String name, String qrCode, String description) {
-        if (unitLoad == null) throw new IllegalArgumentException("unitLoad is null");
+    public LoadItem(String name, String qrCode, String description) {
         if (name == null || name.isBlank()) throw new IllegalArgumentException("name is blank");
         if (qrCode == null || qrCode.isBlank()) throw new IllegalArgumentException("qrCode is blank");
-        this.unitLoad = unitLoad;
+
         this.name = name;
         this.qrCode = qrCode;
         this.description = description;

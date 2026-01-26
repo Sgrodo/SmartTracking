@@ -3,7 +3,6 @@ package it.univr.track.controller.api;
 import it.univr.track.controller.api.dto.CreateShipmentRequest;
 import it.univr.track.controller.api.dto.UpdateShipmentRequest;
 import it.univr.track.entity.data.Shipment;
-import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.service.ShipmentService;
 import it.univr.track.service.UnitLoadService;
@@ -129,8 +128,8 @@ public class ShipmentController {
 
     // list all the shipments
     @GetMapping("/api/shipments")
-    public UnitLoad[] readShipments() {
-        return unitLoadService.getAllUnitLoads();
+    public Shipment[] readShipments() {
+        return shipmentService.getAllShipments().toArray(new Shipment[0]);
     }
 
     // start/stop tracking

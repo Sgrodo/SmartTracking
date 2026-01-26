@@ -6,13 +6,12 @@ import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
-import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.repository.ShipmentRepository;
 import it.univr.track.repository.TrackableRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
+import java.util.List;
 
 @Service
 public class ShipmentService {
@@ -44,6 +43,10 @@ public class ShipmentService {
                 .orElseThrow(() -> new IllegalArgumentException("Shipment not found: " + shipmentId));
     }
 
+    @Transactional
+    public List<Shipment> getAllShipments(){
+        return shipmentRepository.findAll();
+    }
     @Transactional
     public void update(Long shipmentId, UpdateShipmentRequest req) {
         if (req == null) throw new IllegalArgumentException("request is null");

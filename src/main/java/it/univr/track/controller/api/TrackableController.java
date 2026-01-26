@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.*;
 
 @RestController()
-@RequestMapping({"/api/unitload","/api/package"})
 public class TrackableController {
 
     private final UnitLoadService unitLoadService;
@@ -30,7 +29,7 @@ public class TrackableController {
         this.loadItemRepository = loadItemRepository;
     }
     @PostMapping("/api/unitload")
-    public boolean createUnitLoad(@RequestParam UnitLoadRequest request) {
+    public boolean createUnitLoad(@RequestBody UnitLoadRequest request) {
         try {
             List<LoadItem> list = new ArrayList<>();
             for (long id : request.getLoadItems()) {
@@ -79,7 +78,7 @@ public class TrackableController {
         return packageService.deletePackageById(packageId);
     }
 
-    @DeleteMapping("/api/package/{packageId}")
+    @DeleteMapping("/api/unitload/{unitLoadId}")
     public boolean deleteUnitLoad(@PathVariable Long unitLoadId){
         return unitLoadService.deleteUnitLoadById(unitLoadId);
     }
