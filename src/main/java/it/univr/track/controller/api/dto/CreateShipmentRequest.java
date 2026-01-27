@@ -1,13 +1,16 @@
 package it.univr.track.controller.api.dto;
 
+import it.univr.track.entity.data.Trackable;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 @Getter
 @Setter
 public class CreateShipmentRequest {
     private ZonedDateTime startDate;
     private String description;
+    private Set<Long> trackableIds;
 }

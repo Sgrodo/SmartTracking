@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 /**
  * Package rappresenta un contenitore logico di più UnitLoad.
  * Può essere tracciato come Trackable e le informazioni

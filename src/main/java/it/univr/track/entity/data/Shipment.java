@@ -2,6 +2,7 @@ package it.univr.track.entity.data;
 
 import it.univr.track.entity.AbstractEntity;
 import it.univr.track.entity.enumeration.ShipmentState;
+import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,8 +43,8 @@ public class Shipment extends AbstractEntity {
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
 
-    public Shipment(ZonedDateTime startDate, String description) {
-        if (startDate == null) throw new IllegalArgumentException("startDate is required");
+    public Shipment(ZonedDateTime startDate, String description, Set<UnitLoad> unitLoads) {
+        if (startDate == null) this.startDate= ZonedDateTime.now();
         this.startDate = startDate;
         this.description = description;
     }
@@ -51,25 +52,25 @@ public class Shipment extends AbstractEntity {
     // DOMAIN METHODS
 
     public void addPackage(Package pkg) {
-        if (pkg == null) throw new IllegalArgumentException("package is null");
+        Thrower.notNull(pkg, "Package is null");
         packages.add(pkg);
         pkg.setShipment(this);
     }
 
     public void removePackage(Package pkg) {
-        if (pkg == null) throw new IllegalArgumentException("package is null");
+        Thrower.notNull(pkg, "Package is null");
         packages.remove(pkg);
         pkg.setShipment(null);
     }
 
     public void addUnitLoad(UnitLoad ul) {
-        if (ul == null) throw new IllegalArgumentException("unitLoad is null");
+        Thrower.notNull(ul, "UnitLoad is null");
         unitLoads.add(ul);
         ul.setShipment(this);
     }
 
     public void removeUnitLoad(UnitLoad ul) {
-        if (ul == null) throw new IllegalArgumentException("unitLoad is null");
+        Thrower.notNull(ul, "UnitLoad is null");
         unitLoads.remove(ul);
         ul.setShipment(null);
     }

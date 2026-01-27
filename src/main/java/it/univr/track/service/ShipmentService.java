@@ -12,17 +12,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
-    private final TrackableRepository trackableRepository;
+    private final TrackableService trackableService;
 
     public ShipmentService(ShipmentRepository shipmentRepository,
-                           TrackableRepository trackableRepository) {
+                           TrackableService trackableService) {
         this.shipmentRepository = shipmentRepository;
-        this.trackableRepository = trackableRepository;
+        this.trackableService = trackableService;
     }
 
     @Transactional
@@ -32,7 +33,9 @@ public class ShipmentService {
         if (req.getDescription() == null || req.getDescription().isBlank())
             throw new IllegalArgumentException("description is required");
 
-        Shipment s = new Shipment(req.getStartDate(), req.getDescription());
+        Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(req.getTrackableIds());
+        this.checkTrackablesDeviceAssignemnts(unitLoads);
+        Shipment s = new Shipment(req.getStartDate(), req.getDescription(),unitLoads);
         return shipmentRepository.save(s);
     }
 
@@ -47,6 +50,7 @@ public class ShipmentService {
     public List<Shipment> getAllShipments(){
         return shipmentRepository.findAll();
     }
+
     @Transactional
     public void update(Long shipmentId, UpdateShipmentRequest req) {
         if (req == null) throw new IllegalArgumentException("request is null");
@@ -134,5 +138,11 @@ public class ShipmentService {
             return true;
         }
         return false;
+    }
+
+    @Transactional(readOnly = true)
+    private void checkTrackablesDeviceAssignemnts(Set<Trackable> trackableIds){
+
+
     }
 }

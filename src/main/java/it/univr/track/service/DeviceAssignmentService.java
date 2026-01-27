@@ -3,6 +3,7 @@ package it.univr.track.service;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceAssignmentRepository;
 import it.univr.track.repository.DeviceRepository;
 import it.univr.track.repository.TrackableRepository;
@@ -19,7 +20,6 @@ public class DeviceAssignmentService {
     private final DeviceRepository deviceRepository;
     private final TrackableRepository trackableRepository;
     private final DeviceAssignmentRepository assignmentRepository;
-
     /***
      * overload del comando, in automatico usa NOW
      * @param deviceId
@@ -96,4 +96,10 @@ public class DeviceAssignmentService {
                 .orElseThrow(() -> new IllegalStateException("No active assignment for device " + deviceId + " at " + ts))
                 .getTarget();
     }
+
+    public boolean isTrackableAssigned(Trackable trk) {
+        Thrower.notNull(trk, "trk is null");
+
+        ifgi
+        Trackable target = trackableRepository.findById(trackableId
 }

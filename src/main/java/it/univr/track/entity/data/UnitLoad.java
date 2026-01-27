@@ -3,6 +3,7 @@ package it.univr.track.entity.data;
 import it.univr.track.entity.PhysicalConstraintEmbeddable;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -65,7 +66,7 @@ public class UnitLoad extends Trackable {
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
     public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, List<LoadItem> loadItems) {
-        if (startDate == null) throw new IllegalArgumentException("startDate is required");
+        Thrower.notNull(startDate, "startDate is required");
         this.startDate = startDate;
         this.description = description;
 
@@ -102,18 +103,18 @@ public class UnitLoad extends Trackable {
     // -------- CONSTRAINTS SECTION --------
 
     public void addPhysicalConstraint(PhysicalConstraint c) {
-        if (c == null) throw new IllegalArgumentException("constraint is null");
+        Thrower.notNull(c, "constraint is null");
         physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(c));
     }
 
     public boolean removePhysicalConstraint(PhysicalConstraint constraint) {
-        if (constraint == null) throw new IllegalArgumentException("constraint is null");
+        Thrower.notNull(constraint, "constraint is null");
         return physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(constraint));
     }
 
     public void editPhysicalConstraint(PhysicalConstraint oldConstraint, PhysicalConstraint newConstraint) {
-        if (oldConstraint == null) throw new IllegalArgumentException("oldConstraint is null");
-        if (newConstraint == null) throw new IllegalArgumentException("newConstraint is null");
+        Thrower.notNull(oldConstraint, "oldConstraint is null");
+        Thrower.notNull(newConstraint, "newConstraint is null");
 
         boolean removed = physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(oldConstraint));
         if (!removed) throw new IllegalArgumentException("Constraint to edit not found: " + oldConstraint);
@@ -126,13 +127,16 @@ public class UnitLoad extends Trackable {
      * (Se vuoi la metti nel service invece che qui)
      */
     public void activateTracking() {
-        if (products.isEmpty()) {
-            throw new IllegalStateException("UnitLoad must contain at least one product before activation");
-        }
+        Thrower.state(products.isEmpty(), "UnitLoad must contain at least one product before activation");
         this.trackingState = TrackingState.ACTIVE;
     }
 
     public void deactivateTracking(){
         this.trackingState = TrackingState.INACTIVE;
+    }
+
+    @Override
+    public Set<UnitLoad> getUnitLoads() {
+        return Set.of(this);
     }
 }

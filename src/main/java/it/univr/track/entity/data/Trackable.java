@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -26,4 +27,6 @@ public abstract class Trackable extends AbstractEntity {
         if (sending == null) throw new IllegalArgumentException("sending is null");
         sendings.add(sending);
     }
+
+    public abstract Set<UnitLoad> getUnitLoads();
 }
