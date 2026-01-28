@@ -97,9 +97,8 @@ public class DeviceAssignmentService {
                 .getTarget();
     }
 
-    public boolean isTrackableAssigned(Trackable trk) {
+    public boolean isTrackableAssignedToDevice(Trackable trk) {
         Thrower.notNull(trk, "trk is null");
-
-        ifgi
-        Trackable target = trackableRepository.findById(trackableId
+        return !assignmentRepository.findByTarget(trk).isEmpty();
+    }
 }

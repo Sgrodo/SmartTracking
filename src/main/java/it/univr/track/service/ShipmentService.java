@@ -2,15 +2,19 @@ package it.univr.track.service;
 
 import it.univr.track.controller.api.dto.CreateShipmentRequest;
 import it.univr.track.controller.api.dto.UpdateShipmentRequest;
+import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.entity.enumeration.ShipmentState;
+import it.univr.track.helper.Thrower;
 import it.univr.track.repository.ShipmentRepository;
-import it.univr.track.repository.TrackableRepository;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -19,23 +23,18 @@ public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final TrackableService trackableService;
-
+    private final DeviceService deviceService;
     public ShipmentService(ShipmentRepository shipmentRepository,
-                           TrackableService trackableService) {
+                           TrackableService trackableService,
+                           DeviceService deviceService) {
         this.shipmentRepository = shipmentRepository;
         this.trackableService = trackableService;
+        this.deviceService = deviceService;
     }
 
     @Transactional
-    public Shipment create(CreateShipmentRequest req) {
-        if (req == null) throw new IllegalArgumentException("request is null");
-        if (req.getStartDate() == null) throw new IllegalArgumentException("startDate is required");
-        if (req.getDescription() == null || req.getDescription().isBlank())
-            throw new IllegalArgumentException("description is required");
-
-        Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(req.getTrackableIds());
-        this.checkTrackablesDeviceAssignemnts(unitLoads);
-        Shipment s = new Shipment(req.getStartDate(), req.getDescription(),unitLoads);
+    public Shipment create(ZonedDateTime startDate, String description, Set<UnitLoad> unitloads) {
+        Shipment s = new Shipment(startDate, description, unitloads);
         return shipmentRepository.save(s);
     }
 
@@ -52,15 +51,27 @@ public class ShipmentService {
     }
 
     @Transactional
-    public void update(Long shipmentId, UpdateShipmentRequest req) {
-        if (req == null) throw new IllegalArgumentException("request is null");
-
-        Shipment s = getById(shipmentId);
-
-        // description
-        if (req.getDescription() != null ) {
-            s.edit(req.getDescription(), null, null);
+    public void update( Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<UnitLoad> unitLoads) {
+        if(endDate != null){
+            //se esiste una endDate allora lo stato dello SHipment deve essere coerente
+            Thrower.state(state.equals(ShipmentState.COMPLETED) || state.equals(ShipmentState.CANCELLED),
+                    "Shipment with endDate must be in COMPLETED or CANCELLED state");
         }
+        if(state.equals(ShipmentState.CANCELLED) || state.equals(ShipmentState.COMPLETED)){
+            // se ha uno stato "finale" allora deve avere una endDate
+            if(endDate == null){
+                endDate =ZonedDateTime.now();
+            }
+        }
+        shipment.edit(description, state, endDate);
+        for (UnitLoad ul : unitLoads){
+            if(!shipment.getUnitLoads().contains(ul)){
+                shipment.addUnitLoad(ul);
+            }else{
+                shipment.removeUnitLoad(ul);
+            }
+        }
+        shipmentRepository.save(shipment);
     }
 
     @Transactional
@@ -132,6 +143,7 @@ public class ShipmentService {
 
     @Transactional
     public boolean deleteUnitLoadById(Long unitLoadId) {
+        Thrower.notNull(unitLoadId, "unitLoadId is null");
         if (unitLoadId == null) throw new IllegalArgumentException("unitLoadId is null");
         if (shipmentRepository.existsById(unitLoadId)) {
             shipmentRepository.deleteById(unitLoadId);
@@ -141,8 +153,7 @@ public class ShipmentService {
     }
 
     @Transactional(readOnly = true)
-    private void checkTrackablesDeviceAssignemnts(Set<Trackable> trackableIds){
-
-
+    private List<Device> getAvailableDevices(){
+         return deviceService.getAvailableDevices();
     }
 }

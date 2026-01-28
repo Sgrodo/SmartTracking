@@ -15,7 +15,7 @@ public interface DeviceAssignmentRepository extends JpaRepository<DeviceAssignme
 
     Optional<DeviceAssignment> findFirstByDeviceAndToTsIsNull(Device device);
 
-    List<DeviceAssignment> findByTargetAndToTsIsNull(Trackable target);
+    List<DeviceAssignment> findByTarget(Trackable target);
 
     @Query("""
         select a from DeviceAssignment a

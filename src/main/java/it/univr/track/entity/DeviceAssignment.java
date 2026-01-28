@@ -1,6 +1,7 @@
 package it.univr.track.entity;
 
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -34,13 +35,13 @@ public class DeviceAssignment extends AbstractEntity {
     private ZonedDateTime toTs; // null = attivo
 
     public DeviceAssignment(Device device, Trackable target, ZonedDateTime fromTs) {
-        if (device == null) throw new IllegalArgumentException("device is null");
-        if (target == null) throw new IllegalArgumentException("target is null");
-        if (fromTs == null) throw new IllegalArgumentException("fromTs is null");
+        Thrower.notNull(device, "device is null");
+        Thrower.notNull(target, "target is null");
+        if (fromTs == null) this.fromTs = ZonedDateTime.now();
+        else this.fromTs = fromTs;
 
         this.device = device;
         this.target = target;
-        this.fromTs = fromTs;
         this.toTs = null;
     }
 

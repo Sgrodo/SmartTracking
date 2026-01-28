@@ -3,12 +3,20 @@ package it.univr.track.controller.api;
 import it.univr.track.controller.api.dto.CreateShipmentRequest;
 import it.univr.track.controller.api.dto.UpdateShipmentRequest;
 import it.univr.track.entity.data.Shipment;
+import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.helper.Thrower;
+import it.univr.track.service.DeviceAssignmentService;
 import it.univr.track.service.ShipmentService;
+import it.univr.track.service.TrackableService;
 import it.univr.track.service.UnitLoadService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.ZonedDateTime;
+import java.util.Set;
 
 @RestController
 @RequestMapping({"/api/shipments", "/shipments"})
@@ -16,21 +24,42 @@ public class ShipmentController {
 
     private final UnitLoadService unitLoadService;
     private final ShipmentService shipmentService;
+    private final TrackableService trackableService;
+    private final DeviceAssignmentService deviceAssignmentService;
 
-    public ShipmentController(UnitLoadService unitLoadService, ShipmentService shipmentService){
+    public ShipmentController(UnitLoadService unitLoadService, ShipmentService shipmentService,
+                              TrackableService trackableService, DeviceAssignmentService deviceAssignmentService){
         this.unitLoadService = unitLoadService;
         this.shipmentService = shipmentService;
+        this.trackableService = trackableService;
+        this.deviceAssignmentService = deviceAssignmentService;
     }
     // create a shipment
     @PostMapping("/shipment")
     public boolean createShipment(@RequestBody CreateShipmentRequest request) {
         try {
-            shipmentService.create(request);
+            Thrower.notNull(request, "request is null");
+
+            Set<Long> trackableIds = request.getTrackableIds();
+            Thrower.notNull(trackableIds, "trackableIds is null");
+
+            for (Long id : trackableIds) {
+                Thrower.notNull(id, "trackableId is null");
+            }
+            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(trackableIds);
+            // Controllo che tutte le UnitLoad siano valide prima di creare lo Shipment,
+            // una UnitLoad è valida se ha assegnato almeno un Device
+            for (UnitLoad ul : unitLoads){
+                Thrower.state(!deviceAssignmentService.isTrackableAssignedToDevice(ul),
+                        "UnitLoad " + ul.getId() + " is not assigned to a Device");
+            }
+
+            shipmentService.create(request.getStartDate(), request.getDescription(), unitLoads);
             return true;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation failed");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation failed" + e.getMessage());
         }
     }
 
@@ -38,7 +67,9 @@ public class ShipmentController {
     public boolean updateShipment(@PathVariable Long shipmentId,
                                   @RequestBody UpdateShipmentRequest request) {
         try {
-            shipmentService.update(shipmentId, request);
+            Result result = getResult(shipmentId, request);
+            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getTrackableIds());
+            shipmentService.update(result.s(), result.description(), result.endDate(), result.state(),unitLoads);
             return true;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
@@ -47,6 +78,21 @@ public class ShipmentController {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
         }
+    }
+
+    private Result getResult(Long shipmentId, UpdateShipmentRequest request) {
+        Thrower.notNull(request, "request is null");
+
+        Shipment s = shipmentService.getById(shipmentId);
+
+        String description = request.getDescription();
+        ZonedDateTime endDate = request.getEndDate();
+        ShipmentState state = request.getState();
+        Result result = new Result(s, description, endDate, state);
+        return result;
+    }
+
+    private record Result(Shipment s, String description, ZonedDateTime endDate, ShipmentState state) {
     }
 
 
@@ -66,7 +112,10 @@ public class ShipmentController {
     @PutMapping("/api/shipment")
     public boolean editShipment(@RequestParam UpdateShipmentRequest request) {
         try {
-            shipmentService.update(request.getShipmentId(), request);
+            Thrower.notNull(request.getShipmentId(), "shipmentId is null");
+            Result result = getResult(request.getShipmentId(), request);
+            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getTrackableIds());
+            shipmentService.update(result.s(), result.description(), result.endDate(), result.state(),unitLoads);
             return true;
         }  catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());

@@ -5,10 +5,22 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 @Getter
-@Setter
 public class UpdateShipmentRequest {
-    private String description;        // null => non modificare
+    private String description;
+    private ZonedDateTime endDate;
+    private ShipmentState state;
+    /***
+     * IDs of Trackables (Packages/UnitLoads)
+     * if (not present)
+     * then to be added to the Shipment
+     * else
+     * removed from it
+     */
+    private Set<Long> trackableIds;
+
     private Long shipmentId;
+
 }

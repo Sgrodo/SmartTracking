@@ -2,11 +2,15 @@ package it.univr.track.service;
 
 import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Sending;
+import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -81,5 +85,9 @@ public class DeviceService {
         if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
         return deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+    }
+
+    public List<Device> getAvailableDevices() {
+        return deviceRepository.findDevicesByNotInShipmentStates(List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT));
     }
 }
