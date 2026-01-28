@@ -20,6 +20,7 @@ public class DeviceAssignmentService {
     private final DeviceRepository deviceRepository;
     private final TrackableRepository trackableRepository;
     private final DeviceAssignmentRepository assignmentRepository;
+
     /***
      * overload del comando, in automatico usa NOW
      * @param deviceId
@@ -36,9 +37,9 @@ public class DeviceAssignmentService {
      */
     @Transactional
     public void bind(Long deviceId, Long trackableId, ZonedDateTime now) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        if (trackableId == null) throw new IllegalArgumentException("trackableId is null");
-        if (now == null) throw new IllegalArgumentException("now is null");
+        Thrower.notNullArgumentException(deviceId, "deviceId is null");
+        Thrower.notNullArgumentException(trackableId, "trackableId is null");
+        Thrower.notNullArgumentException(now, "now is null");
 
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
@@ -48,7 +49,9 @@ public class DeviceAssignmentService {
 
         // chiudi quello attivo, se esiste (constraint logico)
         assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
-                .ifPresent(a -> a.close(now));
+                .ifPresent((_t) -> {
+                    throw new IllegalStateException("Device " + deviceId + " is already assigned");
+                });
 
         assignmentRepository.save(new DeviceAssignment(device, target, now));
     }
@@ -63,8 +66,8 @@ public class DeviceAssignmentService {
 
     @Transactional
     public void unbind(Long deviceId, ZonedDateTime now) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        if (now == null) throw new IllegalArgumentException("now is null");
+        Thrower.notNullArgumentException(deviceId, "deviceId is null");
+        Thrower.notNullArgumentException(now, "now is null");
 
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
@@ -86,8 +89,8 @@ public class DeviceAssignmentService {
      */
     @Transactional(readOnly = true)
     public Trackable getActiveTarget(Long deviceId, ZonedDateTime ts) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        if (ts == null) throw new IllegalArgumentException("ts is null");
+        Thrower.notNullArgumentException(deviceId, "deviceId is null");
+        Thrower.notNullArgumentException(ts, "ts is null");
 
         Device device = deviceRepository.findById(deviceId)
                 .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
@@ -99,6 +102,6 @@ public class DeviceAssignmentService {
 
     public boolean isTrackableAssignedToDevice(Trackable trk) {
         Thrower.notNullArgumentException(trk, "trk is null");
-        return !assignmentRepository.findByTarget(trk).isEmpty();
+        return assignmentRepository.findFirstByTargetAndToTsIsNull(trk).isPresent();
     }
 }

@@ -1,11 +1,14 @@
 package it.univr.track.entity.data;
 
 import it.univr.track.entity.AbstractEntity;
+import it.univr.track.entity.Device;
+import it.univr.track.entity.DeviceAssignment;
 import jakarta.persistence.*;
         import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,6 +25,10 @@ public abstract class Trackable extends AbstractEntity {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "target_id") // FK in sending
     private List<Sending> sendings = new ArrayList<>();
+
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "target_id") // FK in device_assignment
+    private Set<DeviceAssignment> devices = new HashSet<>();
 
     public void addSending(Sending sending) {
         if (sending == null) throw new IllegalArgumentException("sending is null");
