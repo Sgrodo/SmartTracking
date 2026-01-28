@@ -63,7 +63,7 @@ public class ShipmentService {
         shipment.edit(description, state, endDate);
         for (UnitLoad ul : unitLoads){
             if(!shipment.getUnitLoads().contains(ul)){
-                shipment.addUnitLoad(ul);
+                shipment.addTrackable(ul);
             }else{
                 shipment.removeUnitLoad(ul);
             }
@@ -82,7 +82,7 @@ public class ShipmentService {
             if (ul.getShipment() != null && !ul.getShipment().getId().equals(shipmentId)) {
                 throw new IllegalStateException("UnitLoad " + trackableId + " already belongs to another Shipment");
             }
-            s.addUnitLoad(ul);
+            s.addTrackable(ul);
             return;
         }
 

@@ -36,7 +36,7 @@ public class Package extends Trackable {
         }
     }
 
-    protected void setShipment(Shipment shipment) {
+    public void setShipment(Shipment shipment) {
         this.shipment = shipment;
     }
 
