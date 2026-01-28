@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Check;
 
 import java.util.Set;
 
@@ -20,10 +21,10 @@ import java.util.Set;
 @Getter
 public class LoadItem extends AbstractEntity {
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinTable(name = "unitload_product",
-        joinColumns = @JoinColumn(name = "loaditem_id"),
-        inverseJoinColumns = @JoinColumn(name = "unitload_id"))
+            joinColumns = @JoinColumn(name = "loaditem_id"),
+            inverseJoinColumns = @JoinColumn(name = "unitload_id"))
     private Set<UnitLoad> unitLoads;
 
     @Column(nullable = false)

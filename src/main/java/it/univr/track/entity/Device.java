@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
 
 import java.math.BigDecimal;
 
@@ -17,10 +18,11 @@ import java.math.BigDecimal;
 public class Device extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
-    private TrackingState trackingState;
+    @Column(nullable = false)
+    private TrackingState trackingState = TrackingState.INACTIVE;
 
     @Column(nullable = false)
-    private Boolean isConnected;
+    private Boolean isConnected = false;
 
     @Column(nullable = false)
     private Boolean state;
@@ -28,12 +30,14 @@ public class Device extends AbstractEntity {
     @Column(nullable = false)
     private Boolean isCalibrated;
 
+    @Check(name = "device_price_positive_ck", constraints = "price >= 0")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
     /**
      * Origin / Formula del device (rappresentazione testuale)
      */
+    @Check(name = "device_origin_not_empty_ck", constraints = "origin != ''")
     @Column(nullable = false)
     private String origin;
 
@@ -44,18 +48,7 @@ public class Device extends AbstractEntity {
     @JoinColumn(name = "unit load_id")
     private UnitLoad unitLoad;
 
-    public Device(
-            Boolean isConnected,
-            Boolean state,
-            Boolean isCalibrated,
-            BigDecimal price,
-            String origin
-    ) {
-        if (price == null || price.signum() < 0)
-            throw new IllegalArgumentException("Invalid price");
-        if (origin == null || origin.isBlank())
-            throw new IllegalArgumentException("origin required");
-
+    public Device(Boolean isConnected, Boolean state, Boolean isCalibrated, BigDecimal price, String origin) {
         this.isConnected = isConnected;
         this.state = state;
         this.isCalibrated = isCalibrated;

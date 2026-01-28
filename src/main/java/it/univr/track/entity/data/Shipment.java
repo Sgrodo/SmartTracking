@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Check;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
@@ -27,6 +28,17 @@ public class Shipment extends AbstractEntity {
     private ZonedDateTime startDate;
 
     @Column
+    @Check(name = "shipment_enddate_check", constraints = "endDate == null or endDate >= startDate")
+    @Check(
+            name = "shipment_state_enddate_check",
+            constraints = """
+                (
+                    (state IN ('COMPLETED', 'CANCELLED') AND end_date IS NOT NULL)
+                    OR
+                    (state NOT IN ('COMPLETED', 'CANCELLED') AND end_date IS NULL)
+                )
+            """
+    )
     private ZonedDateTime endDate;
 
     @Setter
@@ -63,25 +75,13 @@ public class Shipment extends AbstractEntity {
         trackable.setShipment(null);
     }
 
-    @PrePersist
-    @PreUpdate
-    /***
+    /**
      * Validazione dello stato della Shipment prima di salvarla
      * Coerenza tra stato e date
      */
+    @PrePersist
+    @PreUpdate
     private void validate() {
-        if (this.isFinalState() && endDate == null) {
-            throw new IllegalStateException("Shipment with state " + state + " must have an endDate");
-        }
-        if (endDate != null && endDate.isBefore(startDate)) {
-            throw new IllegalStateException("endDate cannot be before startDate");
-        }
-
-        if(endDate != null && !this.isFinalState()){
-            // se ha una endDate allora lo stato non deve essere "finale"
-            throw new IllegalStateException("Shipment with endDate must be in COMPLETED or CANCELLED state");
-        }
-
         this.validateTrackables();
     }
 
@@ -126,6 +126,20 @@ public class Shipment extends AbstractEntity {
         this.endDate = now;
         this.state = ShipmentState.CANCELLED;
     }
+
+    public void setInTransit(){
+        this.setInTransit(ZonedDateTime.now());
+    }
+
+    public void setInTransit(ZonedDateTime now) {
+        if(this.state.equals(ShipmentState.IN_TRANSIT)){
+            return;
+        }
+
+        this.state = ShipmentState.IN_TRANSIT;
+        this.endDate = null;
+    }
+
 
     public Set<UnitLoad> getUnitLoads() {
         Set<UnitLoad> unitLoads = new HashSet<>();

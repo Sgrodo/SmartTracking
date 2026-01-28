@@ -6,8 +6,10 @@ import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.entity.sensor.TemperatureConstraint;
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 
 @Embeddable
+@EqualsAndHashCode
 public class PhysicalConstraintEmbeddable {
 
     @Enumerated(EnumType.STRING)
@@ -24,7 +26,6 @@ public class PhysicalConstraintEmbeddable {
 
     protected PhysicalConstraintEmbeddable() {} // JPA
 
-    // factory: dominio -> embeddable
     public static PhysicalConstraintEmbeddable fromDomain(PhysicalConstraint c) {
         var e = new PhysicalConstraintEmbeddable();
         e.type = c.type();
@@ -54,17 +55,4 @@ public class PhysicalConstraintEmbeddable {
         };
     }
 
-    // IMPORTANTISSIMO: equals/hashCode "a valore"
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof PhysicalConstraintEmbeddable other)) return false;
-        return type == other.type
-                && java.util.Objects.equals(numberValue, other.numberValue)
-                && temperatureUnit == other.temperatureUnit;
-    }
-
-    @Override
-    public int hashCode() {
-        return java.util.Objects.hash(type, numberValue, temperatureUnit);
-    }
 }

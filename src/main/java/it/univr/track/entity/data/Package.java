@@ -5,10 +5,11 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+
 /**
  * Package rappresenta un contenitore logico di più UnitLoad.
  * Può essere tracciato come Trackable e le informazioni
@@ -23,22 +24,20 @@ public class Package extends Trackable {
     @OneToMany(mappedBy = "pkg", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
-    public Package(Set<UnitLoad> unitLoads){
-        if (unitLoads.isEmpty()){
+    public Package(Set<UnitLoad> unitLoads) {
+        if (unitLoads.isEmpty()) {
             throw new RuntimeException("List of UnitLoads is empty");
         }
-        for( UnitLoad u : unitLoads){
+        for (UnitLoad u : unitLoads) {
             this.addUnitLoad(u);
         }
     }
 
-    public void setShipment(Shipment shipment) {
-        this.shipment = shipment;
-    }
 
     /**
      * Metodo di dominio per aggiungere una UnitLoad al Package.

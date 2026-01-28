@@ -75,7 +75,7 @@ public class DeviceAssignmentService {
         DeviceAssignment active = assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
                 .orElseThrow(() -> new IllegalStateException("Device " + deviceId + " has no active assignment"));
 
-        active.close(now);
+        active.deactivate(now);
 
         assignmentRepository.save(active);
     }

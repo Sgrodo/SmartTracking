@@ -33,13 +33,11 @@ public class UnitLoad extends Trackable {
     @JoinColumn(name = "package_id")
     private Package pkg;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
-    public void setShipment(Shipment shipment) {
-        this.shipment = shipment;
-    }
 
     protected void setPackage(Package pkg) {
         this.pkg = pkg;
@@ -48,7 +46,7 @@ public class UnitLoad extends Trackable {
 
     // CONTENT (LoadItem)
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, fetch = FetchType.LAZY)
     @JoinTable(
             name = "unitload_product",
             joinColumns = @JoinColumn(name = "unitload_id"),

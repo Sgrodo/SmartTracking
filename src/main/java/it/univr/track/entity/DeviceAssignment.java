@@ -6,8 +6,10 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Check;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /**
  * Questa Classe rappresenta la relazione tra un device ed un Trackable (UnitLoad o Package)
@@ -16,7 +18,7 @@ import java.time.ZonedDateTime;
  */
 @Entity
 @Table(name = "device_assignment")
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // richiesto da JPA
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class DeviceAssignment extends AbstractEntity {
 
@@ -32,14 +34,18 @@ public class DeviceAssignment extends AbstractEntity {
     private ZonedDateTime fromTs;
 
     @Column(name = "to_ts")
+    @Check(name = "device_assignment_to_ts_ck", constraints = "to_ts == null or to_ts >= from_ts")
     private ZonedDateTime toTs; // null = attivo
+
+    public DeviceAssignment(Device device, Trackable target){
+        this(device, target, ZonedDateTime.now());
+    }
 
     public DeviceAssignment(Device device, Trackable target, ZonedDateTime fromTs) {
         Thrower.notNullArgumentException(device, "device is null");
         Thrower.notNullArgumentException(target, "target is null");
-        if (fromTs == null) this.fromTs = ZonedDateTime.now();
-        else this.fromTs = fromTs;
 
+        this.fromTs = Objects.requireNonNullElseGet(fromTs, ZonedDateTime::now);
         this.device = device;
         this.target = target;
         this.toTs = null;
@@ -49,10 +55,9 @@ public class DeviceAssignment extends AbstractEntity {
         return toTs == null;
     }
 
-    public void close(ZonedDateTime toTs) {
+    public void deactivate(ZonedDateTime toTs) {
         if (toTs == null) throw new IllegalArgumentException("toTs is null");
         if (this.toTs != null) throw new IllegalStateException("assignment already closed");
-        if (toTs.isBefore(fromTs)) throw new IllegalArgumentException("toTs before fromTs");
         this.toTs = toTs;
     }
 }
