@@ -48,26 +48,16 @@ public class ShipmentService {
     }
 
     @Transactional
-    public void update( Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<UnitLoad> unitLoads) {
-        if(endDate != null){
-            //se esiste una endDate allora lo stato dello SHipment deve essere coerente
-            Thrower.state(state.equals(ShipmentState.COMPLETED) || state.equals(ShipmentState.CANCELLED),
-                    "Shipment with endDate must be in COMPLETED or CANCELLED state");
+    public void update( Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
+        if(state.equals(ShipmentState.CANCELLED)){
+            shipment.cancel();
+        }else if (state.equals(ShipmentState.COMPLETED)){
+            shipment.complete();
         }
-        if(state.equals(ShipmentState.CANCELLED) || state.equals(ShipmentState.COMPLETED)){
-            // se ha uno stato "finale" allora deve avere una endDate
-            if(endDate == null){
-                endDate =ZonedDateTime.now();
-            }
-        }
-        shipment.edit(description, state, endDate);
-        for (UnitLoad ul : unitLoads){
-            if(!shipment.getUnitLoads().contains(ul)){
-                shipment.addTrackable(ul);
-            }else{
-                shipment.removeUnitLoad(ul);
-            }
-        }
+
+        shipment.setDescription(description);
+        shipment.setTrackables(trackables);
+
         shipmentRepository.save(shipment);
     }
 

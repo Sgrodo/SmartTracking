@@ -31,4 +31,9 @@ public class TrackableService {
 
         return result;
     }
+
+    @Transactional
+    public Set<Trackable> getAllTrackablesById(Set<Long> trackableIds) {
+        return new HashSet<>(trackableRepository.findAllById(trackableIds));
+    }
 }

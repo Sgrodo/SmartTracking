@@ -62,23 +62,6 @@ public class ShipmentController {
         }
     }
 
-    @PutMapping("/api/shipments/{shipmentId}")
-    public boolean updateShipment(@PathVariable Long shipmentId,
-                                  @RequestBody UpdateShipmentRequest request) {
-        try {
-            Result result = getResult(shipmentId, request);
-            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getTrackableIds());
-            shipmentService.update(result.s(), result.description(), result.endDate(), result.state(),unitLoads);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
-        }
-    }
-
     private Result getResult(Long shipmentId, UpdateShipmentRequest request) {
         Thrower.notNullArgumentException(request, "request is null");
 
@@ -111,14 +94,14 @@ public class ShipmentController {
     @PutMapping("/api/shipment")
     public boolean editShipment(@RequestParam UpdateShipmentRequest request) {
         try {
-            Thrower.notNullArgumentException(request.getShipmentId(), "shipmentId is null");
-            Result result = getResult(request.getShipmentId(), request);
-            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getTrackableIds());
-            shipmentService.update(result.s(), result.description(), result.endDate(), result.state(),unitLoads);
+            Thrower.notNullArgumentException(request, "request is null");
+            shipmentService.update(shipmentService.getById(request.getShipmentId()),
+                    request.getDescription(), request.getEndDate(), request.getState(),
+                    trackableService.getAllTrackablesById(request.getTrackableIds()));
             return true;
         }  catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (IllegalStateException e) {
+        } catch (ResponseStatusException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
@@ -143,36 +126,38 @@ public class ShipmentController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
         }
     }
-
-    // ATTACH a trackable (UnitLoad or Package) to shipment
-    @PostMapping("/{shipmentId}/trackables/{trackableId}")
-    public boolean attach(@PathVariable Long shipmentId, @PathVariable Long trackableId) {
-        try {
-            shipmentService.attachTrackable(shipmentId, trackableId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
-        }
-    }
-
-    // DETACH a trackable (UnitLoad or Package) from shipment
-    @DeleteMapping("/{shipmentId}/trackables/{trackableId}")
-    public boolean detach(@PathVariable Long shipmentId, @PathVariable Long trackableId) {
-        try {
-            shipmentService.detachTrackable(shipmentId, trackableId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
-        }
-    }
+//
+//    //TODO
+//    // ATTACH a trackable (UnitLoad or Package) to shipment
+//    @PostMapping("/{shipmentId}/trackables/{trackableId}")
+//    public boolean attach(@PathVariable Long shipmentId, @PathVariable Long trackableId) {
+//        try {
+//            shipmentService.attachTrackable(shipmentId, trackableId);
+//            return true;
+//        } catch (IllegalArgumentException e) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+//        } catch (IllegalStateException e) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+//        } catch (Exception e) {
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
+//        }
+//    }
+//
+//    //TODO
+//    // DETACH a trackable (UnitLoad or Package) from shipment
+//    @DeleteMapping("/{shipmentId}/trackables/{trackableId}")
+//    public boolean detach(@PathVariable Long shipmentId, @PathVariable Long trackableId) {
+//        try {
+//            shipmentService.detachTrackable(shipmentId, trackableId);
+//            return true;
+//        } catch (IllegalArgumentException e) {
+//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+//        } catch (IllegalStateException e) {
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+//        } catch (Exception e) {
+//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
+//        }
+//    }
 
     // list all the shipments
     @GetMapping("/api/shipments")
