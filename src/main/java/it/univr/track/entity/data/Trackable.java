@@ -29,4 +29,6 @@ public abstract class Trackable extends AbstractEntity {
     }
 
     public abstract Set<UnitLoad> getUnitLoads();
+
+    public abstract void setShipment(Shipment shipment);
 }

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -37,42 +38,26 @@ public class Shipment extends AbstractEntity {
 
     // Shipment -> Packages
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Package> packages = new HashSet<>();
+    private Set<Trackable> trackables = new HashSet<>();
 
-    // Shipment -> UnitLoads "sfuse" (senza package)
-    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<UnitLoad> unitLoads = new HashSet<>();
-
-    public Shipment(ZonedDateTime startDate, String description, Set<UnitLoad> unitLoads) {
-        if (startDate == null) this.startDate= ZonedDateTime.now();
-        this.startDate = startDate;
+    public Shipment(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
+        this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
     }
 
     // DOMAIN METHODS
 
-    public void addPackage(Package pkg) {
-        Thrower.notNull(pkg, "Package is null");
-        packages.add(pkg);
-        pkg.setShipment(this);
+
+    public void addTrackable(Trackable trackable) {
+        Thrower.notNull(trackable, "UnitLoad is null");
+        trackables.add(trackable);
+        trackable.setShipment(this);
     }
 
-    public void removePackage(Package pkg) {
-        Thrower.notNull(pkg, "Package is null");
-        packages.remove(pkg);
-        pkg.setShipment(null);
-    }
-
-    public void addUnitLoad(UnitLoad ul) {
-        Thrower.notNull(ul, "UnitLoad is null");
-        unitLoads.add(ul);
-        ul.setShipment(this);
-    }
-
-    public void removeUnitLoad(UnitLoad ul) {
-        Thrower.notNull(ul, "UnitLoad is null");
-        unitLoads.remove(ul);
-        ul.setShipment(null);
+    public void removeTrackable(Trackable trackable) {
+        Thrower.notNull(trackable, "UnitLoad is null");
+        trackables.remove(trackable);
+        trackable.setShipment(null);
     }
 
     public void markInTransit() {

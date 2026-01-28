@@ -37,7 +37,7 @@ public class UnitLoad extends Trackable {
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
-    protected void setShipment(Shipment shipment) {
+    public void setShipment(Shipment shipment) {
         this.shipment = shipment;
     }
 
