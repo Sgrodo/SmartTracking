@@ -35,8 +35,8 @@ public class DeviceAssignment extends AbstractEntity {
     private ZonedDateTime toTs; // null = attivo
 
     public DeviceAssignment(Device device, Trackable target, ZonedDateTime fromTs) {
-        Thrower.notNull(device, "device is null");
-        Thrower.notNull(target, "target is null");
+        Thrower.notNullArgumentException(device, "device is null");
+        Thrower.notNullArgumentException(target, "target is null");
         if (fromTs == null) this.fromTs = ZonedDateTime.now();
         else this.fromTs = fromTs;
 

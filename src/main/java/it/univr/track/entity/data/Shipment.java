@@ -52,25 +52,25 @@ public class Shipment extends AbstractEntity {
     // DOMAIN METHODS
 
     public void addPackage(Package pkg) {
-        Thrower.notNull(pkg, "Package is null");
+        Thrower.notNullArgumentException(pkg, "Package is null");
         packages.add(pkg);
         pkg.setShipment(this);
     }
 
     public void removePackage(Package pkg) {
-        Thrower.notNull(pkg, "Package is null");
+        Thrower.notNullArgumentException(pkg, "Package is null");
         packages.remove(pkg);
         pkg.setShipment(null);
     }
 
     public void addUnitLoad(UnitLoad ul) {
-        Thrower.notNull(ul, "UnitLoad is null");
+        Thrower.notNullArgumentException(ul, "UnitLoad is null");
         unitLoads.add(ul);
         ul.setShipment(this);
     }
 
     public void removeUnitLoad(UnitLoad ul) {
-        Thrower.notNull(ul, "UnitLoad is null");
+        Thrower.notNullArgumentException(ul, "UnitLoad is null");
         unitLoads.remove(ul);
         ul.setShipment(null);
     }

@@ -98,7 +98,7 @@ public class DeviceAssignmentService {
     }
 
     public boolean isTrackableAssignedToDevice(Trackable trk) {
-        Thrower.notNull(trk, "trk is null");
+        Thrower.notNullArgumentException(trk, "trk is null");
         return !assignmentRepository.findByTarget(trk).isEmpty();
     }
 }

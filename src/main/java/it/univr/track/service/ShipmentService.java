@@ -1,7 +1,5 @@
 package it.univr.track.service;
 
-import it.univr.track.controller.api.dto.CreateShipmentRequest;
-import it.univr.track.controller.api.dto.UpdateShipmentRequest;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
@@ -10,7 +8,6 @@ import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.ShipmentRepository;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -143,7 +140,7 @@ public class ShipmentService {
 
     @Transactional
     public boolean deleteUnitLoadById(Long unitLoadId) {
-        Thrower.notNull(unitLoadId, "unitLoadId is null");
+        Thrower.notNullArgumentException(unitLoadId, "unitLoadId is null");
         if (unitLoadId == null) throw new IllegalArgumentException("unitLoadId is null");
         if (shipmentRepository.existsById(unitLoadId)) {
             shipmentRepository.deleteById(unitLoadId);

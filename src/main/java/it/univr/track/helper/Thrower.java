@@ -7,9 +7,9 @@ public final class Thrower {
 
     private Thrower() {
     }
-    public static <T> T notNull(T value, String message) {
+    public static <T> T notNullArgumentException(T value, String message) {
         if (value == null)
-            throw new NullPointerException(message);
+            throw new IllegalArgumentException(message);
         return value;
     }
 

@@ -19,7 +19,6 @@ import java.time.ZonedDateTime;
 import java.util.Set;
 
 @RestController
-@RequestMapping({"/api/shipments", "/shipments"})
 public class ShipmentController {
 
     private final UnitLoadService unitLoadService;
@@ -38,13 +37,13 @@ public class ShipmentController {
     @PostMapping("/shipment")
     public boolean createShipment(@RequestBody CreateShipmentRequest request) {
         try {
-            Thrower.notNull(request, "request is null");
+            Thrower.notNullArgumentException(request, "request is null");
 
             Set<Long> trackableIds = request.getTrackableIds();
-            Thrower.notNull(trackableIds, "trackableIds is null");
+            Thrower.notNullArgumentException(trackableIds, "trackableIds is null");
 
             for (Long id : trackableIds) {
-                Thrower.notNull(id, "trackableId is null");
+                Thrower.notNullArgumentException(id, "trackableId is null");
             }
             Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(trackableIds);
             // Controllo che tutte le UnitLoad siano valide prima di creare lo Shipment,
@@ -81,7 +80,7 @@ public class ShipmentController {
     }
 
     private Result getResult(Long shipmentId, UpdateShipmentRequest request) {
-        Thrower.notNull(request, "request is null");
+        Thrower.notNullArgumentException(request, "request is null");
 
         Shipment s = shipmentService.getById(shipmentId);
 
@@ -112,7 +111,7 @@ public class ShipmentController {
     @PutMapping("/api/shipment")
     public boolean editShipment(@RequestParam UpdateShipmentRequest request) {
         try {
-            Thrower.notNull(request.getShipmentId(), "shipmentId is null");
+            Thrower.notNullArgumentException(request.getShipmentId(), "shipmentId is null");
             Result result = getResult(request.getShipmentId(), request);
             Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getTrackableIds());
             shipmentService.update(result.s(), result.description(), result.endDate(), result.state(),unitLoads);

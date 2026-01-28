@@ -66,7 +66,7 @@ public class UnitLoad extends Trackable {
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
     public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, List<LoadItem> loadItems) {
-        Thrower.notNull(startDate, "startDate is required");
+        Thrower.notNullArgumentException(startDate, "startDate is required");
         this.startDate = startDate;
         this.description = description;
 
@@ -103,18 +103,18 @@ public class UnitLoad extends Trackable {
     // -------- CONSTRAINTS SECTION --------
 
     public void addPhysicalConstraint(PhysicalConstraint c) {
-        Thrower.notNull(c, "constraint is null");
+        Thrower.notNullArgumentException(c, "constraint is null");
         physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(c));
     }
 
     public boolean removePhysicalConstraint(PhysicalConstraint constraint) {
-        Thrower.notNull(constraint, "constraint is null");
+        Thrower.notNullArgumentException(constraint, "constraint is null");
         return physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(constraint));
     }
 
     public void editPhysicalConstraint(PhysicalConstraint oldConstraint, PhysicalConstraint newConstraint) {
-        Thrower.notNull(oldConstraint, "oldConstraint is null");
-        Thrower.notNull(newConstraint, "newConstraint is null");
+        Thrower.notNullArgumentException(oldConstraint, "oldConstraint is null");
+        Thrower.notNullArgumentException(newConstraint, "newConstraint is null");
 
         boolean removed = physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(oldConstraint));
         if (!removed) throw new IllegalArgumentException("Constraint to edit not found: " + oldConstraint);
