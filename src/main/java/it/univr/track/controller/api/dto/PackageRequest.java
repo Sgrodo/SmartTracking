@@ -1,12 +1,15 @@
 package it.univr.track.controller.api.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.Set;
 
 @Getter
-@Setter
 public class PackageRequest {
-    private Set<Long> unitLoadIds;
+
+    @NotNull(message = "unitLoadIds is required")
+    @NotEmpty(message = "At least one unitLoadId is needed")
+    private Set<@NotNull(message = "unitLoadId can't be null") Long> unitLoadIds;
 }

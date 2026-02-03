@@ -6,45 +6,41 @@ import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.repository.LoadItemRepository;
-import it.univr.track.repository.UnitLoadRepository;
+import it.univr.track.repository.TrackableRepository;
 import it.univr.track.service.PackageService;
+import it.univr.track.service.TrackableService;
 import it.univr.track.service.UnitLoadService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.Set;
 
+@Validated
 @RestController()
+@RequiredArgsConstructor
 public class TrackableController {
 
     private final UnitLoadService unitLoadService;
     private final PackageService packageService;
-    private final UnitLoadRepository unitLoadRepository;
+    private final TrackableService trackableService;
     private final LoadItemRepository loadItemRepository;
-    public TrackableController(UnitLoadService unitLoadService, PackageService packageService, UnitLoadRepository unitLoadRepository, LoadItemRepository loadItemRepository){
-        this.unitLoadService = unitLoadService;
-        this.packageService = packageService;
-        this.unitLoadRepository = unitLoadRepository;
-        this.loadItemRepository = loadItemRepository;
-    }
+    private final TrackableRepository trackableRepository;
+
+
     @PostMapping("/api/unitload")
-    public boolean createUnitLoad(@RequestBody UnitLoadRequest request) {
+    public boolean createUnitLoad(@Valid @RequestBody UnitLoadRequest request) {
         try {
-            List<LoadItem> list = new ArrayList<>();
-            for (long id : request.getLoadItems()) {
-                if(loadItemRepository.findById(id).isEmpty()){
-                    throw new NullPointerException("LoadItem of id: "+ id + "does not exist");
-                }
-                LoadItem referenceById = loadItemRepository.getReferenceById(id);
-                list.add(referenceById);
-            }
+            Set<LoadItem> loadItemSet = loadItemRepository.getLoadItemsByIdIn(request.getLoadItemIds());
             unitLoadService.createUnitLoad(
-                        request.getDescription(),
-                        request.getStartDate(),
-                        request.getConstraints(),
-                        list
-                        );
+                    request.getDescription(),
+                    request.getStartDate(),
+                    request.getConstraints(),
+                    loadItemSet
+            );
             return true;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -54,33 +50,26 @@ public class TrackableController {
     }
 
     @PostMapping("/api/package")
-    public Package createPackage(@RequestBody PackageRequest request) {
+    public Package createPackage(@Valid @RequestBody PackageRequest request) {
         try {
-            Set<Long> unitLoadIds = (request != null) ? request.getUnitLoadIds() : null;
-            Set<UnitLoad> loadItems = new HashSet<>();
+            Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getUnitLoadIds());
 
-            if(unitLoadIds == null){
-                throw new NullPointerException("UnitLoadsIds is null");
-            }
-            for( Long id : unitLoadIds){
-                Optional<UnitLoad> byId = unitLoadRepository.findById(id);
-                byId.ifPresent(loadItems::add);
-            }
-            return packageService.createPackage(loadItems);
+            return packageService.createPackage(unitLoads);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation failed");
         }
     }
-    @DeleteMapping("/api/package/{packageId}")
-    public boolean deletePackage(@PathVariable Long packageId){
-        return packageService.deletePackageById(packageId);
+
+    @DeleteMapping("/api/trackable/{trackableId}")
+    public boolean deleteTrackable(@PathVariable Long trackableId) {
+        if (!trackableRepository.existsById(trackableId)) {
+            throw new IllegalArgumentException("Trackable not found: " + trackableId);
+        }
+        trackableRepository.deleteById(trackableId);
+        return true;
     }
 
-    @DeleteMapping("/api/unitload/{unitLoadId}")
-    public boolean deleteUnitLoad(@PathVariable Long unitLoadId){
-        return unitLoadService.deleteUnitLoadById(unitLoadId);
-    }
 
 }

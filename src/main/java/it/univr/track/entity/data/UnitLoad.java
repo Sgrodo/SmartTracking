@@ -51,7 +51,7 @@ public class UnitLoad extends Trackable {
     )
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
-    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, List<LoadItem> loadItems) {
+    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, Collection<LoadItem> loadItems) {
         Thrower.notNullArgumentException(startDate, "startDate is required");
         this.startDate = startDate;
         this.description = description;

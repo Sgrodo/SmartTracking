@@ -1,15 +1,21 @@
 package it.univr.track.controller.api.dto;
 
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
 
 @Getter
-@Setter
 public class CreateShipmentRequest {
+
+    @NotNull(message = "startDate is required")
     private ZonedDateTime startDate;
+
     private String description;
-    private Set<Long> trackableIds;
+
+    @NotNull(message = "trackableIds is required")
+    @NotEmpty(message = "At least one trackable id is needed")
+    private Set<@NotNull(message = "trackableId can't be null") Long> trackableIds;
 }

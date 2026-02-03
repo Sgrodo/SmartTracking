@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,7 +41,7 @@ public class UnitLoadService {
     public UnitLoad createUnitLoad(String description,
                                    ZonedDateTime startDate,
                                    Set<PhysicalConstraint> physicalConstraints,
-                                   List<LoadItem> loadItems) {
+                                   Collection<LoadItem> loadItems) {
         UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints, loadItems);
         return unitLoadRepository.save(unitLoad);
     }

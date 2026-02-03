@@ -10,13 +10,16 @@ import it.univr.track.helper.Thrower;
 import it.univr.track.service.DeviceAssignmentService;
 import it.univr.track.service.ShipmentService;
 import it.univr.track.service.TrackableService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+@Validated
 @RestController
 public class ShipmentController {
 
@@ -33,16 +36,9 @@ public class ShipmentController {
 
     // create a shipment
     @PostMapping("/shipment")
-    public boolean createShipment(@RequestBody CreateShipmentRequest request) {
+    public boolean createShipment(@Valid @RequestBody CreateShipmentRequest request) {
         try {
-            Thrower.notNullArgumentException(request, "request is null");
-
             Set<Long> trackableIds = request.getTrackableIds();
-            Thrower.notNullArgumentException(trackableIds, "trackableIds is null");
-
-            for (Long id : trackableIds) {
-                Thrower.notNullArgumentException(id, "trackableId is null");
-            }
 
             Set<Trackable> trackables = trackableService.getAllTrackablesById(trackableIds);
             shipmentService.create(request.getStartDate(), request.getDescription(), trackables);
@@ -70,9 +66,8 @@ public class ShipmentController {
 
 
     @PutMapping("/api/shipment")
-    public boolean editShipment(@RequestParam UpdateShipmentRequest request) {
+    public boolean editShipment(@Valid @RequestBody UpdateShipmentRequest request) {
         try {
-            Thrower.notNullArgumentException(request, "request is null");
             Shipment shipment = shipmentService.getById(request.getShipmentId());
             String description = request.getDescription();
             ZonedDateTime endDate = request.getEndDate();

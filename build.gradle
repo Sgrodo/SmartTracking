@@ -28,11 +28,16 @@ dependencies {
     testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.0'
     testImplementation 'io.cucumber:cucumber-spring:7.14.0' // solo se usi Spring
 
+    // Junit
     testImplementation 'org.junit.platform:junit-platform-suite-api:1.10.2'
     testRuntimeOnly  'org.junit.platform:junit-platform-suite-engine:1.10.2'
     testRuntimeOnly  'org.junit.platform:junit-platform-engine:1.10.2'
 
+    // RestAssured
     testImplementation 'io.rest-assured:rest-assured:5.3.0'
+
+    // Jakarta Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     //Già presenti
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
