@@ -2,7 +2,6 @@ package it.univr.track.controller.api.dto;
 
 import it.univr.track.entity.enumeration.ShipmentState;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.Set;

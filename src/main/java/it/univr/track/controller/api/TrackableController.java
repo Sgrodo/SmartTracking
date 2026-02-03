@@ -57,7 +57,7 @@ public class TrackableController {
     public Package createPackage(@RequestBody PackageRequest request) {
         try {
             Set<Long> unitLoadIds = (request != null) ? request.getUnitLoadIds() : null;
-            Set<UnitLoad> loadItems = new HashSet<UnitLoad>();
+            Set<UnitLoad> loadItems = new HashSet<>();
 
             if(unitLoadIds == null){
                 throw new NullPointerException("UnitLoadsIds is null");

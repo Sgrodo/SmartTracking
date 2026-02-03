@@ -3,7 +3,6 @@ package it.univr.track.service;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.repository.PackageRepository;
-import it.univr.track.repository.UnitLoadRepository; // legacy: in realtà UnitLoadRepository
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +12,12 @@ import java.util.Set;
 public class PackageService {
 
     private final PackageRepository packageRepository;
-    private final UnitLoadRepository unitLoadRepository; // legacy
-    private final DeviceAssignmentService deviceAssignmentService;
+    private final UnitLoadService unitLoadService;
 
     public PackageService(PackageRepository packageRepository,
-                          UnitLoadRepository unitLoadRepository,
-                          DeviceAssignmentService deviceAssignmentService) {
+                          UnitLoadService unitLoadService) {
         this.packageRepository = packageRepository;
-        this.unitLoadRepository = unitLoadRepository;
-        this.deviceAssignmentService = deviceAssignmentService;
+        this.unitLoadService = unitLoadService;
     }
 
 
@@ -51,22 +47,17 @@ public class PackageService {
 
         Package pkg = getPackageById(packageId);
 
-        UnitLoad ul = unitLoadRepository.findById(unitLoadId)
-                .orElseThrow(() -> new IllegalArgumentException("UnitLoad not found: " + unitLoadId));
+        UnitLoad ul = unitLoadService.getUnitLoadById(unitLoadId);
 
         // Qui uso metodi di Dominio per mantenere coerenza (metodi protected chiamati dentro al public)
         pkg.addUnitLoad(ul);
-
-        packageRepository.save(pkg);      // salva pkg + cascade sulle relazioni
-        unitLoadRepository.save(ul);      // opzionale, ma safe se non sei sicuro del cascade
     }
 
     @Transactional
     public void removeUnitLoadFromPackage(Long packageId, Long unitLoadId) {
         Package pkg = getPackageById(packageId);
 
-        UnitLoad ul = unitLoadRepository.findById(unitLoadId)
-                .orElseThrow(() -> new IllegalArgumentException("UnitLoad not found: " + unitLoadId));
+        UnitLoad ul = unitLoadService.getUnitLoadById(unitLoadId);
 
         // controllo base
         if (ul.getPkg() == null || !ul.getPkg().getId().equals(pkg.getId())) {
@@ -74,39 +65,11 @@ public class PackageService {
         }
 
         pkg.removeUnitLoad(ul);
-
-        packageRepository.save(pkg);
-        unitLoadRepository.save(ul);
     }
 
     @Transactional(readOnly = true)
     public Set<UnitLoad> getUnitLoadsOfPackage(Long packageId) {
         return getPackageById(packageId).getUnitLoads();
-    }
-
-    // DEVICE BINDING
-
-    /**
-     * Associa un device a un package (target = package).
-     */
-    @Transactional
-    public void bindDeviceToPackage(Long packageId, Long deviceId) {
-        if (packageId == null) throw new IllegalArgumentException("packageId is null");
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-
-        // fail-fast package deve esistere
-        getPackageById(packageId);
-
-        deviceAssignmentService.bind(deviceId, packageId);
-    }
-
-    /**
-     * Disassocia device (chiude assignment attivo).
-     */
-    @Transactional
-    public void unbindDevice(Long deviceId) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        deviceAssignmentService.unbind(deviceId);
     }
 
     @Transactional

@@ -1,24 +1,24 @@
 package it.univr.track.entity.data;
 
 import it.univr.track.entity.AbstractEntity;
+import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
+import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+/***
+ * Questa classe Entity serve per gestire il binding dei device a unitloads e packages in modo univoco
+ */
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "trackable")
 @NoArgsConstructor
 @Getter
-/***
- * Questa classe Entity serve per gestire il binding dei device a unitloads e packages in modo univoco
- */
 public abstract class Trackable extends AbstractEntity {
 
     @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval = true)
@@ -29,6 +29,12 @@ public abstract class Trackable extends AbstractEntity {
     @JoinColumn(name = "target_id") // FK in device_assignment
     private Set<DeviceAssignment> devices = new HashSet<>();
 
+
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shipment_id")
+    private Shipment shipment;
+
     public void addSending(Sending sending) {
         if (sending == null) throw new IllegalArgumentException("sending is null");
         sendings.add(sending);
@@ -36,5 +42,13 @@ public abstract class Trackable extends AbstractEntity {
 
     public abstract Set<UnitLoad> getUnitLoads();
 
-    public abstract void setShipment(Shipment shipment);
+    public Map<Device, TrackingState> getTrackingState() {
+        HashMap<Device, TrackingState> trackingStateHashMap = new HashMap<>();
+        for(DeviceAssignment deviceAssignment : devices){
+            Device device = deviceAssignment.getDevice();
+            trackingStateHashMap.put(device, device.getTrackingState());
+        }
+        return trackingStateHashMap;
+    }
+
 }

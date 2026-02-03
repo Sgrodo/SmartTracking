@@ -10,6 +10,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Check;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -55,7 +56,12 @@ public class Shipment extends AbstractEntity {
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Trackable> trackables = new HashSet<>();
 
-    public Shipment(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
+    public Shipment(ZonedDateTime startDate, String description, Collection<Trackable> trackables) {
+        this(startDate, description);
+        this.trackables = new HashSet<>(trackables);
+    }
+
+    public Shipment(ZonedDateTime startDate, String description) {
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
     }
@@ -93,6 +99,9 @@ public class Shipment extends AbstractEntity {
                     throw new IllegalStateException("Trackable " + ut.getId() + " is assigned to multiple Trackables in the same Shipment");
                 }
                 visited.add(ut);
+            }
+            if (t.getShipment() != null && !t.getShipment().equals(this)){
+                throw new IllegalStateException(String.format("Trying to add trackable[%s] assigned to another shipment[%s]: ", t.getId(), t.getShipment().getId()));
             }
         }
     }

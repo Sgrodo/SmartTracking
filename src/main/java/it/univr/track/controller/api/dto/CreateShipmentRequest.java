@@ -1,6 +1,5 @@
 package it.univr.track.controller.api.dto;
 
-import it.univr.track.entity.data.Trackable;
 import lombok.Getter;
 import lombok.Setter;
 

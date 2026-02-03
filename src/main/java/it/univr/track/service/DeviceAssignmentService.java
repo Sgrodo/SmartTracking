@@ -5,8 +5,6 @@ import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceAssignmentRepository;
-import it.univr.track.repository.DeviceRepository;
-import it.univr.track.repository.TrackableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,8 +15,8 @@ import java.time.ZonedDateTime;
 @RequiredArgsConstructor
 public class DeviceAssignmentService {
 
-    private final DeviceRepository deviceRepository;
-    private final TrackableRepository trackableRepository;
+    private final DeviceService deviceService;
+    private final TrackableService trackableService;
     private final DeviceAssignmentRepository assignmentRepository;
 
     /***
@@ -36,22 +34,17 @@ public class DeviceAssignmentService {
      * Un device appartiene SOLO ad una UnilLoad OPPURE ad un Package (collezione di UnitLoad)
      */
     @Transactional
-    public void bind(Long deviceId, Long trackableId, ZonedDateTime now) {
+    public void bind(Long deviceId, Long trackableId, ZonedDateTime now) throws IllegalStateException {
         Thrower.notNullArgumentException(deviceId, "deviceId is null");
         Thrower.notNullArgumentException(trackableId, "trackableId is null");
         Thrower.notNullArgumentException(now, "now is null");
 
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+        Device device = deviceService.getDeviceById(deviceId);
+        Trackable target = trackableService.getById(trackableId);
 
-        Trackable target = trackableRepository.findById(trackableId)
-                .orElseThrow(() -> new IllegalArgumentException("Trackable not found: " + trackableId));
-
-        // chiudi quello attivo, se esiste (constraint logico)
-        assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
-                .ifPresent((_t) -> {
-                    throw new IllegalStateException("Device " + deviceId + " is already assigned");
-                });
+        if (this.isTrackableAssignedToDevice(target)) {
+            throw new IllegalStateException("Device " + deviceId + " is already assigned");
+        }
 
         assignmentRepository.save(new DeviceAssignment(device, target, now));
     }
@@ -69,8 +62,7 @@ public class DeviceAssignmentService {
         Thrower.notNullArgumentException(deviceId, "deviceId is null");
         Thrower.notNullArgumentException(now, "now is null");
 
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+        Device device = deviceService.getDeviceById(deviceId);
 
         DeviceAssignment active = assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
                 .orElseThrow(() -> new IllegalStateException("Device " + deviceId + " has no active assignment"));
@@ -92,14 +84,14 @@ public class DeviceAssignmentService {
         Thrower.notNullArgumentException(deviceId, "deviceId is null");
         Thrower.notNullArgumentException(ts, "ts is null");
 
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+        Device device = deviceService.getDeviceById(deviceId);
 
         return assignmentRepository.findActiveAt(device, ts)
                 .orElseThrow(() -> new IllegalStateException("No active assignment for device " + deviceId + " at " + ts))
                 .getTarget();
     }
 
+    @Transactional
     public boolean isTrackableAssignedToDevice(Trackable trk) {
         Thrower.notNullArgumentException(trk, "trk is null");
         return assignmentRepository.findFirstByTargetAndToTsIsNull(trk).isPresent();

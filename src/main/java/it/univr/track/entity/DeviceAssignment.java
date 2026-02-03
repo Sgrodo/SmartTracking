@@ -37,7 +37,7 @@ public class DeviceAssignment extends AbstractEntity {
     @Check(name = "device_assignment_to_ts_ck", constraints = "to_ts == null or to_ts >= from_ts")
     private ZonedDateTime toTs; // null = attivo
 
-    public DeviceAssignment(Device device, Trackable target){
+    public DeviceAssignment(Device device, Trackable target) {
         this(device, target, ZonedDateTime.now());
     }
 
@@ -56,8 +56,9 @@ public class DeviceAssignment extends AbstractEntity {
     }
 
     public void deactivate(ZonedDateTime toTs) {
-        if (toTs == null) throw new IllegalArgumentException("toTs is null");
-        if (this.toTs != null) throw new IllegalStateException("assignment already closed");
+        if(!isActive()){
+            return;
+        }
         this.toTs = toTs;
     }
 }

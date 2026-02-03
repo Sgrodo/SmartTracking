@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,11 +22,6 @@ public class Package extends Trackable {
 
     @OneToMany(mappedBy = "pkg", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
-
-    @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    private Shipment shipment;
 
     public Package(Set<UnitLoad> unitLoads) {
         if (unitLoads.isEmpty()) {
@@ -53,4 +47,5 @@ public class Package extends Trackable {
         unitLoads.remove(unitLoad);
         unitLoad.setPackage(null);
     }
+
 }

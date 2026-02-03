@@ -4,12 +4,10 @@ import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Sending;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
-import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -17,36 +15,12 @@ import java.util.Set;
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
-    private final DeviceAssignmentService deviceAssignmentService;
     private final SendingFactory sendingFactory;
 
     public DeviceService(DeviceRepository deviceRepository,
-                         DeviceAssignmentService deviceAssignmentService,
                          SendingFactory sendingFactory) {
         this.deviceRepository = deviceRepository;
-        this.deviceAssignmentService = deviceAssignmentService;
         this.sendingFactory = sendingFactory;
-    }
-
-    /**
-     * Prima era addDeviceToShipment(shipmentId, deviceId).
-     * Ora il binding si fa verso un Trackable (UnitLoad o Package).
-     */
-    @Transactional
-    public void bindDeviceToTrackable(Long deviceId, Long trackableId) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        if (trackableId == null) throw new IllegalArgumentException("trackableId is null");
-
-        deviceAssignmentService.bind(deviceId, trackableId);
-    }
-
-    /**
-     * Scollega il device chiudendo l'assignment attivo (toTs valorizzato).
-     */
-    @Transactional
-    public void unbindDevice(Long deviceId) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-        deviceAssignmentService.unbind(deviceId);
     }
 
     /**

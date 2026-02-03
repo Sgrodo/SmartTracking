@@ -1,13 +1,11 @@
 package it.univr.track.entity.data;
 
 import it.univr.track.entity.PhysicalConstraintEmbeddable;
-import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.ZonedDateTime;
 import java.util.*;
@@ -18,11 +16,6 @@ import java.util.*;
 @Getter
 public class UnitLoad extends Trackable {
 
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TrackingState trackingState = TrackingState.INACTIVE;
-
     @Column(nullable = false)
     private ZonedDateTime startDate;
 
@@ -32,11 +25,6 @@ public class UnitLoad extends Trackable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "package_id")
     private Package pkg;
-
-    @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    private Shipment shipment;
 
 
     protected void setPackage(Package pkg) {
@@ -124,17 +112,11 @@ public class UnitLoad extends Trackable {
      * non puoi attivare se non hai almeno un product.
      * (Se vuoi la metti nel service invece che qui)
      */
-    public void activateTracking() {
-        Thrower.state(products.isEmpty(), "UnitLoad must contain at least one product before activation");
-        this.trackingState = TrackingState.ACTIVE;
-    }
 
-    public void deactivateTracking(){
-        this.trackingState = TrackingState.INACTIVE;
-    }
 
     @Override
     public Set<UnitLoad> getUnitLoads() {
         return Set.of(this);
     }
+
 }

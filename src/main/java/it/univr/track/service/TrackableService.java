@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class TrackableService {
@@ -33,7 +32,13 @@ public class TrackableService {
     }
 
     @Transactional
-    public Set<Trackable> getAllTrackablesById(Set<Long> trackableIds) {
+    public Set<Trackable> getAllTrackablesById(Iterable<Long> trackableIds) {
         return new HashSet<>(trackableRepository.findAllById(trackableIds));
     }
+
+    @Transactional(readOnly = true)
+    public Trackable getById(Long id) {
+        return trackableRepository.findById(id).orElseThrow(() -> new NullPointerException("No trackable found with id " + id));
+    }
+
 }

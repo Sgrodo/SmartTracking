@@ -14,8 +14,8 @@ public interface DeviceRepository extends JpaRepository<Device, Long> {
     @Query("""
         select distinct da.device
         from Shipment s
-        join s.unitLoads ul
-        join DeviceAssignment da on da.target = ul
+        join s.trackables trk
+        join DeviceAssignment da on da.target = trk
         where s.state not in :states
           and da.toTs is null
     """)
