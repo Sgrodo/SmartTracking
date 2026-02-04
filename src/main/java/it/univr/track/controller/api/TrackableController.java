@@ -5,6 +5,7 @@ import it.univr.track.controller.api.dto.UnitLoadRequest;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.repository.TrackableRepository;
 import it.univr.track.service.PackageService;
@@ -65,7 +66,7 @@ public class TrackableController {
     @DeleteMapping("/api/trackable/{trackableId}")
     public boolean deleteTrackable(@PathVariable Long trackableId) {
         if (!trackableRepository.existsById(trackableId)) {
-            throw new IllegalArgumentException("Trackable not found: " + trackableId);
+            throw new NotFoundException("Trackable not found: " + trackableId);
         }
         trackableRepository.deleteById(trackableId);
         return true;

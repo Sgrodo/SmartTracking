@@ -2,48 +2,45 @@ package it.univr.track.service;
 
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.exception.InvalidDataException;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.PackageRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class PackageService {
 
     private final PackageRepository packageRepository;
     private final UnitLoadService unitLoadService;
 
-    public PackageService(PackageRepository packageRepository,
-                          UnitLoadService unitLoadService) {
-        this.packageRepository = packageRepository;
-        this.unitLoadService = unitLoadService;
-    }
-
-
     @Transactional(readOnly = true)
     public Package getPackageById(Long packageId) {
         if (packageId == null) throw new IllegalArgumentException("packageId is null");
         return packageRepository.findById(packageId)
-                .orElseThrow(() -> new IllegalArgumentException("Package not found: " + packageId));
+                .orElseThrow(() -> new NotFoundException("Package not found: " + packageId));
     }
 
     @Transactional
     public boolean deletePackageById(Long packageId) {
-        if (packageId == null) throw new IllegalArgumentException("packageId is null");
-        if (packageRepository.existsById(packageId)) {
-            packageRepository.deleteById(packageId);
-            return true;
+        if (packageId == null) throw new InvalidDataException("packageId is null");
+        if (!packageRepository.existsById(packageId)) {
+            throw new NotFoundException("Package not found: " + packageId);
         }
-        return false;
+        packageRepository.deleteById(packageId);
+        return true;
     }
 
     // UNITLOAD COMPOSITION
 
     @Transactional
     public void addUnitLoadToPackage(Long packageId, Long unitLoadId) {
-        if (packageId == null) throw new IllegalArgumentException("packageId is null");
-        if (unitLoadId == null) throw new IllegalArgumentException("unitLoadId is null");
+        if (packageId == null) throw new InvalidDataException("packageId is null");
+        if (unitLoadId == null) throw new InvalidDataException("unitLoadId is null");
 
         Package pkg = getPackageById(packageId);
 
@@ -61,7 +58,7 @@ public class PackageService {
 
         // controllo base
         if (ul.getPkg() == null || !ul.getPkg().getId().equals(pkg.getId())) {
-            throw new IllegalStateException("UnitLoad " + unitLoadId + " is not in Package " + packageId);
+            throw new NotFoundException("UnitLoad " + unitLoadId + " is not in Package " + packageId);
         }
 
         pkg.removeUnitLoad(ul);

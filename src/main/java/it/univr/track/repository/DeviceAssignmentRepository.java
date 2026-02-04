@@ -20,12 +20,14 @@ public interface DeviceAssignmentRepository extends JpaRepository<DeviceAssignme
     Optional<DeviceAssignment> findFirstByTargetAndToTsIsNull(Trackable target);
 
     @Query("""
-        select a from DeviceAssignment a
-        where a.device = :device
-          and a.fromTs <= :ts
-          and (a.toTs is null or a.toTs > :ts)
-        order by a.fromTs desc
-    """)
+                select a from DeviceAssignment a
+                where a.device = :device
+                  and a.fromTs <= :ts
+                  and (a.toTs is null or a.toTs > :ts)
+                order by a.fromTs desc
+            """)
     Optional<DeviceAssignment> findActiveAt(@Param("device") Device device,
                                             @Param("ts") ZonedDateTime ts);
+
+    List<DeviceAssignment> findByTargetAndToTsIsNull(Trackable target);
 }

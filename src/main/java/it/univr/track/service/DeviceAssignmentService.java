@@ -3,6 +3,7 @@ package it.univr.track.service;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceAssignmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,7 +66,7 @@ public class DeviceAssignmentService {
         Device device = deviceService.getDeviceById(deviceId);
 
         DeviceAssignment active = assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
-                .orElseThrow(() -> new IllegalStateException("Device " + deviceId + " has no active assignment"));
+                .orElseThrow(() -> new NotFoundException("Device " + deviceId + " has no active assignment"));
 
         active.deactivate(now);
 
@@ -87,7 +88,7 @@ public class DeviceAssignmentService {
         Device device = deviceService.getDeviceById(deviceId);
 
         return assignmentRepository.findActiveAt(device, ts)
-                .orElseThrow(() -> new IllegalStateException("No active assignment for device " + deviceId + " at " + ts))
+                .orElseThrow(() -> new NotFoundException("No active assignment for device " + deviceId + " at " + ts))
                 .getTarget();
     }
 

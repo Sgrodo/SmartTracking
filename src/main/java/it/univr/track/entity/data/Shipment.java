@@ -67,8 +67,6 @@ public class Shipment extends AbstractEntity {
     }
 
     // DOMAIN METHODS
-
-
     public void addTrackable(Trackable trackable) {
         Thrower.notNullArgumentException(trackable, "UnitLoad is null");
         trackables.add(trackable);

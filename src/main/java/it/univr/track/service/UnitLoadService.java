@@ -5,6 +5,8 @@ import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import it.univr.track.exception.InvalidDataException;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.DeviceAssignmentRepository;
 import it.univr.track.repository.UnitLoadRepository;
 import org.springframework.stereotype.Service;
@@ -48,19 +50,19 @@ public class UnitLoadService {
 
     @Transactional(readOnly = true)
     public UnitLoad getUnitLoadById(Long unitLoadId) {
-        if (unitLoadId == null) throw new IllegalArgumentException("unitLoadId is null");
+        if (unitLoadId == null) throw new InvalidDataException("unitLoadId is null");
         return unitLoadRepository.findById(unitLoadId)
-                .orElseThrow(() -> new IllegalArgumentException("UnitLoad not found: " + unitLoadId));
+                .orElseThrow(() -> new NotFoundException("UnitLoad not found: " + unitLoadId));
     }
 
     @Transactional
     public boolean deleteUnitLoadById(Long unitLoadId) {
-        if (unitLoadId == null) throw new IllegalArgumentException("unitLoadId is null");
+        if (unitLoadId == null) throw new InvalidDataException("unitLoadId is null");
         if (unitLoadRepository.existsById(unitLoadId)) {
             unitLoadRepository.deleteById(unitLoadId);
             return true;
         }
-        return false;
+        throw new NotFoundException("UnitLoad not found: " + unitLoadId);
     }
 
     @Transactional(readOnly = true)

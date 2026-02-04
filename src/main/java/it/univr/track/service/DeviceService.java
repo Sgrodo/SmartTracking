@@ -4,6 +4,8 @@ import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Sending;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.exception.InvalidDataException;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.DeviceRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,8 +31,8 @@ public class DeviceService {
      */
     @Transactional
     public void setDeviceTrackingState(Set<Device> devices, TrackingState state) {
-        if (devices == null) throw new IllegalArgumentException("devices is null");
-        if (state == null) throw new IllegalArgumentException("state is null");
+        if (devices == null) throw new InvalidDataException("devices is null");
+        if (state == null) throw new InvalidDataException("state is null");
 
         for (Device d : devices) {
             if (d == null) continue;
@@ -49,16 +51,16 @@ public class DeviceService {
 
         // opzionale: fail fast se device non esiste
         deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+                .orElseThrow(() -> new NotFoundException("Device not found: " + deviceId));
 
         // la factory deve: (1) risolvere target attivo, (2) creare sending, (3) salvarlo sul Trackable
         return sendingFactory.ingestSending(deviceId);
     }
 
     public Device getDeviceById(Long deviceId) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
+        if (deviceId == null) throw new InvalidDataException("deviceId is null");
         return deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+                .orElseThrow(() -> new NotFoundException("Device not found: " + deviceId));
     }
 
     public List<Device> getAvailableDevices() {

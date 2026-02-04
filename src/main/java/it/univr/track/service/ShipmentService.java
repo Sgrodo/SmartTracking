@@ -5,8 +5,10 @@ import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.ShipmentRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +17,12 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final TrackableService trackableService;
 
-    public ShipmentService(ShipmentRepository shipmentRepository,
-                           TrackableService trackableService) {
-        this.shipmentRepository = shipmentRepository;
-        this.trackableService = trackableService;
-    }
 
     @Transactional
     public Shipment create(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
@@ -36,7 +34,7 @@ public class ShipmentService {
     public Shipment getById(Long shipmentId) {
         if (shipmentId == null) throw new IllegalArgumentException("shipmentId is null");
         return shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new IllegalArgumentException("Shipment not found: " + shipmentId));
+                .orElseThrow(() -> new NotFoundException("Shipment not found: " + shipmentId));
     }
 
     @Transactional
