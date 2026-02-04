@@ -9,6 +9,11 @@ import java.util.Set;
 @Getter
 public class PackageRequest {
 
+    @NotNull
+    private String groupCode;
+
+    private String description = "";
+
     @NotNull(message = "unitLoadIds is required")
     @NotEmpty(message = "At least one unitLoadId is needed")
     private Set<@NotNull(message = "unitLoadId can't be null") Long> unitLoadIds;

@@ -2,18 +2,15 @@ package it.univr.track.entity.data;
 
 import it.univr.track.entity.PhysicalConstraintEmbeddable;
 import it.univr.track.entity.sensor.PhysicalConstraint;
-import it.univr.track.exception.InvalidDataException;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.*;
 
 @Entity
 @Table(name = "unit_load")
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 public class UnitLoad extends Trackable {
 
@@ -41,7 +38,7 @@ public class UnitLoad extends Trackable {
             joinColumns = @JoinColumn(name = "unitload_id"),
             inverseJoinColumns = @JoinColumn(name = "loaditem_id")
     )
-    private Set<LoadItem> products = new HashSet<>();
+    private Set<LoadItem> loadItems = new HashSet<>();
 
     // CONSTRAINTS
 
@@ -52,7 +49,7 @@ public class UnitLoad extends Trackable {
     )
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
-    public UnitLoad(String description, ZonedDateTime startDate, Collection<PhysicalConstraint> constraints, Collection<LoadItem> loadItems) {
+    public UnitLoad(String description, ZonedDateTime startDate, Collection<PhysicalConstraint> constraints) {
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = Objects.requireNonNullElse(description, "");
 
@@ -63,24 +60,14 @@ public class UnitLoad extends Trackable {
         }else{
             this.physicalConstraints = new HashSet<>();
         }
-
-        if (loadItems == null || loadItems.isEmpty()) {
-            throw new InvalidDataException("loadItems is required and cannot be empty");
-        }
-        this.products.addAll(loadItems);
-
     }
 
-    public UnitLoad(String description, ZonedDateTime startDate, Collection<LoadItem> loadItems) {
-        this(description, startDate, null, loadItems);
+    public UnitLoad(ZonedDateTime startDate) {
+        this("", startDate, null);
     }
 
-    public UnitLoad(ZonedDateTime startDate, Collection<LoadItem> loadItems) {
-        this("", startDate, loadItems);
-    }
-
-    public UnitLoad(Collection<LoadItem> loadItems) {
-        this(ZonedDateTime.now(), loadItems);
+    public UnitLoad() {
+        this(ZonedDateTime.now());
     }
 
     // -------- PRODUCTS SECTION --------
@@ -89,19 +76,20 @@ public class UnitLoad extends Trackable {
      * Crea e aggiunge un LoadItem come contenuto di questa UnitLoad.
      * LoadItem non è standalone nel dominio: nasce con UnitLoad.
      */
-    public LoadItem addProduct(LoadItem loadItem) {
+    public LoadItem addLoadItem(LoadItem loadItem) {
         Thrower.notNullArgumentException(loadItem, "loadItem is required");
-        products.add(loadItem);
+        loadItems.add(loadItem);
+        loadItem.getUnitLoads().add(this);
         return loadItem;
     }
 
     public boolean removeProductByQrCode(String qrCode) {
         if (qrCode == null || qrCode.isBlank()) throw new IllegalArgumentException("qrCode is blank");
-        return products.removeIf(p -> qrCode.equals(p.getQrCode()));
+        return loadItems.removeIf(p -> qrCode.equals(p.getQrCode()));
     }
 
     public boolean hasProducts() {
-        return !products.isEmpty();
+        return !loadItems.isEmpty();
     }
 
     // -------- CONSTRAINTS SECTION --------

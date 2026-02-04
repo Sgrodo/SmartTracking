@@ -6,7 +6,6 @@ import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
-import it.univr.track.helper.Thrower;
 import it.univr.track.service.DeviceAssignmentService;
 import it.univr.track.service.ShipmentService;
 import it.univr.track.service.TrackableService;
@@ -93,7 +92,7 @@ public class ShipmentController {
     @DeleteMapping("/api/shipment")
     public boolean deleteShipment(@RequestParam Long shipmentId) {
         try {
-            return shipmentService.deleteUnitLoadById(shipmentId);
+            return shipmentService.deleteById(shipmentId);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (IllegalStateException e) {

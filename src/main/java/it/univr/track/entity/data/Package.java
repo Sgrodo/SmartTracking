@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -17,20 +18,25 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "package_tbl")
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Package extends Trackable {
 
-    @OneToMany(mappedBy = "pkg", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "pkg", cascade = {CascadeType.DETACH, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
 
-    public Package(Collection<UnitLoad> unitLoads) {
-        if (unitLoads.isEmpty()) {
-            throw new RuntimeException("List of UnitLoads is empty");
-        }
-        for (UnitLoad u : unitLoads) {
-            this.addUnitLoad(u);
-        }
+    private String description;
+    private String groupCode;
+
+    public Package(String description, String groupCode) {
+        if(groupCode == null || groupCode.isBlank())
+            throw new IllegalArgumentException("groupCode is null or blank");
+        this.groupCode = groupCode;
+        this.description = Objects.requireNonNullElse(description, "");
+    }
+
+    public Package(String groupCode){
+        this("", groupCode);
     }
 
 

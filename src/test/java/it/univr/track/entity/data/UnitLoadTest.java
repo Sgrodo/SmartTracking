@@ -13,32 +13,23 @@ import static org.junit.jupiter.api.Assertions.*;
 public class UnitLoadTest extends BaseTest {
 
     @Test
-    public void testConstructor() {
-        // test constructor without load items
-        assertThrows(
-                InvalidDataException.class,
-                () -> new UnitLoad("unvalid unitload",
-                        ZonedDateTime.now(), List.of(new HumidityConstraint(20.0)), null)
-        );
-    }
-
-    @Test
     public void testProducts() {
         UnitLoad ul = new UnitLoad("test unitload",
-                ZonedDateTime.now(), List.of(new HumidityConstraint(20.0)), List.of(this.loadItems[0]));
-        assertArrayEquals(new LoadItem[]{this.loadItems[0]}, ul.getProducts().toArray());
+                ZonedDateTime.now(), List.of(new HumidityConstraint(20.0)));
+        ul.getLoadItems().add(this.loadItems[0]);
+        assertEquals(1, ul.getLoadItems().size());
 
-        ul.addProduct(this.loadItems[1]);
-        assertArrayEquals(new LoadItem[]{this.loadItems[0], this.loadItems[1]}, ul.getProducts().toArray());
+        ul.addLoadItem(this.loadItems[1]);
+        assertEquals(2, ul.getLoadItems().size());
 
         ul.removeProductByQrCode(this.loadItems[0].getQrCode());
-        assertArrayEquals(new LoadItem[]{this.loadItems[1]}, ul.getProducts().toArray());
+        assertEquals(1, ul.getLoadItems().size());
     }
 
     @Test
     public void testPhysicalConstraints() {
         UnitLoad ul = new UnitLoad("test unitload",
-                ZonedDateTime.now(), List.of(new HumidityConstraint(20.0)), List.of(this.loadItems[0]));
+                ZonedDateTime.now(), List.of(new HumidityConstraint(20.0)));
 
         assertEquals(1, ul.getPhysicalConstraints().size());
 

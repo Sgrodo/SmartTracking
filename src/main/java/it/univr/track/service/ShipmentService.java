@@ -5,6 +5,7 @@ import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
+import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.ShipmentRepository;
@@ -26,8 +27,17 @@ public class ShipmentService {
 
     @Transactional
     public Shipment create(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
-        Shipment s = new Shipment(startDate, description, trackables);
-        return shipmentRepository.save(s);
+        if(trackables == null || trackables.isEmpty()) {
+            throw new InvalidDataException("trackables is null or empty");
+        }
+        Shipment shipment = new Shipment(startDate, description);
+        shipment = shipmentRepository.save(shipment);
+
+        for(Trackable tr : trackables){
+            shipment.addTrackable(tr);
+        }
+
+        return shipment;
     }
 
     @Transactional(readOnly = true)
@@ -44,12 +54,7 @@ public class ShipmentService {
 
     @Transactional
     public void update(Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
-        if (state.equals(ShipmentState.CANCELLED)) {
-            shipment.cancel();
-        } else if (state.equals(ShipmentState.COMPLETED)) {
-            shipment.complete();
-        }
-
+        shipment.setState(state);
         shipment.setDescription(description);
         shipment.setTrackables(trackables);
 
@@ -57,13 +62,13 @@ public class ShipmentService {
     }
 
     @Transactional
-    public boolean deleteUnitLoadById(Long unitLoadId) {
-        Thrower.notNullArgumentException(unitLoadId, "unitLoadId is null");
-        if (shipmentRepository.existsById(unitLoadId)) {
-            shipmentRepository.deleteById(unitLoadId);
+    public boolean deleteById(Long shipmentId) {
+        Thrower.notNullArgumentException(shipmentId, "shipmentId is null");
+        if (shipmentRepository.existsById(shipmentId)) {
+            shipmentRepository.deleteById(shipmentId);
             return true;
         }
-        return false;
+        throw new NotFoundException("Shipment not found: " + shipmentId);
     }
 
     @Transactional

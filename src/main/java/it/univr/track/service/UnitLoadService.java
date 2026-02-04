@@ -36,7 +36,10 @@ public class UnitLoadService {
                                    ZonedDateTime startDate,
                                    Set<PhysicalConstraint> physicalConstraints,
                                    Collection<LoadItem> loadItems) {
-        UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints, loadItems);
+        UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints);
+        for( LoadItem item : loadItems ) {
+            unitLoad.addLoadItem(item);
+        }
         return unitLoadRepository.save(unitLoad);
     }
 
@@ -95,7 +98,7 @@ public class UnitLoadService {
             throw new NotFoundException("LoadItem not found: " + loadItemId);
         }
 
-        ul.addProduct(loadItem.get());
+        ul.addLoadItem(loadItem.get());
         unitLoadRepository.save(ul);
     }
 

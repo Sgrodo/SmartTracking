@@ -55,7 +55,7 @@ public class TrackableController {
         try {
             Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getUnitLoadIds());
 
-            return packageService.createPackage(unitLoads);
+            return packageService.createPackage(request.getGroupCode(), request.getDescription(), unitLoads);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (Exception e) {

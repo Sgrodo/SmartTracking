@@ -70,9 +70,17 @@ public class PackageService {
     }
 
     @Transactional
-    public Package createPackage(Set<UnitLoad> unitLoads) {
-        Package pkg = new Package(unitLoads);
-        return packageRepository.save(pkg); // così ha l'id
+    public Package createPackage(String groupCode, String description, Set<UnitLoad> unitLoads) {
+        if (unitLoads == null || unitLoads.isEmpty()){
+            throw new InvalidDataException("unitLoads is null or empty");
+        }
+        Package pkg = new Package(description, groupCode);
+        pkg = packageRepository.save(pkg); // così ha l'id
+
+        for (UnitLoad ul : unitLoads) {
+            pkg.addUnitLoad(ul);
+        }
+        return packageRepository.save(pkg);
     }
 
 }

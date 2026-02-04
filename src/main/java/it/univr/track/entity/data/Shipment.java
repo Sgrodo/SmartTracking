@@ -2,6 +2,7 @@ package it.univr.track.entity.data;
 
 import it.univr.track.entity.AbstractEntity;
 import it.univr.track.entity.enumeration.ShipmentState;
+import it.univr.track.exception.InvalidDataException;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -56,25 +57,24 @@ public class Shipment extends AbstractEntity {
     // Shipment -> Packages
     @Setter
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<@NotNull Trackable> trackables = new HashSet<>();
+    private Set<Trackable> trackables = new HashSet<>();
 
-    public Shipment(ZonedDateTime startDate, String description, Collection<? extends Trackable> trackables) {
-        this(startDate, description);
-        if (trackables == null)
-            throw new IllegalArgumentException("trackables is null");
-        if (trackables.isEmpty())
-            throw new IllegalArgumentException("at leat one trackable is required");
-        this.trackables = new HashSet<>(trackables);
-    }
-
-    private Shipment(ZonedDateTime startDate, String description) {
+    public Shipment(ZonedDateTime startDate, String description) {
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
+    }
+
+    public Shipment(String description) {
+        this(ZonedDateTime.now(), description);
     }
 
     // DOMAIN METHODS
     public void addTrackable(Trackable trackable) {
         Thrower.notNullArgumentException(trackable, "UnitLoad is null");
+        if (trackable.getShipment() != null && !trackable.getShipment().equals(this)){
+            throw new IllegalStateException(String.format("Trying to add trackable[%s] assigned to another shipment[%s]: ", trackable.getId(), trackable.getShipment().getId()));
+        }
+
         trackables.add(trackable);
         trackable.setShipment(this);
     }
@@ -96,19 +96,14 @@ public class Shipment extends AbstractEntity {
     }
 
     private void validateTrackables() {
-        if(this.trackables.isEmpty()){
-            throw new IllegalStateException("Shipment must have at least one Trackable");
-        }
         Set<Trackable> visited = new HashSet<>();
         for (Trackable t : trackables) {
+            // Uniqueness among trackables in the same shipment
             for (UnitLoad ut : t.getUnitLoads()){
                 if (visited.contains(ut)) {
-                    throw new IllegalStateException("Trackable " + ut.getId() + " is assigned to multiple Trackables in the same Shipment");
+                    throw new InvalidDataException("Trackable " + ut.getId() + " is assigned to multiple Trackables in the same Shipment");
                 }
                 visited.add(ut);
-            }
-            if (t.getShipment() != null && !t.getShipment().equals(this)){
-                throw new IllegalStateException(String.format("Trying to add trackable[%s] assigned to another shipment[%s]: ", t.getId(), t.getShipment().getId()));
             }
         }
     }
@@ -117,13 +112,32 @@ public class Shipment extends AbstractEntity {
         return state.equals(ShipmentState.COMPLETED) || state.equals(ShipmentState.CANCELLED);
     }
 
+    public void setState(ShipmentState state) {
+        this.setState(state, ZonedDateTime.now());
+    }
+
+    public void setState(ShipmentState state, ZonedDateTime time) {
+        if (state == null) throw new IllegalArgumentException("state is null");
+        switch (state){
+            case COMPLETED -> this.complete(time);
+            case CANCELLED -> this.cancel(time);
+            case IN_TRANSIT -> this.setInTransit(time);
+            case CREATED -> {
+                this.startDate = ZonedDateTime.now();
+                this.endDate = null;
+                this.state = ShipmentState.CREATED;
+            }
+            default -> throw new IllegalArgumentException("Unsupported state: " + state);
+        }
+    }
+
     public void complete() {
         this.complete(ZonedDateTime.now());
     }
 
     public void complete(ZonedDateTime now) {
-        if (this.isFinalState() && this.endDate != null) {
-            return;
+        if (this.isFinalState()) {
+            throw new IllegalStateException("Cannot change state of a final shipment");
         }
 
         this.endDate = now;
@@ -135,8 +149,8 @@ public class Shipment extends AbstractEntity {
     }
 
     public void cancel(ZonedDateTime now) {
-        if (this.isFinalState() && this.endDate != null) {
-            return;
+        if (this.isFinalState()) {
+            throw new IllegalStateException("Cannot change state of a final shipment");
         }
 
         this.endDate = now;
@@ -148,23 +162,12 @@ public class Shipment extends AbstractEntity {
     }
 
     public void setInTransit(ZonedDateTime now) {
-        if(this.state.equals(ShipmentState.IN_TRANSIT)){
-            return;
+        if(this.isFinalState()) {
+            throw new IllegalStateException("Cannot change state of a final shipment");
         }
 
         this.state = ShipmentState.IN_TRANSIT;
         this.endDate = null;
-    }
-
-
-    public Set<UnitLoad> getUnitLoads() {
-        Set<UnitLoad> unitLoads = new HashSet<>();
-        for (Trackable t : trackables) {
-            if (t instanceof UnitLoad ul) {
-                unitLoads.add(ul);
-            }
-        }
-        return unitLoads;
     }
 
 }

@@ -4,7 +4,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.UUID;
 
 @MappedSuperclass
 @Getter
@@ -14,6 +19,9 @@ public abstract class AbstractEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Setter(value = AccessLevel.NONE)
     protected Long id;
+
+    // Business key equality based on 'id'
+    private String businessKey = UUID.randomUUID().toString();
 
 
     @Override
@@ -28,6 +36,6 @@ public abstract class AbstractEntity {
 
     @Override
     public int hashCode() {
-        return Math.toIntExact(id);
+        return id != null ? Math.toIntExact(id) : businessKey.hashCode();
     }
 }
