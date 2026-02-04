@@ -8,15 +8,14 @@ import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.DeviceAssignmentRepository;
+import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.repository.UnitLoadRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Gestisce le UnitLoad.
@@ -25,20 +24,13 @@ import java.util.Set;
  * - Binding device <-> UnitLoad tramite DeviceAssignment
  */
 @Service
+@RequiredArgsConstructor
 public class UnitLoadService {
 
     private final UnitLoadRepository unitLoadRepository;
+    private final LoadItemRepository loadItemRepository;
     private final DeviceAssignmentRepository deviceAssignmentRepository;
     private final DeviceAssignmentService deviceAssignmentService;
-
-    public UnitLoadService(UnitLoadRepository unitLoadRepository,
-                           DeviceAssignmentService deviceAssignmentService,
-                           DeviceAssignmentRepository deviceAssignmentRepository) {
-        this.unitLoadRepository = unitLoadRepository;
-        this.deviceAssignmentService = deviceAssignmentService;
-        this.deviceAssignmentRepository = deviceAssignmentRepository;
-    }
-
 
     public UnitLoad createUnitLoad(String description,
                                    ZonedDateTime startDate,
@@ -95,9 +87,15 @@ public class UnitLoadService {
     // ---- TRACKING STATE ----
 
     @Transactional
-    public void addLoadItem(Long unitLoadId, String name, String qrCode, String description) {
+    public void addLoadItem(Long unitLoadId, Long loadItemId) {
         UnitLoad ul = getUnitLoadById(unitLoadId);
-        ul.addProduct(name, qrCode, description);
+        Optional<LoadItem> loadItem = loadItemRepository.findById(loadItemId);
+
+        if (loadItem.isEmpty()) {
+            throw new NotFoundException("LoadItem not found: " + loadItemId);
+        }
+
+        ul.addProduct(loadItem.get());
         unitLoadRepository.save(ul);
     }
 

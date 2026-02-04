@@ -2,6 +2,7 @@ package it.univr.track.entity.data;
 
 import it.univr.track.entity.PhysicalConstraintEmbeddable;
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import it.univr.track.exception.InvalidDataException;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +13,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "unit_load")
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @Getter
 public class UnitLoad extends Trackable {
 
@@ -51,16 +52,35 @@ public class UnitLoad extends Trackable {
     )
     private Set<PhysicalConstraintEmbeddable> physicalConstraints = new HashSet<>();
 
-    public UnitLoad(String description, ZonedDateTime startDate, Set<PhysicalConstraint> constraints, Collection<LoadItem> loadItems) {
-        Thrower.notNullArgumentException(startDate, "startDate is required");
-        this.startDate = startDate;
-        this.description = description;
+    public UnitLoad(String description, ZonedDateTime startDate, Collection<PhysicalConstraint> constraints, Collection<LoadItem> loadItems) {
+        this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
+        this.description = Objects.requireNonNullElse(description, "");
 
         if (constraints != null) {
             for (PhysicalConstraint c : constraints) {
                 this.physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(c));
             }
+        }else{
+            this.physicalConstraints = new HashSet<>();
         }
+
+        if (loadItems == null || loadItems.isEmpty()) {
+            throw new InvalidDataException("loadItems is required and cannot be empty");
+        }
+        this.products.addAll(loadItems);
+
+    }
+
+    public UnitLoad(String description, ZonedDateTime startDate, Collection<LoadItem> loadItems) {
+        this(description, startDate, null, loadItems);
+    }
+
+    public UnitLoad(ZonedDateTime startDate, Collection<LoadItem> loadItems) {
+        this("", startDate, loadItems);
+    }
+
+    public UnitLoad(Collection<LoadItem> loadItems) {
+        this(ZonedDateTime.now(), loadItems);
     }
 
     // -------- PRODUCTS SECTION --------
@@ -69,12 +89,10 @@ public class UnitLoad extends Trackable {
      * Crea e aggiunge un LoadItem come contenuto di questa UnitLoad.
      * LoadItem non è standalone nel dominio: nasce con UnitLoad.
      */
-    public LoadItem addProduct(String name, String qrCode, String description) {
-        LoadItem p = new LoadItem(name, qrCode, description);
-
-        products.add(p);
-
-        return p;
+    public LoadItem addProduct(LoadItem loadItem) {
+        Thrower.notNullArgumentException(loadItem, "loadItem is required");
+        products.add(loadItem);
+        return loadItem;
     }
 
     public boolean removeProductByQrCode(String qrCode) {
@@ -96,16 +114,6 @@ public class UnitLoad extends Trackable {
     public boolean removePhysicalConstraint(PhysicalConstraint constraint) {
         Thrower.notNullArgumentException(constraint, "constraint is null");
         return physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(constraint));
-    }
-
-    public void editPhysicalConstraint(PhysicalConstraint oldConstraint, PhysicalConstraint newConstraint) {
-        Thrower.notNullArgumentException(oldConstraint, "oldConstraint is null");
-        Thrower.notNullArgumentException(newConstraint, "newConstraint is null");
-
-        boolean removed = physicalConstraints.remove(PhysicalConstraintEmbeddable.fromDomain(oldConstraint));
-        if (!removed) throw new IllegalArgumentException("Constraint to edit not found: " + oldConstraint);
-
-        physicalConstraints.add(PhysicalConstraintEmbeddable.fromDomain(newConstraint));
     }
 
     /**

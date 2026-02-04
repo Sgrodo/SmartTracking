@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class Package extends Trackable {
     @OneToMany(mappedBy = "pkg", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
 
-    public Package(Set<UnitLoad> unitLoads) {
+    public Package(Collection<UnitLoad> unitLoads) {
         if (unitLoads.isEmpty()) {
             throw new RuntimeException("List of UnitLoads is empty");
         }

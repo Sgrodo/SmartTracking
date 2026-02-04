@@ -11,7 +11,7 @@ public class UnitLoadTest extends BaseRestTest {
         String DESCRIPTION = "Demo Unit Load";
         String START_DATE = "2024-06-01T10:00:00Z";
         String[] CONSTRAINTS = new String[]{"HUMIDITY", "TEMPERATURE"};
-        Long[] LOAD_ITEM_IDS = new Long[]{ this.loadItemsIds[0] };
+        Long[] LOAD_ITEM_IDS = new Long[]{ this.loadItems[0].getId() };
 
         String jsonBody = """
                         {

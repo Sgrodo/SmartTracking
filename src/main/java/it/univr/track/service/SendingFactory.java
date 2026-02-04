@@ -18,27 +18,28 @@ import java.time.ZonedDateTime;
 public class SendingFactory {
 
     private final DeviceRepository deviceRepository;
-    private final DeviceAssignmentService deviceAssignmentService;
+//    private final DeviceAssignmentService deviceAssignmentService;
     private final TrackableRepository trackableRepository;
 
     @Transactional
     public Sending ingestSending(Long deviceId) {
-        ZonedDateTime now = ZonedDateTime.now();
-
-        Device device = deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
-
-        Trackable target = deviceAssignmentService.getActiveTarget(deviceId, now);
-
-        // crea sending (editable...)
-        Sending sending = new Sending(device, now, true, true);
-
-        // salva “sul target” (UnitLoad o Package, uguale)
-        target.addSending(sending);
-
-        // siccome target è entity gestita, basta salvarla (o lasciare che la transazione flushi)
-        trackableRepository.save(target);
-        return sending;
+        return null;
+//        ZonedDateTime now = ZonedDateTime.now();
+//
+//        Device device = deviceRepository.findById(deviceId)
+//                .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+//
+//        Trackable target = deviceAssignmentService.getActiveTarget(deviceId, now);
+//
+//        // crea sending (editable...)
+//        Sending sending = new Sending(device, now, true, true);
+//
+//        // salva “sul target” (UnitLoad o Package, uguale)
+//        target.addSending(sending);
+//
+//        // siccome target è entity gestita, basta salvarla (o lasciare che la transazione flushi)
+//        trackableRepository.save(target);
+//        return sending;
     }
 }
 

@@ -3,6 +3,7 @@ package it.univr.track.entity.data;
 import it.univr.track.entity.AbstractEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ public class LoadItem extends AbstractEntity {
     @Column(nullable = false)
     private String name; // oppure productLabel
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, updatable = false)
     private String qrCode;
 
     @Column

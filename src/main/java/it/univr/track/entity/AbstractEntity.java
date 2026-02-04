@@ -17,7 +17,7 @@ public abstract class AbstractEntity {
 
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null) return false;
         if (getClass() != o.getClass()) return false;
@@ -27,7 +27,7 @@ public abstract class AbstractEntity {
     }
 
     @Override
-    public final int hashCode() {
-        return getClass().hashCode();
+    public int hashCode() {
+        return Math.toIntExact(id);
     }
 }

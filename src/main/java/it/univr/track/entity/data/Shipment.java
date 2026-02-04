@@ -4,6 +4,8 @@ import it.univr.track.entity.AbstractEntity;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,7 +23,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "shipment")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class Shipment extends AbstractEntity {
 
@@ -29,7 +31,7 @@ public class Shipment extends AbstractEntity {
     private ZonedDateTime startDate;
 
     @Column
-    @Check(name = "shipment_enddate_check", constraints = "endDate IS NULL or endDate >= startDate")
+    @Check(name = "shipment_enddate_check", constraints = "end_date IS NULL or end_date >= start_date")
     @Check(
             name = "shipment_state_enddate_check",
             constraints = """
@@ -54,14 +56,18 @@ public class Shipment extends AbstractEntity {
     // Shipment -> Packages
     @Setter
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Trackable> trackables = new HashSet<>();
+    private Set<@NotNull Trackable> trackables = new HashSet<>();
 
-    public Shipment(ZonedDateTime startDate, String description, Collection<Trackable> trackables) {
+    public Shipment(ZonedDateTime startDate, String description, Collection<? extends Trackable> trackables) {
         this(startDate, description);
+        if (trackables == null)
+            throw new IllegalArgumentException("trackables is null");
+        if (trackables.isEmpty())
+            throw new IllegalArgumentException("at leat one trackable is required");
         this.trackables = new HashSet<>(trackables);
     }
 
-    public Shipment(ZonedDateTime startDate, String description) {
+    private Shipment(ZonedDateTime startDate, String description) {
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
     }
@@ -90,6 +96,9 @@ public class Shipment extends AbstractEntity {
     }
 
     private void validateTrackables() {
+        if(this.trackables.isEmpty()){
+            throw new IllegalStateException("Shipment must have at least one Trackable");
+        }
         Set<Trackable> visited = new HashSet<>();
         for (Trackable t : trackables) {
             for (UnitLoad ut : t.getUnitLoads()){
