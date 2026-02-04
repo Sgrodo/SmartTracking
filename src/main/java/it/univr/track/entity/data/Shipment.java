@@ -29,7 +29,7 @@ public class Shipment extends AbstractEntity {
     private ZonedDateTime startDate;
 
     @Column
-    @Check(name = "shipment_enddate_check", constraints = "endDate == null or endDate >= startDate")
+    @Check(name = "shipment_enddate_check", constraints = "endDate IS NULL or endDate >= startDate")
     @Check(
             name = "shipment_state_enddate_check",
             constraints = """

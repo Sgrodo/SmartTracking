@@ -37,7 +37,7 @@ public class Device extends AbstractEntity {
     /**
      * Origin / Formula del device (rappresentazione testuale)
      */
-    @Check(name = "device_origin_not_empty_ck", constraints = "origin != ''")
+    @Check(name = "device_origin_not_empty_ck", constraints = "origin <> ''")
     @Column(nullable = false)
     private String origin;
 

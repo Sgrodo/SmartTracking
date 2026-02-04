@@ -34,7 +34,7 @@ public class DeviceAssignment extends AbstractEntity {
     private ZonedDateTime fromTs;
 
     @Column(name = "to_ts")
-    @Check(name = "device_assignment_to_ts_ck", constraints = "to_ts == null or to_ts >= from_ts")
+    @Check(name = "device_assignment_to_ts_ck", constraints = "to_ts IS NULL or to_ts >= from_ts")
     private ZonedDateTime toTs; // null = attivo
 
     public DeviceAssignment(Device device, Trackable target) {
