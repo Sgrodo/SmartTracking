@@ -47,6 +47,9 @@ public class Device extends AbstractEntity {
 
 
     public Device(Boolean isConnected, Boolean state, Boolean isCalibrated, BigDecimal price, String origin) {
+        if(origin == null || origin.isEmpty()) {
+            throw new IllegalArgumentException("origin is null or empty");
+        }
         this.isConnected = isConnected;
         this.state = state;
         this.isCalibrated = isCalibrated;
