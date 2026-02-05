@@ -95,11 +95,17 @@ public class ShipmentService {
     @Transactional
     public boolean deleteById(Long shipmentId) {
         Thrower.notNullArgumentException(shipmentId, "shipmentId is null");
-        if (shipmentRepository.existsById(shipmentId)) {
-            shipmentRepository.deleteById(shipmentId);
-            return true;
+
+        if (! shipmentRepository.existsById(shipmentId)) {
+            throw new NotFoundException("Shipment not found: " + shipmentId);
         }
-        throw new NotFoundException("Shipment not found: " + shipmentId);
+        shipmentRepository.getReferenceById(shipmentId).getTrackables().
+                forEach((trackable)->{
+            trackable.setShipment(null);
+        });
+        shipmentRepository.deleteById(shipmentId);
+        return true;
+
     }
 
     @Transactional
@@ -109,6 +115,16 @@ public class ShipmentService {
                 deviceAssignment.getDevice().setTrackingState(state);
             }
         }
+    }
+
+    @Transactional
+    public TrackingState getTrackingState(Shipment shipment) {
+        for(Trackable tr : shipment.getTrackables()){
+            for (DeviceAssignment deviceAssignment : tr.getDevices()){
+                return deviceAssignment.getDevice().getTrackingState();
+            }
+        }
+        return null;
     }
 
     @Transactional

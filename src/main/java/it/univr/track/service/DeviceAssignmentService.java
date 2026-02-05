@@ -35,19 +35,21 @@ public class DeviceAssignmentService {
      * Un device appartiene SOLO ad una UnilLoad OPPURE ad un Package (collezione di UnitLoad)
      */
     @Transactional
-    public void bind(Long deviceId, Long trackableId, ZonedDateTime now) throws IllegalStateException {
+    public void bind(Long deviceId, Long trackableId, ZonedDateTime time) throws IllegalStateException {
         Thrower.notNullArgumentException(deviceId, "deviceId is null");
         Thrower.notNullArgumentException(trackableId, "trackableId is null");
-        Thrower.notNullArgumentException(now, "now is null");
+        ZonedDateTime now = time != null ? time : ZonedDateTime.now();
 
         Device device = deviceService.getDeviceById(deviceId);
         Trackable target = trackableService.getById(trackableId);
-
         if (this.isTrackableAssignedToDevice(target)) {
             throw new IllegalStateException("Device " + deviceId + " is already assigned");
         }
 
-        assignmentRepository.save(new DeviceAssignment(device, target, now));
+        DeviceAssignment deviceAssignment = new DeviceAssignment(device, target, now);
+        target.getDevices().add(deviceAssignment);
+
+        assignmentRepository.save(deviceAssignment);
     }
 
     /***
