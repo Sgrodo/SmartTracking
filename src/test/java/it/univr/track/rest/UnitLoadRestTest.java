@@ -36,39 +36,30 @@ public class UnitLoadRestTest extends BaseRestTest {
                 .statusCode(201)
                 .extract().jsonPath().getLong("id");
 
+        // Verify the unit load was created
         given()
         .when()
                 .get("/api/unitloads/{trackableId}", createdUnitLoadId)
         .then()
                 .statusCode(200);
-    }
 
-    @Test
-    public void deleteUnitLoadTest() {
-        Long unitLoadId = 1L;
-
-        // Check that the unit load exists
-        given()
-        .when()
-                .get("/api/unitloads/{trackableId}", unitLoadId)
-        .then()
-                .statusCode(200);
 
         // Delete the unit load
         given()
                 .log().all()
-        .when()
-                .delete("/api/unitloads/{trackableId}", unitLoadId)
-        .then()
+                .when()
+                .delete("/api/unitloads/{trackableId}", createdUnitLoadId)
+                .then()
                 .log().all()
                 .statusCode(200);
 
         // Verify that the unit load has been deleted
         given()
-        .when()
-                .get("/api/unitloads/{trackableId}", unitLoadId)
-        .then()
+                .when()
+                .get("/api/unitloads/{trackableId}", createdUnitLoadId)
+                .then()
                 .statusCode(404);
     }
+
 
 }
