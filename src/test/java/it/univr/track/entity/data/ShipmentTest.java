@@ -46,11 +46,6 @@ public class ShipmentTest extends BaseTest {
         pkgSample = packageRepository.save(pkgSample);
     }
 
-    @AfterEach
-    public void resetShipmentDb() {
-        shipmentRepository.deleteAll();
-        unitLoadRepository.deleteAll();
-    }
 
     @Test
     public void testAddTrackable() {

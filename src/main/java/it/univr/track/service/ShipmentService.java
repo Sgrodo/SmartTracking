@@ -9,6 +9,7 @@ import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.ShipmentRepository;
+import it.univr.track.repository.TrackableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class ShipmentService {
 
     private final ShipmentRepository shipmentRepository;
     private final TrackableService trackableService;
+    private final TrackableRepository trackableRepository;
 
 
     @Transactional
@@ -35,16 +37,19 @@ public class ShipmentService {
 
         for(Trackable tr : trackables){
             shipment.addTrackable(tr);
+            trackableRepository.save(tr);
         }
 
-        return shipment;
+        return shipmentRepository.save(shipment);
     }
 
     @Transactional(readOnly = true)
     public Shipment getById(Long shipmentId) {
         if (shipmentId == null) throw new IllegalArgumentException("shipmentId is null");
-        return shipmentRepository.findById(shipmentId)
-                .orElseThrow(() -> new NotFoundException("Shipment not found: " + shipmentId));
+        if(shipmentRepository.existsById(shipmentId)){
+            return shipmentRepository.getReferenceById(shipmentId);
+        }
+        throw new NotFoundException("Shipment not found: " + shipmentId);
     }
 
     @Transactional
