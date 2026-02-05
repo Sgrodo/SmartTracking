@@ -35,6 +35,10 @@ public abstract class BaseTest {
 
     @Autowired
     protected DeviceRepository deviceRepository;
+    @Autowired
+    protected TrackableRepository trackableRepository;
+    @Autowired
+    protected DeviceAssignmentRepository deviceAssignmentRepository;
 
     @BeforeEach
     public void initBaseDb(){
@@ -63,11 +67,16 @@ public abstract class BaseTest {
 
     @AfterEach
     public void cleanBaseDb(){
-        deviceRepository.deleteAll();
-        unitLoadRepository.deleteAll();
-        shipmentRepository.deleteAll();
-        packageRepository.deleteAll();
-        loadItemRepository.deleteAll();
+        deviceAssignmentRepository.deleteAllInBatch();
+        loadItemRepository.deleteAllInBatch();
+
+        unitLoadRepository.deleteAllInBatch();
+        packageRepository.deleteAllInBatch();
+
+        trackableRepository.deleteAllInBatch();
+        deviceRepository.deleteAllInBatch();
+
+        shipmentRepository.deleteAllInBatch();
     }
 
 }

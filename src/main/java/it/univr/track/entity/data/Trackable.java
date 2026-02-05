@@ -30,7 +30,7 @@ public abstract class Trackable extends AbstractEntity {
 
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
