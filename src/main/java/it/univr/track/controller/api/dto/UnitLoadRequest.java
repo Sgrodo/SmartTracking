@@ -18,10 +18,8 @@ public class UnitLoadRequest {
 
     private String description;
 
-    @NotNull(message = "startDate is required")
-    private ZonedDateTime startDate;
+    private ZonedDateTime startDate = ZonedDateTime.now();
 
-    @NotNull(message = "constraints is required")
     private Set<@NotNull(message = "constraint can't be null") PhysicalConstraint> constraints;
 
     @NotNull(message = "loadItems is required")

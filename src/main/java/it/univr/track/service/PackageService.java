@@ -83,4 +83,9 @@ public class PackageService {
         return packageRepository.save(pkg);
     }
 
+    @Transactional(readOnly = true)
+    public Set<Package> getAllPackages() {
+        return Set.copyOf(packageRepository.findAll());
+    }
+
 }
