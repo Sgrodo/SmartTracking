@@ -56,7 +56,7 @@ public class Shipment extends AbstractEntity {
 
     // Shipment -> Packages
     @Setter
-    @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "shipment")
     private Set<Trackable> trackables = new HashSet<>();
 
     public Shipment(ZonedDateTime startDate, String description) {

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -59,11 +60,36 @@ public class ShipmentService {
 
     @Transactional
     public void update(Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
-        shipment.setState(state);
-        shipment.setDescription(description);
-        shipment.setTrackables(trackables);
+        if(trackables == null || trackables.isEmpty()) {
+            throw new InvalidDataException("trackables is null or empty");
+        }
+        if (shipment == null) {
+            throw new InvalidDataException("shipment is null");
+        }
 
-        shipmentRepository.save(shipment);
+
+        Shipment s;
+        if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
+            s = shipmentRepository.getReferenceById(shipment.getId());
+        }else{
+            throw new NotFoundException("Shipment not found: " + shipment.getId());
+        }
+
+        HashSet<Trackable> toRemove = new HashSet<Trackable>(s.getTrackables());
+        for (Trackable t : toRemove) {
+            s.removeTrackable(t);
+        }
+
+        for (Trackable tr : trackables) {
+            Trackable managed = trackableRepository.findById(tr.getId())
+                    .orElseThrow(() -> new NotFoundException("Trackable not found: " + tr.getId()));
+            s.addTrackable(managed);
+        }
+
+        s.setState(state);
+        s.setDescription(description);
+        //s è managed, save non necessario
+        shipmentRepository.save(s);
     }
 
     @Transactional
