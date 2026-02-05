@@ -55,10 +55,15 @@ public class DeviceAssignment extends AbstractEntity {
         return toTs == null;
     }
 
+    public void deactivate() {
+        deactivate(null);
+    }
+
     public void deactivate(ZonedDateTime toTs) {
+        ZonedDateTime effectiveToTs = Objects.requireNonNullElseGet(toTs, ZonedDateTime::now);
         if(!isActive()){
             return;
         }
-        this.toTs = toTs;
+        this.toTs = effectiveToTs;
     }
 }

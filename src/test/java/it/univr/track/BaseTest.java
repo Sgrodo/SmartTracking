@@ -19,22 +19,22 @@ import java.math.BigDecimal;
 public abstract class BaseTest {
 
     protected LoadItem[] loadItems;
-    protected Device[] deviceIds;
+    protected Device[] devices;
 
     @Autowired
-    private LoadItemRepository loadItemRepository;
+    protected LoadItemRepository loadItemRepository;
 
     @Autowired
-    private UnitLoadRepository unitLoadRepository;
+    protected UnitLoadRepository unitLoadRepository;
 
     @Autowired
-    private PackageRepository packageRepository;
+    protected PackageRepository packageRepository;
 
     @Autowired
-    private ShipmentRepository shipmentRepository;
+    protected ShipmentRepository shipmentRepository;
 
     @Autowired
-    private DeviceRepository deviceRepository;
+    protected DeviceRepository deviceRepository;
 
     @BeforeEach
     public void initBaseDb(){
@@ -58,7 +58,7 @@ public abstract class BaseTest {
         device1 = deviceRepository.save(device1);
         device2 = deviceRepository.save(device2);
 
-        deviceIds = new Device[]{device1, device2};
+        devices = new Device[]{device1, device2};
     }
 
     @AfterEach

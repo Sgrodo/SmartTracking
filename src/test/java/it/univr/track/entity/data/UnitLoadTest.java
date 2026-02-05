@@ -2,7 +2,6 @@ package it.univr.track.entity.data;
 
 import it.univr.track.BaseTest;
 import it.univr.track.entity.sensor.HumidityConstraint;
-import it.univr.track.entity.data.Package;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -57,6 +56,10 @@ public class UnitLoadTest extends BaseTest {
                 startDate, null);
         assertEquals("description test", ul.getDescription());
         assertEquals(startDate, ul.getStartDate());
+
+        LoadItem l = loadItems[0];
+        assertEquals("Item1", l.getName());
+        assertEquals("First Load Item", l.getDescription());
     }
 
     @Test

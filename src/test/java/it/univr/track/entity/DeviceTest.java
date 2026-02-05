@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DeviceTest {
-/*
+    /*
     @Test
     void constructor_setsFieldsCorrectly() {
         Device d = new Device(

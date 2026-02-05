@@ -22,15 +22,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ShipmentTest extends BaseTest {
 
-    @Autowired
-    private ShipmentRepository shipmentRepository;
-
-    @Autowired
-    private PackageRepository packageRepository;
-
-    @Autowired
-    private UnitLoadRepository unitLoadRepository;
-
     private UnitLoad utSample1;
     private UnitLoad utSample2;
 

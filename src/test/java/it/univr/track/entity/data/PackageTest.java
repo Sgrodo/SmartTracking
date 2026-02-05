@@ -61,4 +61,20 @@ public class PackageTest extends BaseTest {
         pkg.removeUnitLoad(utSample1);
         assertEquals(1, pkg.getUnitLoads().size());
     }
+
+    @Test
+    public void testFields(){
+        Package pkg = new Package("Trasporto di Frutta per Supermercato Lidl","Frutta");
+        pkg = packageRepository.save(pkg);
+        assertEquals("Trasporto di Frutta per Supermercato Lidl", pkg.getDescription());
+        assertEquals("Frutta", pkg.getGroupCode());
+        assertThrows(IllegalArgumentException.class, ()->{
+            Package pkg1 = new Package("Trasporto di Frutta per Supermercato Lidl","");
+        });
+
+        assertThrows(IllegalArgumentException.class, ()->{
+            Package pkg2 = new Package("Trasporto di Frutta per Supermercato Lidl",null);
+        });
+
+    }
 }
