@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.annotations.Check;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Entity
 @Table(name = "devices")
@@ -41,12 +42,9 @@ public class Device extends AbstractEntity {
     @Column(nullable = false)
     private String origin;
 
-    /**
-     * Molti device possono appartenere a una shipment
-     */
-    @ManyToOne
-    @JoinColumn(name = "unit load_id")
-    private UnitLoad unitLoad;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "device", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval = true)
+    private Set<DeviceAssignment> deviceAssignments;
+
 
     public Device(Boolean isConnected, Boolean state, Boolean isCalibrated, BigDecimal price, String origin) {
         this.isConnected = isConnected;

@@ -25,8 +25,7 @@ public abstract class Trackable extends AbstractEntity {
     @JoinColumn(name = "target_id") // FK in sending
     private List<Sending> sendings = new ArrayList<>();
 
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval = true)
-    @JoinColumn(name = "target_id") // FK in device_assignment
+    @OneToMany(mappedBy = "target", cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}, orphanRemoval = true)
     private Set<DeviceAssignment> devices = new HashSet<>();
 
 
