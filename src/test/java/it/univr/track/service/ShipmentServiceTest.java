@@ -1,10 +1,14 @@
 package it.univr.track.service;
 
 import it.univr.track.BaseTest;
+import it.univr.track.entity.Device;
+import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
+import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
+import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
@@ -13,9 +17,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,6 +35,8 @@ public class ShipmentServiceTest extends BaseTest {
     private UnitLoad utSample2;
 
     private Package pkgSample;
+    @Autowired
+    private DeviceAssignmentService deviceAssignmentService;
 
     @BeforeEach
     public void initShipmentDb() {
@@ -120,8 +128,39 @@ public class ShipmentServiceTest extends BaseTest {
         shipmentService.update(updatedShipment, "changed description", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample2));
     }
 
+    @Transactional
+    @Test
+    public void testDeleteShipment() {
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", Set.of(utSample1));
+        Long shipmentId = shipment.getId();
 
+        shipmentService.deleteById(shipmentId);
 
+        assertThrows(NotFoundException.class, () -> {
+            shipmentService.getById(shipmentId);
+        });
+    }
+
+    /*@Transactional
+    @Test
+    public void testTrackingState() {
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(),
+                "Test Shipment", Set.of(utSample1, utSample2));
+
+        TrackingState expectedState = TrackingState.INACTIVE;
+        Device device1 = new Device(true,true,true, new BigDecimal("1.0"),"Italy");
+        Device device2 = new Device(true,true,true, new BigDecimal("2.0"),"Germany");
+
+        device1 = deviceRepository.save(device1);
+        device2 = deviceRepository.save(device2);
+
+        deviceAssignmentService.bind(device1.getId(), utSample1.getId());
+        deviceAssignmentService.bind(device2.getId(), utSample2.getId());
+
+        assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(shipment));
+        //shipmentService.setTrackingState(shipment.getId(), TrackingState.ACTIVE);
+    }
+*/
 
 
 }
