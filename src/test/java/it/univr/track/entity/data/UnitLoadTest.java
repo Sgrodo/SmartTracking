@@ -2,7 +2,7 @@ package it.univr.track.entity.data;
 
 import it.univr.track.BaseTest;
 import it.univr.track.entity.sensor.HumidityConstraint;
-import it.univr.track.exception.InvalidDataException;
+import it.univr.track.entity.data.Package;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -24,6 +24,16 @@ public class UnitLoadTest extends BaseTest {
 
         ul.removeProductByQrCode(this.loadItems[0].getQrCode());
         assertEquals(1, ul.getLoadItems().size());
+
+        //unitload should have one LoadItem
+        assertTrue(ul.hasProducts());
+
+        ul.removeProductByQrCode(this.loadItems[1].getQrCode());
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            ul.addLoadItem(new LoadItem("Anormaly_LoadItem","","this load item is not valid"));
+        });
+
     }
 
     @Test
@@ -40,5 +50,24 @@ public class UnitLoadTest extends BaseTest {
         assertEquals(1, ul.getPhysicalConstraints().size());
     }
 
+    @Test
+    public void testFields(){
+        ZonedDateTime startDate = ZonedDateTime.now();
+        UnitLoad ul = new UnitLoad("description test",
+                startDate, null);
+        assertEquals("description test", ul.getDescription());
+        assertEquals(startDate, ul.getStartDate());
+    }
 
+    @Test
+    public void testPackageAssociation(){
+        UnitLoad ul = new UnitLoad();
+        assertNull(ul.getPkg());
+        Package p = new Package("PKG001");
+        ul.setPackage(p);
+        assertEquals(p, ul.getPkg());
+        p.addUnitLoad(ul);
+        assertTrue(p.getUnitLoads().contains(ul));
+
+    }
 }

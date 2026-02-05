@@ -136,11 +136,12 @@ public class Shipment extends AbstractEntity {
     }
 
     public void complete(ZonedDateTime now) {
+        ZonedDateTime zonedDateTime = now == null ? now = ZonedDateTime.now() : now;
         if (this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
         }
 
-        this.endDate = now;
+        this.endDate = zonedDateTime;
         this.state = ShipmentState.COMPLETED;
     }
 
@@ -149,11 +150,13 @@ public class Shipment extends AbstractEntity {
     }
 
     public void cancel(ZonedDateTime now) {
+        ZonedDateTime zonedDateTime = now == null ? now = ZonedDateTime.now() : now;
+
         if (this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
         }
 
-        this.endDate = now;
+        this.endDate = zonedDateTime;
         this.state = ShipmentState.CANCELLED;
     }
 

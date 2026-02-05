@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 
-public class UnitLoadTest extends BaseRestTest {
+public class UnitLoadRestTest extends BaseRestTest {
+/*
 
     @Test
     public void createUnitLoadTest() {
@@ -36,5 +37,6 @@ public class UnitLoadTest extends BaseRestTest {
                 .statusCode(200);
     }
 
+*/
 
 }

@@ -137,6 +137,44 @@ public class ShipmentTest extends BaseTest {
 
         String actualMessage2 = exception2.getMessage();
         assertTrue(actualMessage2.contains(expectedMessage));
+
+        s.setState(ShipmentState.CREATED);
+        assertEquals(ShipmentState.CREATED, s.getState());
+
+        //cancelliamo lo shipment
+        s.cancel();
+        assertEquals(ShipmentState.CANCELLED, s.getState());
+
+        s.setState(ShipmentState.CREATED);
+        s.cancel(ZonedDateTime.now());
+        assertEquals(ShipmentState.CANCELLED, s.getState());
+
+        assertThrows(IllegalStateException.class, s::complete);
+
+    }
+
+    @Test
+    public void testFields(){
+        ZonedDateTime startDate = ZonedDateTime.now();
+        Shipment s = new Shipment( startDate,"Test Shipment");
+        assertEquals(startDate, s.getStartDate());
+        assertNull(s.getEndDate());
+        assertEquals("Test Shipment", s.getDescription());
+
+
+    }
+
+    @Test
+    public void persistentTests(){
+        UnitLoad ul1 = unitLoadRepository.findById(utSample1.getId()).orElseThrow();
+        UnitLoad ul2 = unitLoadRepository.findById(utSample2.getId()).orElseThrow();
+
+        Shipment s = shipmentRepository.saveAndFlush(new Shipment("Persistent Shipment"));
+
+        s.addTrackable(ul1);
+        s.addTrackable(ul2);
+
+        shipmentRepository.saveAndFlush(s); // qui fa UPDATE, non INSERT dei figli -> non mi da erore finalmente
     }
 
 }
