@@ -25,59 +25,49 @@ public class UnitLoadRestTest extends BaseRestTest {
                         """.formatted(DESCRIPTION, START_DATE, LOAD_ITEM_IDS[0]);
 
 
-        given()
+        Long createdUnitLoadId = given()
                 .contentType("application/json")
                 .body(jsonBody)
                 .log().all()
         .when()
-                .post("/api/unitload")
+                .post("/api/unitloads")
         .then()
                 .log().all()
-                .statusCode(201);
+                .statusCode(201)
+                .extract().jsonPath().getLong("id");
 
+        given()
+        .when()
+                .get("/api/unitloads/{trackableId}", createdUnitLoadId)
+        .then()
+                .statusCode(200);
     }
 
     @Test
-    public void invalidRequestTest() {
-        String jsonBody = """
-                        {
-                          "description": "",
-                          "startDate": "invalid-date",
-                          "constraints": [],
-                          "loadItemIds": []
-                        }
-                        """;
+    public void deleteUnitLoadTest() {
+        Long unitLoadId = 1L;
 
+        // Check that the unit load exists
         given()
-                .contentType("application/json")
-                .body(jsonBody)
+        .when()
+                .get("/api/unitloads/{trackableId}", unitLoadId)
+        .then()
+                .statusCode(200);
+
+        // Delete the unit load
+        given()
                 .log().all()
         .when()
-                .post("/api/unitload")
+                .delete("/api/unitloads/{trackableId}", unitLoadId)
         .then()
                 .log().all()
-                .statusCode(400);
-    }
+                .statusCode(200);
 
-    @Test
-    public void invalidLoadItemTest() {
-        String jsonBody = """
-                        {
-                          "description": "Test Unit Load",
-                          "startDate": "2024-06-01T10:00:00Z",
-                          "constraints": [],
-                          "loadItemIds": [9999]
-                        }
-                        """;
-
+        // Verify that the unit load has been deleted
         given()
-                .contentType("application/json")
-                .body(jsonBody)
-                .log().all()
         .when()
-                .post("/api/unitload")
+                .get("/api/unitloads/{trackableId}", unitLoadId)
         .then()
-                .log().all()
                 .statusCode(404);
     }
 

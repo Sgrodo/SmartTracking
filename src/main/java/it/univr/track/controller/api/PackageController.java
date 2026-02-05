@@ -46,6 +46,13 @@ public class PackageController implements CrudController<Package, PackageRequest
     }
 
     @Override
+    @PutMapping("/{trackableId}")
+    public PackageResponse update(@PathVariable Long trackableId, @Valid @RequestBody PackageRequest request) {
+        // TODO implement update functionality
+        return null;
+    }
+
+    @Override
     @DeleteMapping("/{trackableId}")
     public boolean deleteTrackable(@PathVariable Long trackableId) {
         return packageService.deletePackageById(trackableId);

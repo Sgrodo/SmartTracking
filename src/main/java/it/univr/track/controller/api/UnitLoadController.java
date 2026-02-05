@@ -58,6 +58,13 @@ public class UnitLoadController implements CrudController<UnitLoad, UnitLoadRequ
     }
 
     @Override
+    @PutMapping("/{trackableId}")
+    public UnitLoadResponse update(@PathVariable Long trackableId, @Valid @RequestBody UnitLoadRequest request) {
+        // TODO implement update logic
+        return null;
+    }
+
+    @Override
     @DeleteMapping("/{trackableId}")
     public boolean deleteTrackable(@PathVariable Long trackableId) {
         return unitLoadService.deleteUnitLoadById(trackableId);

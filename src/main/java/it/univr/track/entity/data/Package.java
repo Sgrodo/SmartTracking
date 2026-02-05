@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +26,10 @@ public class Package extends Trackable {
     @OneToMany(mappedBy = "pkg", cascade = {CascadeType.DETACH, CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH}, orphanRemoval = true)
     private Set<UnitLoad> unitLoads = new HashSet<>();
 
+    @Setter
     private String description;
+
+    @Setter
     private String groupCode;
 
     public Package(String description, String groupCode) {

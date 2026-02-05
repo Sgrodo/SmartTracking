@@ -19,6 +19,10 @@ public interface CrudController<T, P, R> {
     @ResponseStatus(HttpStatus.FOUND)
     public Iterable<R> getAll();
 
+    @PutMapping("/{trackableId}")
+    @ResponseStatus(HttpStatus.OK)
+    public R update(@PathVariable Long trackableId, @Valid @RequestBody P request);
+
     @DeleteMapping("/{trackableId}")
     @ResponseStatus(HttpStatus.OK)
     public boolean deleteTrackable(@PathVariable Long trackableId);
