@@ -5,6 +5,7 @@ import it.univr.track.controller.api.dto.UnitLoadRequest;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.repository.TrackableRepository;
@@ -33,9 +34,13 @@ public class TrackableController {
 
 
     @PostMapping("/api/unitload")
+    @ResponseStatus(HttpStatus.CREATED)
     public boolean createUnitLoad(@Valid @RequestBody UnitLoadRequest request) {
         try {
             Set<LoadItem> loadItemSet = loadItemRepository.getLoadItemsByIdIn(request.getLoadItemIds());
+            if (loadItemSet.size() <= request.getLoadItemIds().size()){
+                throw new NotFoundException("One or more LoadItems not found");
+            }
             unitLoadService.createUnitLoad(
                     request.getDescription(),
                     request.getStartDate(),
@@ -45,12 +50,11 @@ public class TrackableController {
             return true;
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation failed");
         }
     }
 
     @PostMapping("/api/package")
+    @ResponseStatus(HttpStatus.CREATED)
     public Package createPackage(@Valid @RequestBody PackageRequest request) {
         try {
             Set<UnitLoad> unitLoads = trackableService.getUnitLoadsFromTrackableIds(request.getUnitLoadIds());
@@ -64,6 +68,7 @@ public class TrackableController {
     }
 
     @DeleteMapping("/api/trackable/{trackableId}")
+    @ResponseStatus(HttpStatus.OK)
     public boolean deleteTrackable(@PathVariable Long trackableId) {
         if (!trackableRepository.existsById(trackableId)) {
             throw new NotFoundException("Trackable not found: " + trackableId);

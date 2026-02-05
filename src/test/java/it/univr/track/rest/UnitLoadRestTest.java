@@ -5,13 +5,11 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 
 public class UnitLoadRestTest extends BaseRestTest {
-/*
 
     @Test
     public void createUnitLoadTest() {
         String DESCRIPTION = "Demo Unit Load";
         String START_DATE = "2024-06-01T10:00:00Z";
-        String[] CONSTRAINTS = new String[]{"HUMIDITY", "TEMPERATURE"};
         Long[] LOAD_ITEM_IDS = new Long[]{ this.loadItems[0].getId() };
 
         String jsonBody = """
@@ -22,7 +20,7 @@ public class UnitLoadRestTest extends BaseRestTest {
                             { "type": "HUMIDITY", "percent": 50.0 },
                             { "type": "TEMPERATURE", "value": 4.0, "unit": "CELSIUS" }
                           ],
-                          "loadItems": [%d]
+                          "loadItemIds": [%d]
                         }
                         """.formatted(DESCRIPTION, START_DATE, LOAD_ITEM_IDS[0]);
 
@@ -34,9 +32,53 @@ public class UnitLoadRestTest extends BaseRestTest {
         .when()
                 .post("/api/unitload")
         .then()
-                .statusCode(200);
+                .log().all()
+                .statusCode(201);
+
     }
 
-*/
+    @Test
+    public void invalidRequestTest() {
+        String jsonBody = """
+                        {
+                          "description": "",
+                          "startDate": "invalid-date",
+                          "constraints": [],
+                          "loadItemIds": []
+                        }
+                        """;
+
+        given()
+                .contentType("application/json")
+                .body(jsonBody)
+                .log().all()
+        .when()
+                .post("/api/unitload")
+        .then()
+                .log().all()
+                .statusCode(400);
+    }
+
+    @Test
+    public void invalidLoadItemTest() {
+        String jsonBody = """
+                        {
+                          "description": "Test Unit Load",
+                          "startDate": "2024-06-01T10:00:00Z",
+                          "constraints": [],
+                          "loadItemIds": [9999]
+                        }
+                        """;
+
+        given()
+                .contentType("application/json")
+                .body(jsonBody)
+                .log().all()
+        .when()
+                .post("/api/unitload")
+        .then()
+                .log().all()
+                .statusCode(404);
+    }
 
 }

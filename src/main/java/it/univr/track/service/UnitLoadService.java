@@ -37,6 +37,7 @@ public class UnitLoadService {
                                    Set<PhysicalConstraint> physicalConstraints,
                                    Collection<LoadItem> loadItems) {
         UnitLoad unitLoad = new UnitLoad(description, startDate, physicalConstraints);
+
         for( LoadItem item : loadItems ) {
             unitLoad.addLoadItem(item);
         }

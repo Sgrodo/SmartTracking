@@ -1,12 +1,13 @@
 package it.univr.track.exception;
 
 import it.univr.track.controller.api.ShipmentController;
+import it.univr.track.controller.api.TrackableController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@RestControllerAdvice(assignableTypes = {ShipmentController.class})
+@RestControllerAdvice(assignableTypes = {ShipmentController.class, TrackableController.class})
 public class ShipmentExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)

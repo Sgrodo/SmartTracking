@@ -3,13 +3,17 @@ package it.univr.track.controller.api.dto;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UnitLoadRequest {
 
     private String description;
@@ -18,7 +22,6 @@ public class UnitLoadRequest {
     private ZonedDateTime startDate;
 
     @NotNull(message = "constraints is required")
-    @NotEmpty(message = "At least one constraint is needed")
     private Set<@NotNull(message = "constraint can't be null") PhysicalConstraint> constraints;
 
     @NotNull(message = "loadItems is required")
