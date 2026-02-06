@@ -48,7 +48,7 @@ public class TrackableService {
 
     @Transactional
     public boolean deleteById(Long id) {
-        if (trackableRepository.existsById(id)) {
+        if (! trackableRepository.existsById(id)) {
             throw new NotFoundException("Trackable " + id + " not found");
         }
         trackableRepository.deleteById(id);
