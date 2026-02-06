@@ -46,6 +46,10 @@ public class ShipmentTest extends BaseTest {
         pkgSample = packageRepository.save(pkgSample);
     }
 
+    @AfterEach
+    public void cleanShipmentDb(){
+        super.cleanBaseDb();
+    }
 
     @Test
     public void testAddTrackable() {

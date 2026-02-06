@@ -36,9 +36,7 @@ public class DeviceServiceTest extends BaseTest {
 
     @BeforeEach
     public void tearDown() {
-        deviceRepository.deleteAll();
-        unitLoadRepository.deleteAll();
-        shipmentRepository.deleteAll();
+        super.cleanBaseDb();
     }
 
     @Transactional

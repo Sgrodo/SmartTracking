@@ -31,7 +31,7 @@ public class DeviceAssignmentTest extends BaseTest {
 
     @AfterEach
     public void tearDown() {
-        unitLoadRepository.deleteAll();
+        super.cleanBaseDb();
     }
 
 

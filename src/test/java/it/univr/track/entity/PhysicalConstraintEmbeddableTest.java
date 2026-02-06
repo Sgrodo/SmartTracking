@@ -1,15 +1,22 @@
 package it.univr.track.entity;
 
+import it.univr.track.BaseTest;
 import it.univr.track.entity.enumeration.PhysicalConstraintType;
 import it.univr.track.entity.enumeration.TemperatureUnit;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.entity.sensor.TemperatureConstraint;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class PhysicalConstraintEmbeddableTest {
+class PhysicalConstraintEmbeddableTest extends BaseTest {
+
+    @AfterEach
+    public void cleanConstraintDb(){
+        super.cleanBaseDb();
+    }
 
     @Test
     void fromDomain_createsEmbeddable_fromHumidityConstraint() {
@@ -20,7 +27,7 @@ class PhysicalConstraintEmbeddableTest {
         // non posso leggere i campi (sono private) quindi verifico con round-trip
         PhysicalConstraint back = e.toDomain();
 
-        assertTrue(back instanceof HumidityConstraint);
+        assertInstanceOf(HumidityConstraint.class, back);
         assertEquals(PhysicalConstraintType.HUMIDITY, back.type());
         assertEquals(55.0, ((HumidityConstraint) back).percent());
     }
@@ -33,7 +40,7 @@ class PhysicalConstraintEmbeddableTest {
 
         PhysicalConstraint back = e.toDomain();
 
-        assertTrue(back instanceof TemperatureConstraint);
+        assertInstanceOf(TemperatureConstraint.class, back);
         assertEquals(PhysicalConstraintType.TEMPERATURE, back.type());
         TemperatureConstraint t = (TemperatureConstraint) back;
         assertEquals(4.5, t.value());

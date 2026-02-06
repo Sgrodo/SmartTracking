@@ -42,8 +42,7 @@ public class PackageTest extends BaseTest {
 
     @AfterEach
     public void resetShipmentDb() {
-        packageRepository.deleteAll();
-        unitLoadRepository.deleteAll();
+        super.cleanBaseDb();
     }
 
     @Test

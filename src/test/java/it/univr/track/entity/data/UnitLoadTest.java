@@ -2,6 +2,7 @@ package it.univr.track.entity.data;
 
 import it.univr.track.BaseTest;
 import it.univr.track.entity.sensor.HumidityConstraint;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
@@ -11,6 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class UnitLoadTest extends BaseTest {
 
+    @AfterEach
+    public void cleanUnitLoadDb(){
+        super.cleanBaseDb();
+    }
     @Test
     public void testProducts() {
         UnitLoad ul = new UnitLoad("test unitload",

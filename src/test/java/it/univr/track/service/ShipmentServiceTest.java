@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +36,8 @@ public class ShipmentServiceTest extends BaseTest {
     private Package pkgSample;
     @Autowired
     private DeviceAssignmentService deviceAssignmentService;
+    @Autowired
+    private UnitLoadService unitLoadService;
 
     @BeforeEach
     public void initShipmentDb() {
@@ -57,11 +60,7 @@ public class ShipmentServiceTest extends BaseTest {
 
     @AfterEach
     public void cleanShipmentDb() {
-        deviceAssignmentRepository.deleteAll();
-        packageRepository.deleteAll();
-        unitLoadRepository.deleteAll();
-        shipmentRepository.deleteAll();
-        deviceRepository.deleteAll();
+        super.cleanBaseDb();
     }
 
     @Test
@@ -191,6 +190,25 @@ public class ShipmentServiceTest extends BaseTest {
         deviceAssignmentService.bind(device1.getId(), utSample1.getId());
         assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(updatedShipment));
 
+        //illegale se non completi
+        assertThrows(IllegalStateException.class, ()->{
+            Shipment s = shipmentService.create(null,"test shipment",Set.of(utSample1,utSample2));
+        });
+
+
+        UnitLoad unitLoad = unitLoadService.createUnitLoad(
+                null, null, null, List.of(loadItems[0]));
+
+        Shipment s = shipmentService.create(null,"test shipment",Set.of(unitLoad));
+
+        deviceAssignmentService.bind(device1.getId(), unitLoad.getId());
+
+        assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(s));
+        assertEquals(ShipmentState.CREATED, shipmentService.getById(s.getId()).getState());
+
+
+        shipmentService.completeShipment(s);
+        assertEquals(ShipmentState.COMPLETED, shipmentService.getById(s.getId()).getState());
 
     }
 

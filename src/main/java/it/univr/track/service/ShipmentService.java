@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -50,20 +51,34 @@ public class ShipmentService {
     }
 
     @Transactional
+    public void completeShipment(Shipment shipment){
+        completeShipment(shipment, ZonedDateTime.now());
+    }
+
+    @Transactional
     public void completeShipment(Shipment shipment, ZonedDateTime endDate) {
         if (shipment == null) throw new IllegalArgumentException("shipment is null");
+        ZonedDateTime date = endDate == null ? ZonedDateTime.now() : endDate;
+
         Shipment s;
         if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
             s = shipmentRepository.getReferenceById(shipment.getId());
         }else{
             throw new NotFoundException("Shipment not found: " + shipment.getId());
         }
-        s.complete(endDate);
+        s.complete(date);
 
         //set di Id dei Trackables associati allo shipment
         Set<Long> set = deviceAssignmentService.getTrackableIdsWithActiveDevice(s.getTrackables());
+        Set<DeviceAssignment> associatedDevices = new HashSet<>();
+        //di ogni trackable mi prendo i deviceAssignament
         for(Long id : set){
-            deviceAssignmentService.unbind(id);
+            associatedDevices = trackableService.getById(id).getDevices();
+           for (DeviceAssignment da : associatedDevices){
+               da.deactivate();
+               //deviceAssignmentService.unbind(id);
+           }
+
         }
         shipmentRepository.save(s);
     }
