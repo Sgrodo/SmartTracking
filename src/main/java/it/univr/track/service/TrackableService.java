@@ -1,8 +1,10 @@
 package it.univr.track.service;
 
+import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.exception.NotFoundException;
+import it.univr.track.repository.ShipmentRepository;
 import it.univr.track.repository.TrackableRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +17,11 @@ import java.util.Set;
 public class TrackableService {
 
     private final TrackableRepository trackableRepository;
+    private final ShipmentRepository shipmentRepository;
 
-    public TrackableService(TrackableRepository trackableRepository) {
+    public TrackableService(TrackableRepository trackableRepository, ShipmentRepository shipmentRepository) {
         this.trackableRepository = trackableRepository;
+        this.shipmentRepository = shipmentRepository;
     }
 
     @Transactional
@@ -51,4 +55,12 @@ public class TrackableService {
         return true;
     }
 
+
+    @Transactional
+    public void setShipment(Long trackableId, Long shipmentId) {
+        Trackable trackable = trackableRepository.findById(trackableId).orElseThrow(
+                () -> new NotFoundException("Trackable " + trackableId + " not found"));
+        Shipment s = shipmentRepository.getReferenceById(shipmentId);
+        trackable.setShipment(s);
+    }
 }

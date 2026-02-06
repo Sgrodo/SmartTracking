@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +67,6 @@ public class DeviceAssignmentService {
     @Transactional
     public void unbind(Long deviceId, ZonedDateTime now) {
         Thrower.notNullArgumentException(deviceId, "deviceId is null");
-        Thrower.notNullArgumentException(now, "now is null");
 
         Device device = deviceService.getDeviceById(deviceId);
 
@@ -93,6 +96,26 @@ public class DeviceAssignmentService {
                 .orElseThrow(() -> new NotFoundException("No active assignment for device " + deviceId + " at " + ts))
                 .getTarget();
     }
+
+    @Transactional(readOnly = true)
+    public Set<Long> getTrackableIdsWithActiveDevice(Collection<Trackable> trackables) {
+        if (trackables == null || trackables.isEmpty())
+            throw new IllegalArgumentException("trackables is null or empty");
+
+        Set<Long> result = new HashSet<>();
+
+        for (Trackable t : trackables) {
+            boolean hasActiveAssignment =
+                    !assignmentRepository.findByTargetAndToTsIsNull(t).isEmpty();
+
+            if (hasActiveAssignment) {
+                result.add(t.getId());
+            }
+        }
+
+        return result;
+    }
+
 
     @Transactional
     public boolean isTrackableAssignedToDevice(Trackable trk) {

@@ -57,9 +57,11 @@ public class ShipmentServiceTest extends BaseTest {
 
     @AfterEach
     public void cleanShipmentDb() {
+        deviceAssignmentRepository.deleteAll();
         packageRepository.deleteAll();
         unitLoadRepository.deleteAll();
         shipmentRepository.deleteAll();
+        deviceRepository.deleteAll();
     }
 
     @Test
@@ -167,5 +169,29 @@ public class ShipmentServiceTest extends BaseTest {
         assertEquals(TrackingState.ACTIVE, shipmentService.getTrackingState(shipment));
     }
 
+    @Transactional
+    @Test
+    public void testCompleteShipment() {
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(),
+                "Test Shipment", Set.of(utSample1, utSample2));
+
+        assertEquals(ShipmentState.CREATED, shipment.getState());
+
+        shipmentService.update(shipment, shipment.getDescription(), ZonedDateTime.now(),
+                ShipmentState.COMPLETED, shipment.getTrackables());
+
+        Shipment updatedShipment = shipmentService.getById(shipment.getId());
+
+        assertEquals(ShipmentState.COMPLETED, updatedShipment.getState());
+
+        //-----------------------------------------------------------------
+        //creo un device e lo associo ad un trackable dello shipment, verifico che funzioni
+        Device device1 = new Device(true,true,true, new BigDecimal("1.0"),"Italy");
+        device1 = deviceRepository.save(device1);
+        deviceAssignmentService.bind(device1.getId(), utSample1.getId());
+        assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(updatedShipment));
+
+
+    }
 
 }

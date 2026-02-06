@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class DeviceService {
@@ -31,7 +33,7 @@ public class DeviceService {
      */
     @Transactional
     public void setDeviceTrackingState(Set<Device> devices, TrackingState state) {
-        if (devices == null) throw new InvalidDataException("devices is null");
+        if (devices == null || devices.isEmpty()) throw new InvalidDataException("devices is null or Empty");
         if (state == null) throw new InvalidDataException("state is null");
 
         for (Device d : devices) {
@@ -64,6 +66,17 @@ public class DeviceService {
     }
 
     public List<Device> getAvailableDevices() {
-        return deviceRepository.findDevicesByNotInShipmentStates(List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT));
+        //Un device è disponibile se non ha relazioni in deviceassignament OPPURE (inclusivo) se ha una relazione
+        // con device assignament ma lo shipment è in uno stato diverso da CREATED o IN_TRANSIT
+        List<ShipmentState> busyStates = List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT);
+
+        List<Device> availables = deviceRepository.findDevicesWithNoActiveAssignment();
+        List<Device> notInBusy = deviceRepository.findDevicesNotInBusyShipments(busyStates);
+
+        return Stream.concat(availables.stream(), notInBusy.stream())
+                .collect(Collectors.toMap(Device::getId, d -> d, (x, y) -> x))
+                .values()
+                .stream()
+                .toList();
     }
 }

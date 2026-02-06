@@ -4,6 +4,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import it.univr.track.entity.*;
 
+import java.math.BigDecimal;
+
 @Controller
 public class DeviceController {
 
@@ -16,7 +18,7 @@ public class DeviceController {
     // read the device configuration
     @GetMapping("/api/device/{deviceId}")
     public Device readDeviceConfig(@PathVariable("deviceId") Long id) {
-        return new Device();
+        return new Device(true,true,true,new BigDecimal("1.0"),"origin");
     }
 
     // update device configuration

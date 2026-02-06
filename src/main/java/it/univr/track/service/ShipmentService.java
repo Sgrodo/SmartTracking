@@ -1,5 +1,6 @@
 package it.univr.track.service;
 
+import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
@@ -26,6 +27,8 @@ public class ShipmentService {
     private final ShipmentRepository shipmentRepository;
     private final TrackableService trackableService;
     private final TrackableRepository trackableRepository;
+    private final DeviceService deviceService;
+    private final DeviceAssignmentService deviceAssignmentService;
 
 
     @Transactional
@@ -38,10 +41,31 @@ public class ShipmentService {
 
         for(Trackable tr : trackables){
             shipment.addTrackable(tr);
-            trackableRepository.save(tr);
+            trackableService.setShipment(tr.getId(),shipment.getId());
+            //tr.setShipment(shipment);
+            //trackableRepository.save(tr);
         }
 
         return shipmentRepository.save(shipment);
+    }
+
+    @Transactional
+    public void completeShipment(Shipment shipment, ZonedDateTime endDate) {
+        if (shipment == null) throw new IllegalArgumentException("shipment is null");
+        Shipment s;
+        if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
+            s = shipmentRepository.getReferenceById(shipment.getId());
+        }else{
+            throw new NotFoundException("Shipment not found: " + shipment.getId());
+        }
+        s.complete(endDate);
+
+        //set di Id dei Trackables associati allo shipment
+        Set<Long> set = deviceAssignmentService.getTrackableIdsWithActiveDevice(s.getTrackables());
+        for(Long id : set){
+            deviceAssignmentService.unbind(id);
+        }
+        shipmentRepository.save(s);
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +91,7 @@ public class ShipmentService {
             throw new InvalidDataException("shipment is null");
         }
 
+        Set<Trackable> newTrackables = new HashSet<>(trackables);
 
         Shipment s;
         if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
@@ -80,15 +105,17 @@ public class ShipmentService {
             s.removeTrackable(t);
         }
 
-        for (Trackable tr : trackables) {
+        for (Trackable tr : newTrackables) {
             Trackable managed = trackableRepository.findById(tr.getId())
                     .orElseThrow(() -> new NotFoundException("Trackable not found: " + tr.getId()));
             s.addTrackable(managed);
+            managed.setShipment(s);
+            trackableRepository.save(tr);
         }
 
         s.setState(state);
         s.setDescription(description);
-        //s è managed, save non necessario
+        //s è managed, save non necessario (in teoria)
         shipmentRepository.save(s);
     }
 
@@ -110,11 +137,13 @@ public class ShipmentService {
 
     @Transactional
     public void setTrackingState(Shipment shipment, TrackingState state) {
+        HashSet<Device> devices = new HashSet<>();
         for(Trackable tr : shipment.getTrackables()){
             for (DeviceAssignment deviceAssignment : tr.getDevices()){
-                deviceAssignment.getDevice().setTrackingState(state);
+                devices.add(deviceAssignment.getDevice());
             }
         }
+        deviceService.setDeviceTrackingState(devices, state);
     }
 
     @Transactional

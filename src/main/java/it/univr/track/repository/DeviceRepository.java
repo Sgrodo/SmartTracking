@@ -12,14 +12,51 @@ import java.util.List;
 public interface DeviceRepository extends JpaRepository<Device, Long> {
 
     @Query("""
-        select distinct da.device
-        from Shipment s
-        join s.trackables trk
-        join DeviceAssignment da on da.target = trk
-        where s.state not in :states
-          and da.toTs is null
-    """)
+select d
+from Device d
+where not exists (
+  select 1
+  from DeviceAssignment da
+  join da.target t
+  join Shipment s
+  join s.trackables st
+  where da.device = d
+    and da.toTs is null
+    and st = t
+    and s.state in :states
+)
+""")
     List<Device> findDevicesByNotInShipmentStates(
             @Param("states") Collection<ShipmentState> states
     );
+
+
+    // Nessun assignment attivo
+    @Query("""
+select d
+from Device d
+where not exists (
+  select 1 from DeviceAssignment da
+  where da.device = d and da.toTs is null
+)
+""")
+    List<Device> findDevicesWithNoActiveAssignment();
+
+
+    // NON busy: non esiste assignment attivo che lo collega a shipment in stati busy
+    @Query("""
+select d
+from Device d
+where not exists (
+  select 1
+  from DeviceAssignment da
+  join da.target t
+  join Shipment s
+    on t member of s.trackables
+  where da.device = d
+    and da.toTs is null
+    and s.state in :busyStates
+)
+""")
+    List<Device> findDevicesNotInBusyShipments(@Param("busyStates") Collection<ShipmentState> busyStates);
 }

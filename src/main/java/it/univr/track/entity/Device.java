@@ -3,6 +3,7 @@ package it.univr.track.entity;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +16,7 @@ import java.util.Set;
 @Table(name = "devices")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Device extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
