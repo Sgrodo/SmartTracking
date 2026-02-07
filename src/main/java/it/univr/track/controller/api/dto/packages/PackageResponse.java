@@ -1,6 +1,8 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.packages;
 
 import java.util.List;
+
+import it.univr.track.controller.api.dto.unitloads.UnitLoadResponse;
 import it.univr.track.entity.data.Package;
 import lombok.Getter;
 import lombok.Setter;

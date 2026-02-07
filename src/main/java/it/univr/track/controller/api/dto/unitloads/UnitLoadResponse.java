@@ -1,4 +1,4 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.unitloads;
 
 import it.univr.track.entity.data.UnitLoad;
 import lombok.Getter;

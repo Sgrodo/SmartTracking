@@ -1,4 +1,4 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.shipment;
 
 import it.univr.track.entity.enumeration.ShipmentState;
 import jakarta.validation.constraints.NotEmpty;

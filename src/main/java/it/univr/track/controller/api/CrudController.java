@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 public interface CrudController<T, P, R> {
 
-    @PostMapping("/")
+    @PostMapping({"/", ""})
     @ResponseStatus(HttpStatus.CREATED)
     public R create(@Valid @RequestBody P request);
 
@@ -15,8 +15,8 @@ public interface CrudController<T, P, R> {
     @ResponseStatus(HttpStatus.OK)
     public R get(@PathVariable Long trackableId);
 
-    @GetMapping("/")
-    @ResponseStatus(HttpStatus.FOUND)
+    @GetMapping({"/", ""})
+    @ResponseStatus(HttpStatus.OK)
     public Iterable<R> getAll();
 
     @PutMapping("/{trackableId}")

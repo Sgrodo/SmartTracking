@@ -61,5 +61,150 @@ public class UnitLoadRestTest extends BaseRestTest {
                 .statusCode(404);
     }
 
+    @Test
+    public void notFoundTest() {
+        // Attempt to get a non-existent unit load
+        given()
+                .when()
+                .get("/api/unitloads/{trackableId}", 9999L)
+                .then()
+                .statusCode(404);
+
+        // Attempt to delete a non-existent unit load
+        given()
+                .when()
+                .delete("/api/unitloads/{trackableId}", 9999L)
+                .then()
+                .statusCode(404);
+    }
+
+    @Test
+    public void invalidRequestTest() {
+        // Missing loadItemIds
+        String invalidJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "HUMIDITY", "percent": 50.0 }
+                    ]
+                }
+                """;
+
+        testBadRequest(invalidJson);
+
+        // Empty loadItemIds
+        String emptyLoadItemsJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "HUMIDITY", "percent": 50.0 }
+                    ],
+                    "loadItemIds": []
+                }
+                """;
+
+        testBadRequest(emptyLoadItemsJson);
+
+        // Null loadItemId
+        String nullLoadItemIdJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z
+                    "constraints": [
+                        { "type": "HUMIDITY", "percent": 50.0 }
+                    ],
+                    "loadItemIds": [null]
+                }
+                """;
+
+        testBadRequest(nullLoadItemIdJson);
+    }
+
+    @Test
+    public void invalidConstraintsTest() {
+        // Invalid constraint type
+        String invalidConstraintJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "INVALID_TYPE", "percent": 50.0 }
+                    ],
+                    "loadItemIds": [1]
+                }
+                """;
+
+        testBadRequest(invalidConstraintJson);
+
+        // Missing required fields for TEMPERATURE constraint
+        String missingFieldsJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "TEMPERATURE" }
+                    ],
+                    "loadItemIds": [1]
+                }
+                """;
+
+        testBadRequest(missingFieldsJson);
+
+        // Negative percent value for HUMIDITY constraint
+        String negativePercentJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "HUMIDITY", "percent": -10.0 }
+                    ],
+                    "loadItemIds": [1]
+                }
+                """;
+
+        testBadRequest(negativePercentJson);
+
+        // Invalid constraint parameters (null value)
+        String nullValueJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "TEMPERATURE", "value": null, "unit": "CELSIUS" }
+                    ],
+                    "loadItemIds": [1]
+                }
+                """;
+
+        testBadRequest(nullValueJson);
+
+        String nullUnitJson = """
+                {
+                    "description": "Invalid Unit Load",
+                    "startDate": "2024-06-01T10:00:00Z",
+                    "constraints": [
+                        { "type": "TEMPERATURE", "value": 4.0, "unit": null }
+                    ],
+                    "loadItemIds": [1]
+                }
+                """;
+
+        testBadRequest(nullUnitJson);
+    }
+
+    private static void testBadRequest(String jsonBody) {
+        given()
+                .contentType("application/json")
+                .body(jsonBody)
+                .log().all()
+        .when()
+                .post("/api/unitloads")
+        .then()
+                .log().all()
+                .statusCode(400);
+    }
+
 
 }

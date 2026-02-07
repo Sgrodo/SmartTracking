@@ -1,6 +1,7 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.unitloads;
 
 import it.univr.track.entity.sensor.PhysicalConstraint;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -20,7 +21,7 @@ public class UnitLoadRequest {
 
     private ZonedDateTime startDate = ZonedDateTime.now();
 
-    private Set<@NotNull(message = "constraint can't be null") PhysicalConstraint> constraints;
+    private Set<@NotNull(message = "constraint can't be null") @Valid PhysicalConstraint> constraints;
 
     @NotNull(message = "loadItems is required")
     @NotEmpty(message = "At least one loadItem is needed")

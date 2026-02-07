@@ -1,0 +1,94 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class AbstractAuditable {
+   createdDate:  Date 
+   lastModifiedDate:  Date 
+}
+class AbstractEntity {
+   id:  Long 
+}
+class AbstractPersistable {
+   id:  PK 
+}
+class Device {
+   isCalibrated:  Boolean 
+   isConnected:  Boolean 
+   origin:  String 
+   price:  BigDecimal 
+   state:  Boolean 
+   trackingState:  TrackingState 
+}
+class DeviceAssignment {
+   fromTs:  ZonedDateTime 
+   toTs:  ZonedDateTime 
+}
+class LoadItem {
+   description:  String 
+   name:  String 
+   qrCode:  String 
+}
+class Package
+class PhysicalConstraintEmbeddable {
+   numberValue:  Double 
+   temperatureUnit:  TemperatureUnit 
+   type:  PhysicalConstraintType 
+}
+class Sending {
+   dataIntegrity:  boolean 
+   secureChannel:  boolean 
+   timestamp:  ZonedDateTime 
+}
+class Shipment {
+   description:  String 
+   endDate:  ZonedDateTime 
+   startDate:  ZonedDateTime 
+   state:  ShipmentState 
+}
+class TrackData
+class Trackable
+class UnitLoad {
+   description:  String 
+   startDate:  ZonedDateTime 
+   trackingState:  TrackingState 
+}
+class UserRegistered {
+   address:  String 
+   city:  String 
+   email:  String 
+   firstname:  String 
+   gender:  Gender 
+   lastname:  String 
+   password:  String 
+   role:  Role 
+   taxIdentificationNumber:  String 
+   telephoneNumber:  String 
+   username:  String 
+}
+
+AbstractAuditable             -[#595959,plain]-^  AbstractPersistable          
+Device                        -[#595959,plain]-^  AbstractEntity               
+Device                       "0..*" -[#595959,plain]-> "0..1" UnitLoad                     
+DeviceAssignment              -[#595959,plain]-^  AbstractEntity               
+DeviceAssignment             "0..*" -[#595959,plain]-> "1" Device                       
+DeviceAssignment             "0..*" -[#595959,plain]-> "1" Trackable                    
+LoadItem                      -[#595959,plain]-^  AbstractEntity               
+LoadItem                     "0..*" -[#595959,plain]-> "0..*" UnitLoad                     
+Package                      "0..*" <-[#595959,plain]-> "0..1" Shipment                     
+Package                       -[#595959,plain]-^  Trackable                    
+Package                      "0..1" <-[#595959,plain]-> "0..*" UnitLoad                     
+Sending                       -[#595959,plain]-^  AbstractEntity               
+Sending                      "0..*" -[#595959,plain]-> "1" Device                       
+Shipment                      -[#595959,plain]-^  AbstractEntity               
+Shipment                     "0..1" <-[#595959,plain]-> "0..*" UnitLoad                     
+TrackData                     -[#595959,plain]-^  UserRegistered               
+Trackable                     -[#595959,plain]-^  AbstractEntity               
+Trackable                    "0..1" -[#595959,plain]-> "0..*" Sending                      
+UnitLoad                     "0..*" -[#595959,plain]-> "0..*" LoadItem                     
+UnitLoad                      *-[#595959,plain]-  PhysicalConstraintEmbeddable 
+UnitLoad                      -[#595959,plain]-^  Trackable                    
+UserRegistered                -[#595959,plain]-^  AbstractEntity               
+@enduml

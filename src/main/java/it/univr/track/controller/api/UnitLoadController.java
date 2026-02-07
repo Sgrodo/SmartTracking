@@ -1,7 +1,8 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.controller.api.dto.UnitLoadRequest;
-import it.univr.track.controller.api.dto.UnitLoadResponse;
+import it.univr.track.controller.api.dto.unitloads.LoadItemResponse;
+import it.univr.track.controller.api.dto.unitloads.UnitLoadRequest;
+import it.univr.track.controller.api.dto.unitloads.UnitLoadResponse;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.exception.NotFoundException;
@@ -9,11 +10,12 @@ import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.service.UnitLoadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Stream;
 
 @Validated
 @RestController
@@ -52,7 +54,7 @@ public class UnitLoadController implements CrudController<UnitLoad, UnitLoadRequ
     @Override
     @GetMapping({"/", ""})
     public Iterable<UnitLoadResponse> getAll() {
-        return Stream.of(unitLoadService.getAllUnitLoads())
+        return Arrays.stream(unitLoadService.getAllUnitLoads())
                 .map(UnitLoadResponse::new)
                 .toList();
     }
@@ -68,5 +70,12 @@ public class UnitLoadController implements CrudController<UnitLoad, UnitLoadRequ
     @DeleteMapping("/{trackableId}")
     public boolean deleteTrackable(@PathVariable Long trackableId) {
         return unitLoadService.deleteUnitLoadById(trackableId);
+    }
+
+    @Transactional(readOnly = true)
+    public Iterable<LoadItemResponse> getAvailableLoadItems() {
+        return Arrays.stream(loadItemRepository.findAll().toArray(new LoadItem[0]))
+                .map(LoadItemResponse::new)
+                .toList();
     }
 }

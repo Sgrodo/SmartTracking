@@ -1,7 +1,7 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.controller.api.dto.CreateShipmentRequest;
-import it.univr.track.controller.api.dto.UpdateShipmentRequest;
+import it.univr.track.controller.api.dto.shipment.CreateShipmentRequest;
+import it.univr.track.controller.api.dto.shipment.UpdateShipmentRequest;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.enumeration.ShipmentState;

@@ -1,5 +1,6 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.packages;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -10,6 +11,7 @@ import java.util.Set;
 public class PackageRequest {
 
     @NotNull
+    @NotBlank
     private String groupCode;
 
     private String description = "";

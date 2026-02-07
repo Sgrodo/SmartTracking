@@ -1,4 +1,4 @@
-package it.univr.track.controller.api.dto;
+package it.univr.track.controller.api.dto.shipment;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

@@ -54,6 +54,10 @@ public class DataInitializer {
             pkgSample.addUnitLoad(utSample3);
             pkgSample.addUnitLoad(utSample4);
             pkgSample = packageRepository.save(pkgSample);
+
+            loadItemRepository.flush();
+            unitLoadRepository.flush();
+            packageRepository.flush();
         };
     }
 }
