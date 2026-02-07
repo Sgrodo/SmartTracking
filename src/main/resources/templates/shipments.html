@@ -14,7 +14,7 @@
     </a>
 </p>
 
-<table border="1" cellpadding="6">
+<table th:border="1" th:cellpadding="6">
     <thead>
     <tr>
         <th>ID</th>
@@ -33,10 +33,16 @@
         <td th:text="${s.description}">desc</td>
 
         <td>
-            <span th:if="${s.trackables != null && !#lists.isEmpty(s.trackables)}"
-                  th:text="${#strings.listJoin(s.trackables.![id], ', ')}">1,2,3</span>
-            <span th:if="${s.trackables == null || #lists.isEmpty(s.trackables)}">-</span>
+            <span th:if="${s.trackables == null or #lists.isEmpty(s.trackables)}">-</span>
+
+            <span th:if="${s.trackables != null and not #lists.isEmpty(s.trackables)}">
+        <span th:each="t, iter : ${s.trackables}">
+            <span th:text="${t.id}">1</span><span th:if="${not iter.last}">, </span>
+        </span>
+    </span>
         </td>
+
+
 
         <td>
             <span th:text="${s.endDate != null ? s.endDate : '-'}">-</span>
@@ -50,7 +56,12 @@
             <a th:href="@{/web/shipments/{id}/trackables(id=${s.id})}">
                 <button type="button">Trackables & Devices</button>
             </a>
+
+            <a th:href="@{/web/shipments/{id}/edit(id=${s.id})}">
+                <button type="button">Edit</button>
+            </a>
         </td>
+
     </tr>
 
     <tr th:if="${shipments == null || #lists.isEmpty(shipments)}">

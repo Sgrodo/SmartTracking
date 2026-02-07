@@ -22,7 +22,7 @@
 
 <h2>Trackables</h2>
 
-<table border="1" cellpadding="6" th:if="${shipment.trackables != null && !#lists.isEmpty(shipment.trackables)}">
+<table th:border="1" th:cellpadding="6" th:if="${shipment.trackables != null && !#lists.isEmpty(shipment.trackables)}">
     <thead>
     <tr>
         <th>Type</th>

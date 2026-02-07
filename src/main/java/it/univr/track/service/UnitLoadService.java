@@ -87,7 +87,7 @@ public class UnitLoadService {
     }
 
     @Transactional
-    public List<UnitLoad> getAllUnitloadsNotInShipments(){
+    public List<UnitLoad> getAllUnitloadsNotInShipment(){
         return unitLoadRepository.findAllNotInActiveShipments();
     }
     //TRACKING STATE

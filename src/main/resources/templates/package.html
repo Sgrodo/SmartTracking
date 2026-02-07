@@ -18,13 +18,15 @@
 
     <div>
         <label>Description:</label><br/>
-        <input type="text" name="description" style="width:420px;" />
+        <label>
+            <input type="text" name="description" style="width:420px;" />
+        </label>
     </div>
 
     <hr/>
 
     <h2>Select UnitLoads to include</h2>
-    <table border="1" cellpadding="6">
+    <table th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -35,10 +37,12 @@
         </thead>
         <tbody>
         <tr th:each="ul : ${unitLoads}">
-            <td><input type="checkbox" name="unitLoadIds" th:value="${ul.id}" /></td>
+            <td><label>
+                <input type="checkbox" name="unitLoadIds" th:value="${ul.id}" />
+            </label></td>
             <td th:text="${ul.id}">1</td>
             <td th:text="${ul.description}">desc</td>
-            <td th:text="${ul.constraints != null ? #lists.size(ul.constraints) : 0}">0</td>
+            <td th:text="${ul.physicalConstraints != null ? #lists.size(ul.physicalConstraints) : 0}">0</td>
         </tr>
 
         <tr th:if="${unitLoads == null || #lists.isEmpty(unitLoads)}">

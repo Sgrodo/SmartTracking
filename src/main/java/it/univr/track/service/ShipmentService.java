@@ -97,6 +97,7 @@ public class ShipmentService {
         return shipmentRepository.findAll();
     }
 
+    //TODO fix enddate useless?
     @Transactional
     public void update(Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
         if(trackables == null || trackables.isEmpty()) {
@@ -127,8 +128,9 @@ public class ShipmentService {
             managed.setShipment(s);
             trackableRepository.save(tr);
         }
-
-        s.setState(state);
+        if(state != null){
+            s.setState(state);
+        }
         s.setDescription(description);
         //s è managed, save non necessario (in teoria)
         shipmentRepository.save(s);

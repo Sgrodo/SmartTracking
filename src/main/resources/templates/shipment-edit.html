@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Edit Shipment</title>
+</head>
+<body>
+
+<h1>Edit Shipment</h1>
+
+<p th:if="${errorMessage != null}" th:text="${errorMessage}" style="color:red;"></p>
+
+<form th:action="@{/web/shipments/{id}/edit(id=${shipment.id})}" method="post">
+
+    <p>
+        <b>Shipment ID:</b> <span th:text="${shipment.id}">1</span>
+    </p>
+
+    <p>
+        <label>Description:</label>
+        <label>
+            <input type="text" name="description" th:value="${shipment.description}" />
+        </label>
+    </p>
+
+    <h2>UnitLoads</h2>
+
+    <table th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Physical constraints</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="ul : ${unitLoadsToShow}">
+            <td>
+                <label>
+                    <input type="checkbox" name="unitLoadIds"
+                           th:value="${ul.id}"
+                           th:checked="${selectedUnitLoadIds != null and selectedUnitLoadIds.contains(ul.id)}" />
+                </label>
+            </td>
+
+            <td th:text="${ul.id}">1</td>
+            <td th:text="${ul.description != null ? ul.description : '-'}">desc</td>
+
+            <!-- conteggio constraints (sicuro e non rompe) -->
+            <td th:text="${ul.physicalConstraints == null ? 0 : #lists.size(ul.physicalConstraints)}">0</td>
+        </tr>
+
+        <tr th:if="${unitLoadsToShow == null or #lists.isEmpty(unitLoadsToShow)}">
+            <td colspan="4">No UnitLoads.</td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <h2>Packages</h2>
+
+    <table th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>UnitLoad(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="p : ${packagesToShow}">
+            <td>
+                <label>
+                    <input type="checkbox" name="packageIds"
+                           th:value="${p.id}"
+                           th:checked="${selectedPackageIds != null and selectedPackageIds.contains(p.id)}" />
+                </label>
+            </td>
+
+            <td th:text="${p.id}">1</td>
+            <td th:text="${p.description != null ? p.description : '-'}">desc</td>
+
+            <!-- CASO B: Package ha una collection unitLoads -->
+            <td th:if="${p.unitLoads == null}">
+                <span th:if="${p.unitLoads == null or #lists.isEmpty(p.unitLoads)}">-</span>
+                <span th:if="${p.unitLoads != null and not #lists.isEmpty(p.unitLoads)}">
+                    <span th:each="ul,iter : ${p.unitLoads}">
+                        <span th:text="${ul.id}">1</span><span th:if="${!iter.last}">, </span>
+                    </span>
+                </span>
+            </td>
+        </tr>
+
+        <tr th:if="${packagesToShow == null or #lists.isEmpty(packagesToShow)}">
+            <td colspan="4">No Packages.</td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <p style="margin-top: 16px;">
+        <button type="submit">Save</button>
+        <a th:href="@{/web/shipments/list}">
+            <button type="button">Cancel</button>
+        </a>
+    </p>
+
+</form>
+
+</body>
+</html>

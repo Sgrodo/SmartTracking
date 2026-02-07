@@ -11,9 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -46,7 +44,7 @@ public class DeviceAssignmentService {
 
         Device device = deviceService.getDeviceById(deviceId);
         Trackable target = trackableService.getById(trackableId);
-        if (this.isTrackableAssignedToDevice(target)) {
+        if (this.isTrackableAssignedToDevice(target,device)) {
             throw new IllegalStateException("Device " + deviceId + " is already assigned");
         }
 
@@ -116,10 +114,27 @@ public class DeviceAssignmentService {
         return result;
     }
 
+    @Transactional(readOnly = true)
+    public Map<Long, List<DeviceAssignment>> getActiveAssignmentsByTrackables(Set<Trackable> trackables) {
+        if (trackables == null || trackables.isEmpty()) return Map.of();
+
+        List<Long> ids = trackables.stream().map(Trackable::getId).toList();
+        List<DeviceAssignment> active = assignmentRepository.findActiveByTargetIds(ids);
+
+        return active.stream()
+                .collect(Collectors.groupingBy(a -> a.getTarget().getId()));
+    }
+
+
 
     @Transactional
-    public boolean isTrackableAssignedToDevice(Trackable trk) {
+    public boolean isTrackableAssignedToDevice(Trackable trk, Device device) {
         Thrower.notNullArgumentException(trk, "trk is null");
-        return assignmentRepository.findFirstByTargetAndToTsIsNull(trk).isPresent();
+        Thrower.notNullArgumentException(device, "device is null");
+
+        return assignmentRepository
+                .findFirstByTargetAndDeviceAndToTsIsNull(trk, device)
+                .isPresent();
     }
+
 }

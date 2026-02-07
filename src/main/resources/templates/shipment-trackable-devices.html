@@ -16,29 +16,21 @@
 <p style="margin-top:-10px;">
     <small>
         Shipment ID: <span th:text="${shipment.id}">1</span>
-        <span th:if="${shipment.description != null && !#strings.isEmpty(shipment.description)}">
+        <span th:if="${shipment.description != null and not #strings.isEmpty(shipment.description)}">
             | <span th:text="${shipment.description}">desc</span>
         </span>
     </small>
 </p>
 
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p th:if="${error != null}" th:text="${error}" style="color:red;"></p>
 
 <div th:each="t : ${trackables}" style="margin-bottom:30px;">
-    <h2>
-        <span th:text="${t.getClass().getSimpleName()}">Trackable</span>
-        #<span th:text="${t.id}">1</span>
-        <span th:if="${t.description != null && !#strings.isEmpty(t.description)}">
-            — <span th:text="${t.description}">desc</span>
-        </span>
-    </h2>
+    <h3>Trackable <span th:text="${t.id}">1</span></h3>
 
-    <h3>Currently associated devices</h3>
-
-    <table border="1" cellpadding="6">
+    <table th:border="1" th:cellpadding="6">
         <thead>
         <tr>
-            <th>ID</th>
+            <th>Device ID</th>
             <th>Origin</th>
             <th>Connected</th>
             <th>Calibrated</th>
@@ -48,65 +40,46 @@
         </tr>
         </thead>
 
-        <tbody>
-        <tr th:each="d : ${t.devices}">
-            <td th:text="${d.id}">1</td>
-            <td th:text="${d.origin}">FORMULA</td>
-            <td th:text="${d.isConnected}">true</td>
-            <td th:text="${d.isCalibrated}">true</td>
-            <td th:text="${d.state}">true</td>
-            <td th:text="${d.price}">0.00</td>
+        <tbody th:with="as=${assignmentsByTrackableId.get(t.id)}">
+
+        <!-- no active assignments -->
+        <tr th:if="${as == null or #lists.isEmpty(as)}">
+            <td colspan="7">Nessun device assegnato</td>
+        </tr>
+
+        <!-- active assignments -->
+        <tr th:each="a : ${as}">
+            <td th:text="${a.device.id}">1</td>
+            <td th:text="${a.device.origin}">Italy</td>
+            <td th:text="${a.device.isConnected}">true</td>
+            <td th:text="${a.device.isCalibrated}">true</td>
+            <td th:text="${a.device.state}">ACTIVE</td>
+            <td th:text="${a.device.price}">100.00</td>
             <td>
-                <form th:action="@{/web/trackables/{trackableId}/devices/{deviceId}/unbind(trackableId=${t.id},deviceId=${d.id})}"
-                      method="post" style="display:inline;">
-                    <button type="submit">Disassociate</button>
+                <form th:action="@{/web/trackables/{trackableId}/devices/unbind(trackableId=${t.id},deviceId=${a.device.id})}"
+                      method="post">
+                    <button type="submit">Unbind</button>
                 </form>
             </td>
         </tr>
 
-        <tr th:if="${t.devices == null || #lists.isEmpty(t.devices)}">
-            <td colspan="7">No devices associated.</td>
-        </tr>
         </tbody>
     </table>
 
-    <h3 style="margin-top:15px;">Associate a device (from DB)</h3>
-
-    <table border="1" cellpadding="6">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Origin</th>
-            <th>Connected</th>
-            <th>Calibrated</th>
-            <th>State</th>
-            <th>Price</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-
-        <tbody>
-        <tr th:each="d : ${allDevices}"
-            th:if="${t.devices == null || !#lists.contains(t.devices, d)}">
-            <td th:text="${d.id}">1</td>
-            <td th:text="${d.origin}">FORMULA</td>
-            <td th:text="${d.isConnected}">true</td>
-            <td th:text="${d.isCalibrated}">true</td>
-            <td th:text="${d.state}">true</td>
-            <td th:text="${d.price}">0.00</td>
-            <td>
-                <form th:action="@{/web/trackables/{trackableId}/devices/{deviceId}/bind(trackableId=${t.id},deviceId=${d.id})}"
-                      method="post" style="display:inline;">
-                    <button type="submit">Associate</button>
-                </form>
-            </td>
-        </tr>
-
-        <tr th:if="${allDevices == null || #lists.isEmpty(allDevices)}">
-            <td colspan="7">No devices in DB.</td>
-        </tr>
-        </tbody>
-    </table>
+    <!-- bind form -->
+    <form th:action="@{/web/trackables/{trackableId}/devices/bind(trackableId=${t.id})}" method="post"
+    style="margin-top:8px;">
+        <label>
+            <select name="deviceId" required>
+                <option value="" disabled selected>Choose device...</option>
+                <option th:each="d : ${availableDevices}"
+                        th:value="${d.id}"
+                        th:text="${d.id + ' - ' + d.origin + ' - ' + d.price}">
+                </option>
+            </select>
+        </label>
+        <button type="submit">Bind device</button>
+    </form>
 
     <hr/>
 </div>

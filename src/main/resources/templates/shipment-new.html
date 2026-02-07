@@ -26,7 +26,9 @@
     <h2>Shipment info</h2>
     <div>
         <label>Description:</label><br/>
-        <textarea name="description" rows="3" cols="60" placeholder="Describe the shipment..."></textarea>
+        <label>
+            <textarea name="description" rows="3" cols="60" placeholder="Describe the shipment..."></textarea>
+        </label>
     </div>
 
     <hr/>
@@ -34,7 +36,7 @@
     <h2>Select UnitLoads</h2>
     <p><small>Pick one or more UnitLoads already stored in DB.</small></p>
 
-    <table border="1" cellpadding="6">
+    <table th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -46,7 +48,9 @@
         <tbody>
         <tr th:each="ul : ${unitLoads}">
             <td>
-                <input type="checkbox" name="unitLoadIds" th:value="${ul.id}" />
+                <label>
+                    <input type="checkbox" name="unitLoadIds" th:value="${ul.id}" />
+                </label>
             </td>
             <td th:text="${ul.id}">1</td>
             <td th:text="${ul.description}">desc</td>
@@ -67,7 +71,7 @@
     <h2>Select Packages</h2>
     <p><small>Pick one or more Packages already stored in DB.</small></p>
 
-    <table border="1" cellpadding="6">
+    <table th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -79,7 +83,9 @@
         <tbody>
         <tr th:each="p : ${packages}">
             <td>
-                <input type="checkbox" name="packageIds" th:value="${p.id}" />
+                <label>
+                    <input type="checkbox" name="packageIds" th:value="${p.id}" />
+                </label>
             </td>
             <td th:text="${p.id}">1</td>
             <td th:text="${p.description}">desc</td>

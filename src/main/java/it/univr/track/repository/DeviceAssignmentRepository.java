@@ -31,4 +31,19 @@ public interface DeviceAssignmentRepository extends JpaRepository<DeviceAssignme
                                             @Param("ts") ZonedDateTime ts);
 
     List<DeviceAssignment> findByTargetAndToTsIsNull(Trackable target);
+
+    @Query("""
+    select da
+    from DeviceAssignment da
+    join fetch da.device d
+    where da.toTs is null
+      and da.target.id in :ids
+""")
+    List<DeviceAssignment> findActiveByTargetIds(@Param("ids") List<Long> ids);
+
+    Optional<DeviceAssignment> findFirstByTargetAndDeviceAndToTsIsNull(
+            Trackable target,
+            Device device
+    );
+
 }
