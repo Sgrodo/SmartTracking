@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Create Package</title>
+</head>
+<body>
+
+<p>
+    <a th:href="@{/web/newShipment}">← Back to shipment creation</a>
+    | <a th:href="@{/web/shipments/list}">Shipments</a>
+</p>
+
+<h1>Create Package</h1>
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<form th:action="@{/web/packages/new}" method="post">
+
+    <div>
+        <label>Description:</label><br/>
+        <input type="text" name="description" style="width:420px;" />
+    </div>
+
+    <hr/>
+
+    <h2>Select UnitLoads to include</h2>
+    <table border="1" cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Constraints</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ul : ${unitLoads}">
+            <td><input type="checkbox" name="unitLoadIds" th:value="${ul.id}" /></td>
+            <td th:text="${ul.id}">1</td>
+            <td th:text="${ul.description}">desc</td>
+            <td th:text="${ul.constraints != null ? #lists.size(ul.constraints) : 0}">0</td>
+        </tr>
+
+        <tr th:if="${unitLoads == null || #lists.isEmpty(unitLoads)}">
+            <td colspan="4">
+                No UnitLoads available.
+                <a th:href="@{/web/unitloads/new}"><button type="button">Create UnitLoad</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <button type="submit">Create Package</button>
+</form>
+
+</body>
+</html>

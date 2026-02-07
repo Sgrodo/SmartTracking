@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Shipment details</title>
+</head>
+<body>
+
+<p><a th:href="@{/web/shipments/list}">← Back to shipments</a></p>
+
+<h1>Shipment details</h1>
+
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<p>
+    <b>ID:</b> <span th:text="${shipment.id}">1</span><br/>
+    <b>Start:</b> <span th:text="${shipment.startDate != null ? shipment.startDate : '-'}">-</span><br/>
+    <b>End:</b> <span th:text="${shipment.endDate != null ? shipment.endDate : '-'}">-</span><br/>
+    <b>Description:</b>
+    <span th:text="${(shipment.description != null && !#strings.isEmpty(shipment.description)) ? shipment.description : '-'}">-</span><br/>
+</p>
+
+<h2>Trackables</h2>
+
+<table border="1" cellpadding="6" th:if="${shipment.trackables != null && !#lists.isEmpty(shipment.trackables)}">
+    <thead>
+    <tr>
+        <th>Type</th>
+        <th>ID</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="t : ${shipment.trackables}">
+        <td th:text="${t.getClass().getSimpleName()}">Trackable</td>
+        <td th:text="${t.id}">1</td>
+        <td th:text="${(t.description != null && !#strings.isEmpty(t.description)) ? t.description : '-'}">-</td>
+    </tr>
+    </tbody>
+</table>
+
+<p th:if="${shipment.trackables == null || #lists.isEmpty(shipment.trackables)}">
+    No trackables in this shipment.
+</p>
+
+</body>
+</html>

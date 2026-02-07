@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Create shipment</title>
+</head>
+<body>
+
+<p><a th:href="@{/web/shipments/list}">← Back to shipments</a></p>
+
+<h1>Create shipment</h1>
+<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+<div style="margin-bottom:15px;">
+    <a th:href="@{/web/unitloads/new}">
+        <button type="button">New UnitLoad</button>
+    </a>
+    <a th:href="@{/web/packages/new}">
+        <button type="button">New Package</button>
+    </a>
+</div>
+
+<form th:action="@{/web/newShipment}" method="post">
+
+
+    <h2>Shipment info</h2>
+    <div>
+        <label>Description:</label><br/>
+        <textarea name="description" rows="3" cols="60" placeholder="Describe the shipment..."></textarea>
+    </div>
+
+    <hr/>
+
+    <h2>Select UnitLoads</h2>
+    <p><small>Pick one or more UnitLoads already stored in DB.</small></p>
+
+    <table border="1" cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Physical constraints”</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ul : ${unitLoads}">
+            <td>
+                <input type="checkbox" name="unitLoadIds" th:value="${ul.id}" />
+            </td>
+            <td th:text="${ul.id}">1</td>
+            <td th:text="${ul.description}">desc</td>
+            <td th:text="${ul.physicalConstraints != null ? #sets.size(ul.physicalConstraints) : 0}">0</td>
+        </tr>
+
+        <tr th:if="${unitLoads == null || #lists.isEmpty(unitLoads)}">
+            <td colspan="4">
+                No UnitLoads available.
+                <a th:href="@{/web/unitloads/new}"><button type="button">Create UnitLoad</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <h2>Select Packages</h2>
+    <p><small>Pick one or more Packages already stored in DB.</small></p>
+
+    <table border="1" cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>UnitLoads</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${packages}">
+            <td>
+                <input type="checkbox" name="packageIds" th:value="${p.id}" />
+            </td>
+            <td th:text="${p.id}">1</td>
+            <td th:text="${p.description}">desc</td>
+            <td th:text="${p.unitLoads != null ? #lists.size(p.unitLoads) : 0}">0</td>
+        </tr>
+
+        <tr th:if="${packages == null || #lists.isEmpty(packages)}">
+            <td colspan="4">
+                No Packages available.
+                <a th:href="@{/web/packages/new}"><button type="button">Create Package</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <button type="submit">Create shipment</button>
+</form>
+
+</body>
+</html>

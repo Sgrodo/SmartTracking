@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -88,4 +89,8 @@ public class PackageService {
         return Set.copyOf(packageRepository.findAll());
     }
 
+    @Transactional
+    public List<Package> getAllPackagesNotInShipments(){
+        return packageRepository.findAllNotInAnyShipment();
+    }
 }

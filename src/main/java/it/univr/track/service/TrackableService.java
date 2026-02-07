@@ -63,4 +63,9 @@ public class TrackableService {
         Shipment s = shipmentRepository.getReferenceById(shipmentId);
         trackable.setShipment(s);
     }
+
+    @Transactional
+    public List<Trackable> getAllTrackablesNotInShipments(){
+        return trackableRepository.findAllNotInActiveShipments();
+    }
 }

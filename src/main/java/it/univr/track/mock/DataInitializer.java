@@ -1,9 +1,11 @@
 package it.univr.track.mock;
 
+import it.univr.track.entity.Device;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.HumidityConstraint;
+import it.univr.track.repository.DeviceRepository;
 import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.repository.PackageRepository;
 import it.univr.track.repository.UnitLoadRepository;
@@ -12,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -21,7 +24,7 @@ public class DataInitializer {
 
     @Bean
     public CommandLineRunner initSampleDate(UnitLoadRepository unitLoadRepository, LoadItemRepository loadItemRepository,
-                                            PackageRepository packageRepository) {
+                                            PackageRepository packageRepository, DeviceRepository deviceRepository) {
         return args -> {
             LoadItem loadItem1 = new LoadItem("banana", "QR_BAN", "1 banana");
             LoadItem loadItem2 = new LoadItem("mela", "QR_MEL", "1 mela");
@@ -58,6 +61,18 @@ public class DataInitializer {
             loadItemRepository.flush();
             unitLoadRepository.flush();
             packageRepository.flush();
+
+
+            //Device to use
+            deviceRepository.saveAll(List.of(
+                    new Device(true, true, true, new BigDecimal("100.00"), "Italy"),
+                    new Device(true, false, true, new BigDecimal("85.50"), "Germany"),
+                    new Device(false, true, false, new BigDecimal("120.00"), "France"),
+                    new Device(true, true, false, new BigDecimal("95.00"), "Spain"),
+                    new Device(false, false, true, new BigDecimal("70.00"), "USA"),
+                    new Device(true, false, true, new BigDecimal("150.00"), "Japan")
+            ));
+
         };
     }
 }

@@ -1,36 +1,60 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
     <title>Shipments</title>
-    <a th:href="@{/shipments/new}">
-        <button>Create new unitLoad</button>
-    </a>
 </head>
 <body>
+
 <h1>Shipments</h1>
 
-<p><a th:href="@{/shipments/new}">Create new unitLoad</a></p>
+<p>
+    <a th:href="@{/web/newShipment}">
+        <button type="button">Create new shipment</button>
+    </a>
+</p>
 
 <table border="1" cellpadding="6">
     <thead>
     <tr>
         <th>ID</th>
-        <th>Description</th>
         <th>Start date</th>
-        <th>Devices</th>
+        <th>Description</th>
+        <th>Trackables IDs</th>
+        <th>End date</th>
         <th>Actions</th>
     </tr>
     </thead>
+
     <tbody>
     <tr th:each="s : ${shipments}">
         <td th:text="${s.id}">1</td>
-        <td th:text="${s.description}">desc</td>
         <td th:text="${s.startDate}">date</td>
-        <td th:text="${#lists.size(s.devices)}">0</td>
+        <td th:text="${s.description}">desc</td>
+
         <td>
-            <a th:href="@{/shipments/{id}(id=${s.id})}">Details</a>
+            <span th:if="${s.trackables != null && !#lists.isEmpty(s.trackables)}"
+                  th:text="${#strings.listJoin(s.trackables.![id], ', ')}">1,2,3</span>
+            <span th:if="${s.trackables == null || #lists.isEmpty(s.trackables)}">-</span>
         </td>
+
+        <td>
+            <span th:text="${s.endDate != null ? s.endDate : '-'}">-</span>
+        </td>
+
+        <td>
+            <a th:href="@{/web/shipments/{id}(id=${s.id})}">
+                <button type="button">Details</button>
+            </a>
+
+            <a th:href="@{/web/shipments/{id}/trackables(id=${s.id})}">
+                <button type="button">Trackables & Devices</button>
+            </a>
+        </td>
+    </tr>
+
+    <tr th:if="${shipments == null || #lists.isEmpty(shipments)}">
+        <td colspan="6">No shipments yet.</td>
     </tr>
     </tbody>
 </table>

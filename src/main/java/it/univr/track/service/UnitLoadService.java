@@ -30,7 +30,6 @@ public class UnitLoadService {
     private final UnitLoadRepository unitLoadRepository;
     private final LoadItemRepository loadItemRepository;
     private final DeviceAssignmentRepository deviceAssignmentRepository;
-    private final DeviceAssignmentService deviceAssignmentService;
 
     public UnitLoad createUnitLoad(String description,
                                    ZonedDateTime startDate,
@@ -87,8 +86,11 @@ public class UnitLoadService {
         return activeDevices;
     }
 
-
-    // ---- TRACKING STATE ----
+    @Transactional
+    public List<UnitLoad> getAllUnitloadsNotInShipments(){
+        return unitLoadRepository.findAllNotInActiveShipments();
+    }
+    //TRACKING STATE
 
     @Transactional
     public void addLoadItem(Long unitLoadId, Long loadItemId) {
