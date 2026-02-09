@@ -96,7 +96,7 @@ public class ShipmentWebController {
                 //model.addAttribute("availableTrackables", trackableService.getAllTrackablesNotInShipments());
                 // + qualsiasi altra roba che la view usa (altrimenti NPE in thymeleaf)
                 // da controllare
-                model.addAttribute("unitLoads",unitLoadService.getAllUnitloadsNotInShipment());
+                model.addAttribute("unitLoads",unitLoadService.getAllNotInShipmentAndNotInPackages());
                 model.addAttribute("packages",packageService.getAllPackagesNotInShipments());
 
                 return "shipment-new";
@@ -194,7 +194,7 @@ public class ShipmentWebController {
     @GetMapping("/unitloads/new")
     public String newUnitLoad(Model model) {
         model.addAttribute("loadItems", loadItemRepository.findAll());
-        model.addAttribute("devices", deviceService.getAvailableDevices()); //TODO check se darli tutti
+        model.addAttribute("devices", deviceService.getAvailableDevices());
         return "unitload";
     }
 
@@ -204,18 +204,26 @@ public class ShipmentWebController {
             @RequestParam String description,
             @RequestParam(required = false) String constraintsRaw,
             @RequestParam(required = false) List<Long> loadItemIds,
-            @RequestParam(required = false) List<Long> deviceIds
+            @RequestParam(required = false) List<Long> deviceIds,
+            Model model
     ) {
         // parse constraints raw
         List<PhysicalConstraint> c = parseConstraintsRaw(constraintsRaw);
         Set<PhysicalConstraint> constraints = new HashSet<>(c);
-        Set<LoadItem> loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
+        try{
+            Set<LoadItem> loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
 
-        UnitLoad u = unitLoadService.createUnitLoad(description,null, constraints, loadItems);
+            UnitLoad u = unitLoadService.createUnitLoad(description,null, constraints, loadItems);
 
-        for(Long id : deviceIds) {
-            deviceAssignmentService.bind(id,u.getId());
+            for(Long id : deviceIds) {
+                deviceAssignmentService.bind(id,u.getId());
+            }
+        } catch (Exception e) {
+            model.addAttribute("loadItems", loadItemRepository.findAll());
+            model.addAttribute("devices", deviceService.getAvailableDevices());
+            return "redirect:/web/unitloads/new";
         }
+
         return "redirect:/web/newShipment";
     }
 

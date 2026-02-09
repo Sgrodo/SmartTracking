@@ -66,12 +66,13 @@ public class DeviceService {
     }
 
     public List<Device> getAvailableDevices() {
-        //Un device è disponibile se non ha relazioni in deviceassignament OPPURE (inclusivo) se ha una relazione
+        return deviceRepository.findDevicesWithNoActiveAssignment();
+        /*//Un device è disponibile se non ha relazioni in deviceassignament OPPURE (inclusivo) se ha una relazione
         // con device assignament ma lo shipment è in uno stato diverso da CREATED o IN_TRANSIT
         List<ShipmentState> busyStates = List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT);
 
         List<Device> availables = deviceRepository.findDevicesWithNoActiveAssignment();
-        /*
+        *//*
         List<Device> notInBusy = deviceRepository.findDevicesNotInBusyShipments(busyStates);
 
         return Stream.concat(availables.stream(), notInBusy.stream())
@@ -79,7 +80,8 @@ public class DeviceService {
                 .values()
                 .stream()
                 .toList();
-        */
+        *//*
         return availables;
+        */
     }
 }
