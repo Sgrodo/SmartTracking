@@ -1,5 +1,6 @@
-package it.univr.track.controller.api.dto.unitloads;
+package it.univr.track.controller.api.dto.trackables.unitloads;
 
+import it.univr.track.controller.api.dto.trackables.TrackableResponse;
 import it.univr.track.entity.data.UnitLoad;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,18 +10,17 @@ import java.util.List;
 
 @Getter
 @Setter
-public class UnitLoadResponse {
+public class UnitLoadResponse extends TrackableResponse {
 
-    private Long id;
-    private ZonedDateTime startDate;
     private String description;
+    private ZonedDateTime startDate;
     private String pkgId;
     private List<LoadItemResponse> loadItems;
 
     public UnitLoadResponse(UnitLoad unitLoad) {
-        this.id = unitLoad.getId();
-        this.startDate = unitLoad.getStartDate();
+        super(unitLoad);
         this.description = unitLoad.getDescription();
+        this.startDate = unitLoad.getStartDate();
         this.pkgId = unitLoad.getPkg() != null ? unitLoad.getPkg().getId().toString() : null;
         this.loadItems = unitLoad.getLoadItems().stream()
                 .map(LoadItemResponse::new)

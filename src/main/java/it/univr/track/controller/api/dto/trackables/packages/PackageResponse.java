@@ -1,25 +1,26 @@
-package it.univr.track.controller.api.dto.packages;
+package it.univr.track.controller.api.dto.trackables.packages;
 
 import java.util.List;
 
-import it.univr.track.controller.api.dto.unitloads.UnitLoadResponse;
+import it.univr.track.controller.api.dto.trackables.TrackableResponse;
+import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadResponse;
 import it.univr.track.entity.data.Package;
+import it.univr.track.entity.data.Trackable;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class PackageResponse {
+public class PackageResponse extends TrackableResponse {
 
-    private Long id;
-    private String groupCode;
     private String description;
+    private String groupCode;
     private List<UnitLoadResponse> unitLoads;
 
     public PackageResponse(Package pkg) {
-        this.id = pkg.getId();
-        this.groupCode = pkg.getGroupCode();
+        super(pkg);
         this.description = pkg.getDescription();
+        this.groupCode = pkg.getGroupCode();
         this.unitLoads = pkg.getUnitLoads().stream()
                 .map(UnitLoadResponse::new)
                 .toList();

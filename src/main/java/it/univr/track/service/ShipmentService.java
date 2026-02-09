@@ -140,7 +140,7 @@ public class ShipmentService {
     public boolean deleteById(Long shipmentId) {
         Thrower.notNullArgumentException(shipmentId, "shipmentId is null");
 
-        if (! shipmentRepository.existsById(shipmentId)) {
+        if (!shipmentRepository.existsById(shipmentId)) {
             throw new NotFoundException("Shipment not found: " + shipmentId);
         }
         shipmentRepository.getReferenceById(shipmentId).getTrackables().

@@ -1,8 +1,8 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.controller.api.dto.unitloads.LoadItemResponse;
-import it.univr.track.controller.api.dto.unitloads.UnitLoadRequest;
-import it.univr.track.controller.api.dto.unitloads.UnitLoadResponse;
+import it.univr.track.controller.api.dto.trackables.unitloads.LoadItemResponse;
+import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadRequest;
+import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadResponse;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.exception.NotFoundException;

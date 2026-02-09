@@ -1,6 +1,7 @@
 package it.univr.track.controller.api;
 
 import it.univr.track.controller.api.dto.shipment.CreateShipmentRequest;
+import it.univr.track.controller.api.dto.shipment.ShipmentResponse;
 import it.univr.track.controller.api.dto.shipment.UpdateShipmentRequest;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
@@ -36,51 +37,31 @@ public class ShipmentController {
     // create a shipment
     @PostMapping("/shipment")
     public boolean createShipment(@Valid @RequestBody CreateShipmentRequest request) {
-        try {
-            Set<Long> trackableIds = request.getTrackableIds();
+        Set<Long> trackableIds = request.getTrackableIds();
 
-            Set<Trackable> trackables = trackableService.getAllTrackablesById(trackableIds);
-            shipmentService.create(request.getStartDate(), request.getDescription(), trackables);
+        Set<Trackable> trackables = trackableService.getAllTrackablesById(trackableIds);
+        shipmentService.create(request.getStartDate(), request.getDescription(), trackables);
 
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation failed" + e.getMessage());
-        }
+        return true;
     }
 
 
     // read a shipment
     @GetMapping("/shipment/{shipmentId}")
-    public Shipment readShipment(@PathVariable Long shipmentId) {
-        try {
-            return shipmentService.getById(shipmentId);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Read failed");
-        }
+    public ShipmentResponse readShipment(@PathVariable Long shipmentId) {
+        return new ShipmentResponse(shipmentService.getById(shipmentId));
     }
 
 
     @PutMapping("/api/shipment")
     public boolean editShipment(@Valid @RequestBody UpdateShipmentRequest request) {
-        try {
-            Shipment shipment = shipmentService.getById(request.getShipmentId());
-            String description = request.getDescription();
-            ZonedDateTime endDate = request.getEndDate();
-            ShipmentState state = request.getState();
-            Set<Trackable> allTrackablesById = trackableService.getAllTrackablesById(request.getTrackableIds());
-            shipmentService.update(shipment, description, endDate, state, allTrackablesById);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (ResponseStatusException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
-        }
+        Shipment shipment = shipmentService.getById(request.getShipmentId());
+        String description = request.getDescription();
+        ZonedDateTime endDate = request.getEndDate();
+        ShipmentState state = request.getState();
+        Set<Trackable> allTrackablesById = trackableService.getAllTrackablesById(request.getTrackableIds());
+        shipmentService.update(shipment, description, endDate, state, allTrackablesById);
+        return true;
     }
 
     /**
@@ -91,67 +72,38 @@ public class ShipmentController {
     // update a shipment
     @DeleteMapping("/api/shipment")
     public boolean deleteShipment(@RequestParam Long shipmentId) {
-        try {
-            return shipmentService.deleteById(shipmentId);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (IllegalStateException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Update failed");
-        }
+        return shipmentService.deleteById(shipmentId);
     }
 
     // list all the shipments
     @GetMapping("/api/shipments")
-    public Shipment[] readShipments() {
-        return shipmentService.getAllShipments().toArray(new Shipment[0]);
+    public ShipmentResponse[] readShipments() {
+        return shipmentService.getAllShipments().stream().map(ShipmentResponse::new).toList().toArray(new ShipmentResponse[0]);
     }
 
     // start/stop tracking
     @PostMapping("/api/shipment/tracking")
     public boolean setShipmentTracking(@RequestParam Long shipmentId, @RequestParam boolean state) {
-        try {
-            TrackingState tState = state ? TrackingState.ACTIVE : TrackingState.INACTIVE;
+        TrackingState tState = state ? TrackingState.ACTIVE : TrackingState.INACTIVE;
 
-            shipmentService.setTrackingState(shipmentId, tState);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Impossible to set TrackingState" + e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Read failed");
-        }
+        shipmentService.setTrackingState(shipmentId, tState);
+        return true;
     }
 
     // allocate a device to a shipment
     @PostMapping("/api/shipment/allocate")
     public boolean allocateDevice(@RequestParam Long trackableId, @RequestParam Long deviceId) {
-        try {
-            trackableService.getById(trackableId); // solo per validare che esista
-            deviceAssignmentService.bind(deviceId, trackableId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Impossible to find a Shipment of Id " + trackableId + ": " + e.getMessage()
-            );
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
-        }
+        trackableService.getById(trackableId); // solo per validare che esista
+        deviceAssignmentService.bind(deviceId, trackableId);
+        return true;
     }
 
 
     // deallocate a device to a shipment
     @PostMapping("/api/shipment/deallocate")
     public boolean deallocateDevice(@RequestParam Long deviceId) {
-        try {
-            deviceAssignmentService.unbind(deviceId);
-            return true;
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Request rejected");
-        }
+        deviceAssignmentService.unbind(deviceId);
+        return true;
     }
 
 }

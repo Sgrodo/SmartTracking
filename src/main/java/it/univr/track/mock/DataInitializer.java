@@ -3,12 +3,10 @@ package it.univr.track.mock;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
+import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.HumidityConstraint;
-import it.univr.track.repository.DeviceRepository;
-import it.univr.track.repository.LoadItemRepository;
-import it.univr.track.repository.PackageRepository;
-import it.univr.track.repository.UnitLoadRepository;
+import it.univr.track.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +15,7 @@ import org.springframework.context.annotation.Profile;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @Profile("mock")
@@ -24,7 +23,7 @@ public class DataInitializer {
 
     @Bean
     public CommandLineRunner initSampleDate(UnitLoadRepository unitLoadRepository, LoadItemRepository loadItemRepository,
-                                            PackageRepository packageRepository, DeviceRepository deviceRepository) {
+                                            PackageRepository packageRepository, DeviceRepository deviceRepository, ShipmentRepository shipmentRepository) {
         return args -> {
             LoadItem loadItem1 = new LoadItem("banana", "QR_BAN", "1 banana");
             LoadItem loadItem2 = new LoadItem("mela", "QR_MEL", "1 mela");
@@ -58,9 +57,6 @@ public class DataInitializer {
             pkgSample.addUnitLoad(utSample4);
             pkgSample = packageRepository.save(pkgSample);
 
-            loadItemRepository.flush();
-            unitLoadRepository.flush();
-            packageRepository.flush();
 
 
             //Device to use
@@ -73,6 +69,19 @@ public class DataInitializer {
                     new Device(true, false, true, new BigDecimal("150.00"), "Japan")
             ));
 
+            // Create sample shipment
+            Shipment shipment = new Shipment("SAMPLE SHIPMENT");
+            shipment.addTrackable(utSample1);
+            shipment.addTrackable(pkgSample);
+            shipmentRepository.save(shipment);
+            unitLoadRepository.save(utSample1);
+            packageRepository.save(pkgSample);
+
+            loadItemRepository.flush();
+            deviceRepository.flush();
+            unitLoadRepository.flush();
+            packageRepository.flush();
+            shipmentRepository.flush();
         };
     }
 }

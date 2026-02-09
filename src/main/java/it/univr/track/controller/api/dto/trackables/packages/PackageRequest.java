@@ -1,4 +1,4 @@
-package it.univr.track.controller.api.dto.packages;
+package it.univr.track.controller.api.dto.trackables.packages;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

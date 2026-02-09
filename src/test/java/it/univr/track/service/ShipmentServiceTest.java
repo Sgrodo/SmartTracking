@@ -105,10 +105,10 @@ public class ShipmentServiceTest extends BaseTest {
     public void testUpdateShipment() {
         Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", Set.of(utSample1));
         Shipment unsavedShipment = new Shipment("Unsave Shipment");
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            shipmentService.update(shipment, "Updated Shipment", null, null, Set.of(utSample1, utSample2));
-        });
+// No more need to test
+//        assertThrows(IllegalArgumentException.class, () -> {
+//            shipmentService.update(shipment, "Updated Shipment", null, null, Set.of(utSample1, utSample2));
+//        });
 
         assertThrows(InvalidDataException.class, () -> {
             shipmentService.update(shipment, "Updated Shipment", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, null);
@@ -128,9 +128,14 @@ public class ShipmentServiceTest extends BaseTest {
 
         Shipment updatedShipment = shipmentService.getById(shipment.getId());
         assertEquals("Test Shipment", updatedShipment.getDescription());
-        assertEquals(2, updatedShipment.getTrackables().size());
+        assertEquals(1, updatedShipment.getTrackables().size());
 
-        shipmentService.update(updatedShipment, "changed description", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample2));
+        ZonedDateTime newEndDate = ZonedDateTime.now();
+        shipmentService.update(updatedShipment, "changed description", newEndDate, ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
+
+        assertEquals("changed description", updatedShipment.getDescription());
+        assertEquals(2, updatedShipment.getTrackables().size());
+        assertEquals(ShipmentState.IN_TRANSIT, updatedShipment.getState());
     }
 
     @Transactional

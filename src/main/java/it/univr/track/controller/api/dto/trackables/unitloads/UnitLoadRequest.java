@@ -1,4 +1,4 @@
-package it.univr.track.controller.api.dto.unitloads;
+package it.univr.track.controller.api.dto.trackables.unitloads;
 
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import jakarta.validation.Valid;

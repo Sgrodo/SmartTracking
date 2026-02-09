@@ -10,8 +10,7 @@ import java.util.Set;
 @Getter
 public class CreateShipmentRequest {
 
-    @NotNull(message = "startDate is required")
-    private ZonedDateTime startDate;
+    private ZonedDateTime startDate = ZonedDateTime.now();
 
     private String description;
 

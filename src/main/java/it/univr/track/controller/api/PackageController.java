@@ -1,7 +1,7 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.controller.api.dto.packages.PackageRequest;
-import it.univr.track.controller.api.dto.packages.PackageResponse;
+import it.univr.track.controller.api.dto.trackables.packages.PackageRequest;
+import it.univr.track.controller.api.dto.trackables.packages.PackageResponse;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.data.Package;
 import it.univr.track.service.PackageService;
