@@ -2,8 +2,10 @@ package it.univr.track.service;
 
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
+import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.exception.InvalidDataException;
@@ -30,7 +32,7 @@ public class ShipmentService {
     private final TrackableRepository trackableRepository;
     private final DeviceService deviceService;
     private final DeviceAssignmentService deviceAssignmentService;
-
+    private final List<ShipmentState> finalStates = List.of(ShipmentState.COMPLETED,ShipmentState.CANCELLED);
 
     @Transactional
     public Shipment create(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
@@ -43,8 +45,14 @@ public class ShipmentService {
         for(Trackable tr : trackables){
             shipment.addTrackable(tr);
             trackableService.setShipment(tr.getId(),shipment.getId());
-            //tr.setShipment(shipment);
-            //trackableRepository.save(tr);
+            /*
+            if(tr instanceof Package){
+                Set<UnitLoad> unitLoads = tr.getUnitLoads();
+                for(UnitLoad ul : unitLoads){
+                    shipment.addTrackable(ul);
+                }
+            }
+            */
         }
 
         return shipmentRepository.save(shipment);
@@ -57,7 +65,7 @@ public class ShipmentService {
 
     @Transactional
     public void completeShipment(Shipment shipment, ZonedDateTime endDate) {
-        if (shipment == null) throw new IllegalArgumentException("shipment is null");
+        Thrower.notNullArgumentException(shipment, "shipment is null");
         ZonedDateTime date = endDate == null ? ZonedDateTime.now() : endDate;
 
         Shipment s;
@@ -68,18 +76,32 @@ public class ShipmentService {
         }
         s.complete(date);
 
-        //set di Id dei Trackables associati allo shipment
-        Set<Long> set = deviceAssignmentService.getTrackableIdsWithActiveDevice(s.getTrackables());
-        Set<DeviceAssignment> associatedDevices = new HashSet<>();
-        //di ogni trackable mi prendo i deviceAssignament
-        for(Long id : set){
-            associatedDevices = trackableService.getById(id).getDevices();
-           for (DeviceAssignment da : associatedDevices){
-               da.deactivate();
-               //deviceAssignmentService.unbind(id);
-           }
+        this.deActivateDevicesOfTrackablesInShipment(shipment);
 
+        shipmentRepository.save(s);
+    }
+
+    @Transactional
+    public void cancelShipment(Long shipmentId){
+        Thrower.notNullArgumentException(shipmentId, "shipment id is null");
+
+        Shipment shipment = shipmentRepository.getReferenceById(shipmentId);
+
+        Thrower.notNullArgumentException(shipment, "shipment is null");
+
+        Shipment s;
+        if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
+            s = shipmentRepository.getReferenceById(shipment.getId());
+        }else{
+            throw new NotFoundException("Shipment not found: " + shipment.getId());
         }
+
+        this.deActivateDevicesOfTrackablesInShipment(s);
+
+        s.cancel();
+        //libero i Trackables
+        trackableService.freeTrackablesFromShipments(s.getId());
+
         shipmentRepository.save(s);
     }
 
@@ -96,6 +118,12 @@ public class ShipmentService {
     public List<Shipment> getAllShipments() {
         return shipmentRepository.findAll();
     }
+
+    @Transactional
+    public List<Shipment> getAllNotFinalShipments(){return shipmentRepository.findNonFinalShipments(finalStates);}
+
+    @Transactional
+    public List<Shipment> getAllFinalShipments(){return shipmentRepository.findFinalShipments(finalStates);}
 
     //TODO fix enddate useless?
     @Transactional
@@ -178,4 +206,21 @@ public class ShipmentService {
         this.setTrackingState(this.getById(shipmentId), state);
     }
 
+
+    @Transactional(readOnly = true)
+    protected void deActivateDevicesOfTrackablesInShipment (Shipment s){
+
+        //set di Id dei Trackables associati allo shipment
+        Set<Long> set = deviceAssignmentService.getTrackableIdsWithActiveDevice(s.getTrackables());
+        Set<DeviceAssignment> associatedDevices = new HashSet<>();
+        //di ogni trackable mi prendo i deviceAssignament
+        for(Long id : set){
+            associatedDevices = trackableService.getById(id).getDevices();
+            for (DeviceAssignment da : associatedDevices){
+                da.deactivate();
+                //deviceAssignmentService.unbind(id);
+            }
+
+        }
+    }
 }

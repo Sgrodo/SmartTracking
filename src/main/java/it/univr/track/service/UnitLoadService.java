@@ -90,6 +90,11 @@ public class UnitLoadService {
     public List<UnitLoad> getAllUnitloadsNotInShipment(){
         return unitLoadRepository.findAllNotInActiveShipments();
     }
+
+    @Transactional
+    public List<UnitLoad> getAllNotInShipmentAndNotInPackages(){
+        return unitLoadRepository.findAllNotInShipmentsAndNotInPackages();
+    }
     //TRACKING STATE
 
     @Transactional

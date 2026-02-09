@@ -20,4 +20,22 @@ public interface UnitLoadRepository extends JpaRepository<UnitLoad, Long> {
 """)
     List<UnitLoad> findAllNotInActiveShipments();
 
+    @Query("""
+    select ul
+    from UnitLoad ul
+    where not exists (
+        select 1
+        from Shipment s
+        join s.trackables t
+        where t = ul
+    )
+    and not exists (
+        select 1
+        from Package p
+        join p.unitLoads pul
+        where pul = ul
+    )
+""")
+    List<UnitLoad> findAllNotInShipmentsAndNotInPackages();
+
 }

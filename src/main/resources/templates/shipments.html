@@ -1,18 +1,6 @@
-<!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8" />
-    <title>Shipments</title>
-</head>
-<body>
+<h2>Active shipments</h2>
 
-<h1>Shipments</h1>
-
-<p>
-    <a th:href="@{/web/newShipment}">
-        <button type="button">Create new shipment</button>
-    </a>
-</p>
+<p> <a th:href="@{/web/newShipment}"> <button type="button">Create new shipment</button> </a> </p>
 
 <table th:border="1" th:cellpadding="6">
     <thead>
@@ -23,52 +11,87 @@
         <th>Trackables IDs</th>
         <th>End date</th>
         <th>Actions</th>
+        <th>State</th>
     </tr>
     </thead>
 
     <tbody>
-    <tr th:each="s : ${shipments}">
+    <tr th:each="s : ${shipmentsActive}">
         <td th:text="${s.id}">1</td>
         <td th:text="${s.startDate}">date</td>
         <td th:text="${s.description}">desc</td>
 
         <td>
             <span th:if="${s.trackables == null or #lists.isEmpty(s.trackables)}">-</span>
-
             <span th:if="${s.trackables != null and not #lists.isEmpty(s.trackables)}">
-        <span th:each="t, iter : ${s.trackables}">
-            <span th:text="${t.id}">1</span><span th:if="${not iter.last}">, </span>
-        </span>
-    </span>
+                <span th:each="t, iter : ${s.trackables}">
+                    <span th:text="${t.id}">1</span><span th:if="${not iter.last}">, </span>
+                </span>
+            </span>
         </td>
 
-
+        <td><span th:text="${s.endDate != null ? s.endDate : '-'}">-</span></td>
 
         <td>
-            <span th:text="${s.endDate != null ? s.endDate : '-'}">-</span>
+            <a th:href="@{/web/shipments/{id}(id=${s.id})}"><button type="button">Details</button></a>
+            <a th:href="@{/web/shipments/{id}/trackables(id=${s.id})}"><button type="button">Trackables & Devices</button></a>
+            <a th:href="@{/web/shipments/{id}/edit(id=${s.id})}"><button type="button">Edit</button></a>
+            <a th:href="@{/web/shipments/{id}/complete(id=${s.id})}"><button type="button">Complete</button></a>
+            <a th:href="@{/web/shipments/{id}/cancel(id=${s.id})}"><button type="button">Cancel</button></a>
         </td>
+
+        <td th:text="${s.state}">ACTIVE</td>
+    </tr>
+
+    <tr th:if="${shipmentsActive == null || #lists.isEmpty(shipmentsActive)}">
+        <td colspan="7">No active shipments.</td>
+    </tr>
+    </tbody>
+</table>
+
+
+<h2 style="margin-top: 24px;">Completed / Cancelled</h2>
+
+<table th:border="1" th:cellpadding="6">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Start date</th>
+        <th>Description</th>
+        <th>Trackables IDs</th>
+        <th>End date</th>
+        <th>State</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="s : ${shipmentsClosed}">
+        <td th:text="${s.id}">1</td>
+        <td th:text="${s.startDate}">date</td>
+        <td th:text="${s.description}">desc</td>
+
+        <td>
+            <span th:if="${s.trackables == null or #lists.isEmpty(s.trackables)}">-</span>
+            <span th:if="${s.trackables != null and not #lists.isEmpty(s.trackables)}">
+                <span th:each="t, iter : ${s.trackables}">
+                    <span th:text="${t.id}">1</span><span th:if="${not iter.last}">, </span>
+                </span>
+            </span>
+        </td>
+
+        <td><span th:text="${s.endDate != null ? s.endDate : '-'}">-</span></td>
+        <td th:text="${s.state}">COMPLETED</td>
 
         <td>
             <a th:href="@{/web/shipments/{id}(id=${s.id})}">
                 <button type="button">Details</button>
             </a>
-
-            <a th:href="@{/web/shipments/{id}/trackables(id=${s.id})}">
-                <button type="button">Trackables & Devices</button>
-            </a>
-
-            <a th:href="@{/web/shipments/{id}/edit(id=${s.id})}">
-                <button type="button">Edit</button>
-            </a>
         </td>
-
     </tr>
 
-    <tr th:if="${shipments == null || #lists.isEmpty(shipments)}">
-        <td colspan="6">No shipments yet.</td>
+    <tr th:if="${shipmentsClosed == null || #lists.isEmpty(shipmentsClosed)}">
+        <td colspan="7">No completed/cancelled shipments.</td>
     </tr>
     </tbody>
 </table>
-
-</body>
-</html>

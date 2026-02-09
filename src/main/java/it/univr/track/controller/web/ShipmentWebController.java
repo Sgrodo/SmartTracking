@@ -45,18 +45,28 @@ public class ShipmentWebController {
 
    //SHIPMENTS
 
+    private void addBaseShipmentsModel(Model model){
+        model.addAttribute("shipmentsActive", shipmentService.getAllNotFinalShipments());
+        model.addAttribute("shipmentsClosed", shipmentService.getAllFinalShipments());
+    }
+
 
     // LIST SHIPMENTS
+    @GetMapping("/shipments")
+    public String redirectShipments(Model model){
+        return "redirect:/web/shipments/list";
+    }
+
     @GetMapping("/shipments/list")
     public String shipments(Model model) {
-        model.addAttribute("shipments", shipmentService.getAllShipments());
+        this.addBaseShipmentsModel(model);
         return "shipments";
     }
 
     // NEW SHIPMENT (PAGE)
     @GetMapping("/newShipment")
     public String newShipment(Model model) {
-        model.addAttribute("unitLoads", unitLoadService.getAllUnitloadsNotInShipment());
+        model.addAttribute("unitLoads", unitLoadService.getAllNotInShipmentAndNotInPackages());
         model.addAttribute("packages", packageService.getAllPackagesNotInShipments());
         return "shipment-new";
     }
@@ -154,6 +164,21 @@ public class ShipmentWebController {
         }
     }
 
+    @GetMapping("/shipments/{id}/complete")
+    public String completeShipment(@PathVariable Long id, Model model) {
+       shipmentService.getById(id).complete();
+       this.addBaseShipmentsModel(model);
+       return "redirect:/web/shipments/list";
+    }
+
+    @GetMapping("/shipments/{id}/cancel")
+    public String cancelShipment(@PathVariable Long id, Model model) {
+        shipmentService.cancelShipment(id);
+        this.addBaseShipmentsModel(model);
+        return "redirect:/web/shipments/list";
+
+    }
+
 
 
     // SHIPMENT DETAILS
@@ -199,8 +224,7 @@ public class ShipmentWebController {
     // NEW PACKAGE (PAGE)
     @GetMapping("/packages/new")
     public String newPackage(Model model) {
-        model.addAttribute("unitLoads", unitLoadService.getAllUnitLoads()); //TODO solo quelle non i packages?
-        model.addAttribute("devices", deviceService.getAvailableDevices()); //TODO check
+        model.addAttribute("unitLoads", unitLoadService.getAllNotInShipmentAndNotInPackages());
         return "package";
     }
 
@@ -208,7 +232,8 @@ public class ShipmentWebController {
     @PostMapping("/packages/new")
     public String createPackage(
             @RequestParam(required = false) String description,
-            @RequestParam List<Long> unitLoadIds
+            @RequestParam List<Long> unitLoadIds,
+            Model model
     ) {
         if (unitLoadIds == null) unitLoadIds = List.of();
         Set<UnitLoad> unitloads = new HashSet<>();
@@ -216,6 +241,7 @@ public class ShipmentWebController {
             unitloads.add(unitLoadService.getUnitLoadById(id));
         }
         packageService.createPackage(UUID.randomUUID().toString(),description, unitloads);
+        model.addAttribute("unitLoads", unitLoadService.getAllUnitloadsNotInShipment());
         return "redirect:/web/newShipment";
     }
 

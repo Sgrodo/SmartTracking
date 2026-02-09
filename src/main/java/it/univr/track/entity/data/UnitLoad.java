@@ -25,7 +25,7 @@ public class UnitLoad extends Trackable {
     private Package pkg;
 
 
-    protected void setPackage(Package pkg) {
+    public void setPackage(Package pkg) {
         this.pkg = pkg;
     }
 

@@ -19,4 +19,13 @@ public interface TrackableRepository extends JpaRepository<Trackable, Long> {
     """)
     List<Trackable> findAllNotInActiveShipments();
 
+
+    @Query("""
+    select t
+    from Shipment s
+    join s.trackables t
+    where s.id = :shipmentId
+""")
+    List<Trackable> findAllByShipmentId(Long shipmentId);
+
 }

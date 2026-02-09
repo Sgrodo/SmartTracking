@@ -71,6 +71,7 @@ public class DeviceService {
         List<ShipmentState> busyStates = List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT);
 
         List<Device> availables = deviceRepository.findDevicesWithNoActiveAssignment();
+        /*
         List<Device> notInBusy = deviceRepository.findDevicesNotInBusyShipments(busyStates);
 
         return Stream.concat(availables.stream(), notInBusy.stream())
@@ -78,5 +79,7 @@ public class DeviceService {
                 .values()
                 .stream()
                 .toList();
+        */
+        return availables;
     }
 }

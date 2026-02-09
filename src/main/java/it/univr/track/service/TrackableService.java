@@ -1,5 +1,6 @@
 package it.univr.track.service;
 
+import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
@@ -67,5 +68,21 @@ public class TrackableService {
     @Transactional
     public List<Trackable> getAllTrackablesNotInShipments(){
         return trackableRepository.findAllNotInActiveShipments();
+    }
+
+    @Transactional
+    public void freeTrackablesFromShipments(Long shipmentId) {
+        List<Trackable> trackables = trackableRepository.findAllByShipmentId(shipmentId);
+
+        for (Trackable t : trackables) {
+            t.setShipment(null);
+            if(t instanceof Package){
+                Set<UnitLoad> unitLoads = t.getUnitLoads();
+                for (UnitLoad u : unitLoads) {
+                    u.setShipment(null);
+                    u.setShipment(null);
+                }
+            }
+        }
     }
 }

@@ -62,6 +62,7 @@ public class Shipment extends AbstractEntity {
     public Shipment(ZonedDateTime startDate, String description) {
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
+        this.state = ShipmentState.CREATED;
     }
 
     public Shipment(String description) {
@@ -155,7 +156,6 @@ public class Shipment extends AbstractEntity {
         if (this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
         }
-
         this.endDate = zonedDateTime;
         this.state = ShipmentState.CANCELLED;
     }
