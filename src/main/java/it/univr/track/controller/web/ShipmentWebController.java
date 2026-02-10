@@ -105,7 +105,7 @@ public class ShipmentWebController {
 
     //EDIT SHIPMENT
 
-    @GetMapping("shipments/{id}/edit")
+    @GetMapping("/shipments/{id}/edit")
     public String editShipmentPage(@PathVariable Long id, Model model) {
         Shipment shipment = shipmentService.getById(id);
 
@@ -123,7 +123,7 @@ public class ShipmentWebController {
         return "shipment-edit";
     }
 
-    @PostMapping("shipments/{id}/edit")
+    @PostMapping("/shipments/{id}/edit")
     public String editShipment(
             @PathVariable Long id,
             @RequestParam(required = false) String description,
@@ -166,7 +166,8 @@ public class ShipmentWebController {
 
     @GetMapping("/shipments/{id}/complete")
     public String completeShipment(@PathVariable Long id, Model model) {
-       shipmentService.getById(id).complete();
+       Shipment shipment = shipmentService.getById(id);
+        shipmentService.completeShipment(shipment);
        this.addBaseShipmentsModel(model);
        return "redirect:/web/shipments/list";
     }

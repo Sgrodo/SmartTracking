@@ -3,6 +3,7 @@ package it.univr.track.service;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -85,10 +87,22 @@ public class DeviceAssignmentService {
     public Set<DeviceAssignment> getActiveDeviceAssignmentsByTrackables(Collection<Trackable> trackables) {
         if (trackables == null || trackables.isEmpty()) return Set.of();
 
-        List<Long> ids = trackables.stream().map(Trackable::getId).toList();
-        List<DeviceAssignment> active = assignmentRepository.findActiveByTargetIds(ids);
+        Set<DeviceAssignment> deviceAssignments = new HashSet<>();
+        for(Trackable trk : trackables){
+            // Iterate over package' unit loads
+            for(UnitLoad ut : trk.getUnitLoads()){
+                for (DeviceAssignment da : ut.getDevices()){
+                    if (da.isActive()) deviceAssignments.add(da);
+                }
+            }
 
-        return new HashSet<>(active);
+            // Iterate over trackable's devices
+            for(DeviceAssignment da : trk.getDevices()){
+                if (da.isActive()) deviceAssignments.add(da);
+            }
+        }
+
+        return deviceAssignments;
     }
 
     @Transactional(readOnly = true)

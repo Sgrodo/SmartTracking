@@ -56,7 +56,7 @@ public class DeviceAssignment extends AbstractEntity {
     }
 
     public void deactivate() {
-        deactivate(null);
+        deactivate(ZonedDateTime.now());
     }
 
     public void deactivate(ZonedDateTime toTs) {
