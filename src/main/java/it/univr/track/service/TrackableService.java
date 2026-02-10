@@ -44,7 +44,7 @@ public class TrackableService {
 
     @Transactional(readOnly = true)
     public Trackable getById(Long id) {
-        return trackableRepository.findById(id).orElseThrow(() -> new NullPointerException("No trackable found with id " + id));
+        return trackableRepository.findById(id).orElseThrow(() -> new NotFoundException("No trackable found with id " + id));
     }
 
     @Transactional

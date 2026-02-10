@@ -109,7 +109,7 @@ public class Shipment extends AbstractEntity {
         }
     }
 
-    private boolean isFinalState() {
+    public boolean isFinalState() {
         return state.equals(ShipmentState.COMPLETED) || state.equals(ShipmentState.CANCELLED);
     }
 
