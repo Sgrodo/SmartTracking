@@ -342,6 +342,7 @@ public class ShipmentWebController {
 
     @PostMapping("/trackables/{trackableId}/devices/unbind")
     public String unbindDeviceToTrackable(
+            @PathVariable Long trackableId,
             @RequestParam Long deviceId,
             @RequestParam Long shipmentId
     ) {
