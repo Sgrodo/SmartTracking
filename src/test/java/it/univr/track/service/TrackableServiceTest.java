@@ -100,7 +100,7 @@ public class TrackableServiceTest extends BaseTest {
         assertNotNull(fetched);
         assertEquals(pkg.getId(), fetched.getId());
 
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             trackableService.getById(999999L);
         });
     }

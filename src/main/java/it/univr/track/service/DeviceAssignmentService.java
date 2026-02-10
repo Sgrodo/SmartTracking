@@ -3,6 +3,8 @@ package it.univr.track.service;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
+import it.univr.track.entity.enumeration.ShipmentState;
+import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceAssignmentRepository;
@@ -43,11 +45,14 @@ public class DeviceAssignmentService {
         ZonedDateTime now = time != null ? time : ZonedDateTime.now();
 
         Device device = deviceService.getDeviceById(deviceId);
-        Trackable target = trackableService.getById(trackableId);
-        if (this.isTrackableAssignedToDevice(target,device)) {
-            throw new IllegalStateException("Device " + deviceId + " is already assigned");
+        if (this.isDeviceAssigned(device)) {
+            throw new InvalidDataException("Device " + deviceId + " is already assigned");
         }
 
+        Trackable target = trackableService.getById(trackableId);
+        if(target.getShipment() != null && target.getShipment().isFinalState()){
+            throw new InvalidDataException("Cannot assign device to trackable " + trackableId + " because its shipment is in " + target.getShipment().getState());
+        }
         DeviceAssignment deviceAssignment = new DeviceAssignment(device, target, now);
         target.getDevices().add(deviceAssignment);
 
@@ -69,7 +74,7 @@ public class DeviceAssignmentService {
         Device device = deviceService.getDeviceById(deviceId);
 
         DeviceAssignment active = assignmentRepository.findFirstByDeviceAndToTsIsNull(device)
-                .orElseThrow(() -> new NotFoundException("Device " + deviceId + " has no active assignment"));
+                .orElseThrow(() -> new InvalidDataException("Device " + deviceId + " has no active assignment"));
 
         active.deactivate(now);
 
@@ -96,22 +101,13 @@ public class DeviceAssignmentService {
     }
 
     @Transactional(readOnly = true)
-    public Set<Long> getTrackableIdsWithActiveDevice(Collection<Trackable> trackables) {
-        if (trackables == null || trackables.isEmpty())
-            throw new IllegalArgumentException("trackables is null or empty");
+    public Set<DeviceAssignment> getActiveDeviceAssignmentsByTrackables(Collection<Trackable> trackables) {
+        if (trackables == null || trackables.isEmpty()) return Set.of();
 
-        Set<Long> result = new HashSet<>();
+        List<Long> ids = trackables.stream().map(Trackable::getId).toList();
+        List<DeviceAssignment> active = assignmentRepository.findActiveByTargetIds(ids);
 
-        for (Trackable t : trackables) {
-            boolean hasActiveAssignment =
-                    !assignmentRepository.findByTargetAndToTsIsNull(t).isEmpty();
-
-            if (hasActiveAssignment) {
-                result.add(t.getId());
-            }
-        }
-
-        return result;
+        return new HashSet<>(active);
     }
 
     @Transactional(readOnly = true)
@@ -128,12 +124,11 @@ public class DeviceAssignmentService {
 
 
     @Transactional
-    public boolean isTrackableAssignedToDevice(Trackable trk, Device device) {
-        Thrower.notNullArgumentException(trk, "trk is null");
+    public boolean isDeviceAssigned(Device device) {
         Thrower.notNullArgumentException(device, "device is null");
 
         return assignmentRepository
-                .findFirstByTargetAndDeviceAndToTsIsNull(trk, device)
+                .findFirstByDeviceAndToTsIsNull(device)
                 .isPresent();
     }
 

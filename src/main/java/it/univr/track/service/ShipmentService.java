@@ -68,12 +68,12 @@ public class ShipmentService {
         Thrower.notNullArgumentException(shipment, "shipment is null");
         ZonedDateTime date = endDate == null ? ZonedDateTime.now() : endDate;
 
-        Shipment s;
-        if(shipment.getId() != null && shipmentRepository.existsById(shipment.getId())){
-            s = shipmentRepository.getReferenceById(shipment.getId());
-        }else{
-            throw new NotFoundException("Shipment not found: " + shipment.getId());
+        if(shipment.getId() == null){
+            throw new NotFoundException("Shipment not in database");
         }
+
+        Shipment s = shipmentRepository.findById(shipment.getId())
+                .orElseThrow(() -> new NotFoundException("Shipment not found: " + shipment.getId()));;
         s.complete(date);
 
         this.deActivateDevicesOfTrackablesInShipment(shipment);
@@ -157,7 +157,11 @@ public class ShipmentService {
             trackableRepository.save(tr);
         }
         if(state != null){
-            s.setState(state);
+            switch (state){
+                case COMPLETED -> this.completeShipment(shipment);
+                case CANCELLED -> this.cancelShipment(shipment.getId());
+                default -> s.setState(state);
+            }
         }
         s.setDescription(description);
         //s è managed, save non necessario (in teoria)
@@ -207,20 +211,11 @@ public class ShipmentService {
     }
 
 
-    @Transactional(readOnly = true)
+    @Transactional
     protected void deActivateDevicesOfTrackablesInShipment (Shipment s){
-
-        //set di Id dei Trackables associati allo shipment
-        Set<Long> set = deviceAssignmentService.getTrackableIdsWithActiveDevice(s.getTrackables());
-        Set<DeviceAssignment> associatedDevices = new HashSet<>();
-        //di ogni trackable mi prendo i deviceAssignament
-        for(Long id : set){
-            associatedDevices = trackableService.getById(id).getDevices();
-            for (DeviceAssignment da : associatedDevices){
-                da.deactivate();
-                //deviceAssignmentService.unbind(id);
-            }
-
+        Set<DeviceAssignment> activeDeviceAssignments = deviceAssignmentService.getActiveDeviceAssignmentsByTrackables(s.getTrackables());
+        for (DeviceAssignment da : activeDeviceAssignments){
+            deviceAssignmentService.unbind(da.getDevice().getId());
         }
     }
 }

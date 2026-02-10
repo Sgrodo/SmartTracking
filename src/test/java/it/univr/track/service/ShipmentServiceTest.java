@@ -176,44 +176,47 @@ public class ShipmentServiceTest extends BaseTest {
     @Transactional
     @Test
     public void testCompleteShipment() {
+        // Create shipment and verify initial state
         Shipment shipment = shipmentService.create(ZonedDateTime.now(),
                 "Test Shipment", Set.of(utSample1, utSample2));
 
         assertEquals(ShipmentState.CREATED, shipment.getState());
 
+        // Update shipment state to COMPLETED and verify
         shipmentService.update(shipment, shipment.getDescription(), ZonedDateTime.now(),
                 ShipmentState.COMPLETED, shipment.getTrackables());
 
-        Shipment updatedShipment = shipmentService.getById(shipment.getId());
+        Shipment completedShipment = shipmentService.getById(shipment.getId());
 
-        assertEquals(ShipmentState.COMPLETED, updatedShipment.getState());
+        assertEquals(ShipmentState.COMPLETED, completedShipment.getState());
 
         //-----------------------------------------------------------------
-        //creo un device e lo associo ad un trackable dello shipment, verifico che funzioni
+        //creo un device e lo associo ad un trackable dello shipment completato (invalido)
         Device device1 = new Device(true,true,true, new BigDecimal("1.0"),"Italy");
         device1 = deviceRepository.save(device1);
-        deviceAssignmentService.bind(device1.getId(), utSample1.getId());
-        assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(updatedShipment));
+        final Device finalDevice = device1; // serve per usarlo dentro la lambda, altrimenti non è effettivamente final e non compila
+        assertThrows(InvalidDataException.class, () ->{
+            deviceAssignmentService.bind(finalDevice.getId(), utSample1.getId());
+        });
 
         //illegale se non completi
         assertThrows(IllegalStateException.class, ()->{
             Shipment s = shipmentService.create(null,"test shipment",Set.of(utSample1,utSample2));
         });
 
-
+        // Testing dell'associazione di un device prima appartenente ad uno shipment completato (dovrebbe essere possibile)
         UnitLoad unitLoad = unitLoadService.createUnitLoad(
                 null, null, null, List.of(loadItems[0]));
 
-        Shipment s = shipmentService.create(null,"test shipment",Set.of(unitLoad));
+        Shipment newShipment = shipmentService.create(null,"test shipment",Set.of(unitLoad));
 
         deviceAssignmentService.bind(device1.getId(), unitLoad.getId());
 
-        assertEquals(TrackingState.INACTIVE, shipmentService.getTrackingState(s));
-        assertEquals(ShipmentState.CREATED, shipmentService.getById(s.getId()).getState());
+        assertEquals(ShipmentState.CREATED, shipmentService.getById(newShipment.getId()).getState());
 
+        shipmentService.completeShipment(newShipment);
 
-        shipmentService.completeShipment(s);
-        assertEquals(ShipmentState.COMPLETED, shipmentService.getById(s.getId()).getState());
+        assertEquals(ShipmentState.COMPLETED, shipmentService.getById(newShipment.getId()).getState());
 
     }
 

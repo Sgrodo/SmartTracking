@@ -3,6 +3,7 @@ package it.univr.track.rest;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
 
 public class ShipmentRestTest extends BaseRestTest {
 
@@ -209,7 +210,88 @@ public class ShipmentRestTest extends BaseRestTest {
         .then()
                 .log().all()
                 .statusCode(400);
+    }
 
+    @Test
+    public void testSetTrackingState(){
+        // TODO
+    }
+
+    @Test
+    public void testAllocateAndDeallocate(){
+        // extract devices length before allocation
+        int devicesLengthBefore = given()
+        .when()
+                .get("/api/unitloads/1")
+        .then()
+                .statusCode(200)
+                .extract()
+                .path("devices.size()");
+
+        // allocate a device to the trackable
+        given()
+        .when()
+                .post("/api/shipment/allocate?trackableId=1&deviceId=1")
+        .then()
+                .statusCode(200);
+
+        // check if the device is allocated to the trackable
+        given()
+        .when()
+                .get("/api/unitloads/1")
+        .then()
+                .statusCode(200)
+                .body("devices.size()", is(devicesLengthBefore + 1));
+
+        // allocate the same device again should fail
+        given()
+        .when()
+                .post("/api/shipment/allocate?trackableId=2&deviceId=1")
+        .then()
+                .statusCode(400);
+
+        // invalid trackable ID
+        given()
+        .when()
+                .post("/api/shipment/allocate?trackableId=999&deviceId=1")
+        .then()
+                .statusCode(404);
+
+        // invalid device ID
+        given()
+        .when()
+                .post("/api/shipment/allocate?trackableId=1&deviceId=999")
+        .then()
+                .statusCode(404);
+
+        // deallocate the device from the trackable
+        given()
+        .when()
+                .post("/api/shipment/deallocate?deviceId=1")
+        .then()
+                .statusCode(200);
+
+        // check if the device is deallocated from the trackable
+        given()
+        .when()
+                .get("/api/unitloads/1")
+        .then()
+                .statusCode(200)
+                .body("devices.size()", is(devicesLengthBefore));
+
+        // deallocate the same device again should fail
+        given()
+        .when()
+                .post("/api/shipment/deallocate?deviceId=1")
+        .then()
+                .statusCode(400);
+
+        // invalid device ID for deallocation
+        given()
+        .when()
+                .post("/api/shipment/deallocate?deviceId=999")
+        .then()
+                .statusCode(404);
 
     }
 
