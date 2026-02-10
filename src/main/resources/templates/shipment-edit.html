@@ -9,7 +9,7 @@
 <h1>Edit Shipment</h1>
 
 <!-- ERROR MESSAGE -->
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
+<p id="error" th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
 
 <form th:action="@{/web/shipments/{id}/edit(id=${shipment.id})}" method="post">
 
@@ -18,21 +18,20 @@
         <span th:text="${shipment.id}">1</span>
     </p>
 
-    <p>
-        <label>Description:</label>
-        <label>
-            <input type="text"
-                   name="description"
-                   maxlength="240"
-                   th:value="${shipment.description}" />
-        </label>
-    </p>
+    <div>
+        <label for="description-input">Description:</label>
+        <input id="description-input"
+               type="text"
+               name="description"
+               maxlength="240"
+               th:value="${shipment.description}" />
+    </div>
 
     <!-- ================= UNIT LOADS ================= -->
 
     <h2>UnitLoads</h2>
 
-    <table th:border="1" th:cellpadding="6">
+    <table id="unit-loads-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -68,7 +67,7 @@
 
     <h2>Packages</h2>
 
-    <table th:border="1" th:cellpadding="6">
+    <table id="packages-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -108,12 +107,12 @@
 
     <!-- ================= ACTIONS ================= -->
 
-    <p style="margin-top:16px;">
-        <button type="submit">Save</button>
+    <div style="margin-top:16px;">
+        <input type="submit" value="Save" />
         <a th:href="@{/web/shipments/list}">
             <button type="button">Cancel</button>
         </a>
-    </p>
+    </div>
 
 </form>
 

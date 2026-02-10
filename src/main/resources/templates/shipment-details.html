@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Shipment details</title>
 </head>
 <body>
@@ -12,14 +12,16 @@
 
 <h1>Shipment details</h1>
 
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p id="error" style="color:red;" th:if="${error}" th:text="${error}"></p>
 
 <p>
-    <b>ID:</b> <span th:text="${shipment.id}">1</span><br/>
-    <b>Start:</b> <span th:text="${shipment.startDate != null ? shipment.startDate : '-'}">-</span><br/>
-    <b>End:</b> <span th:text="${shipment.endDate != null ? shipment.endDate : '-'}">-</span><br/>
+    <b>ID:</b> <span id="shipment-id" th:text="${shipment.id}">1</span><br/>
+    <b>Start:</b> <span id="shipment-start-date"
+                        th:text="${shipment.startDate != null ? shipment.startDate : '-'}">-</span><br/>
+    <b>End:</b> <span id="shipment-end-date"
+                      th:text="${shipment.endDate != null ? shipment.endDate : '-'}">-</span><br/>
     <b>Description:</b>
-    <span th:text="${(shipment.description != null && !#strings.isEmpty(shipment.description))
+    <span id="shipment-description" th:text="${(shipment.description != null && !#strings.isEmpty(shipment.description))
                     ? shipment.description : '-'}">-</span><br/>
 </p>
 
@@ -28,38 +30,25 @@
 <!-- ========================= -->
 
 <!-- Se NON è finale -->
-<div th:if="${!shipment.isFinalState()}"
-     style="border:1px solid #ddd; padding:12px; margin:16px 0; border-radius:8px;">
-
-    <h2 style="margin:0 0 8px 0;">TrackingState</h2>
-
-    <p style="margin:0 0 12px 0;">
-        <b>Current state:</b>
-        <span th:text="${trackingState.toString()}">CREATED</span>
-    </p>
-
-    <div style="display:flex; gap:10px;">
-        <form th:action="@{/web/shipments/{id}/tracking/activate(id=${shipment.id})}" method="post">
-            <button type="submit">Activate</button>
-        </form>
-
-        <form th:action="@{/web/shipments/{id}/tracking/deactivate(id=${shipment.id})}" method="post">
-            <button type="submit">Deactivate</button>
-        </form>
-    </div>
-</div>
-
-<!-- Se è finale -->
-<div th:if="${shipment.isFinalState()}"
-     style="border:1px solid #eee; padding:12px; margin:16px 0;
-            border-radius:8px; background:#fafafa;">
+<div style="border:1px solid #ddd; padding:12px; margin:16px 0; border-radius:8px;">
 
     <h2 style="margin:0 0 8px 0;">TrackingState</h2>
 
     <p style="margin:0;">
-        Shipment finale: tracking non modificabile.<br/>
-        Stato: <b th:text="${shipment.state}">COMPLETED</b>
+        <span th:if="${shipment.isFinalState()}">Final shipment: tracking cannot be modified.</span><br/>
+        Current state: <b id="shipment-status" th:text="${shipment.state}">CREATED</b>
     </p>
+
+    <div th:if="${!shipment.isFinalState()}">
+        " style="display:flex; gap:10px;">
+        <form method="post" th:action="@{/web/shipments/{id}/tracking/activate(id=${shipment.id})}">
+            <input id="activate-btn" type="submit" value="Activate"/>
+        </form>
+
+        <form method="post" th:action="@{/web/shipments/{id}/tracking/deactivate(id=${shipment.id})}">
+            <input id="deactivate-btn" type="submit" value="Deactivate"/>
+        </form>
+    </div>
 </div>
 
 <!-- ========================= -->
@@ -68,7 +57,7 @@
 
 <h2>Trackables</h2>
 
-<table th:border="1" th:cellpadding="6"
+<table id="trackable-table" th:border="1" th:cellpadding="6"
        th:if="${shipment.trackables != null && !#lists.isEmpty(shipment.trackables)}">
     <thead>
     <tr>
@@ -82,12 +71,13 @@
         <td th:text="${t.getClass().getSimpleName()}">Trackable</td>
         <td th:text="${t.id}">1</td>
         <td th:text="${(t.description != null && !#strings.isEmpty(t.description))
-                        ? t.description : '-'}">-</td>
+                        ? t.description : '-'}">-
+        </td>
     </tr>
     </tbody>
 </table>
 
-<p th:if="${shipment.trackables == null || #lists.isEmpty(shipment.trackables)}">
+<p id="no-trk-msg" th:if="${shipment.trackables == null || #lists.isEmpty(shipment.trackables)}">
     No trackables in this shipment.
 </p>
 

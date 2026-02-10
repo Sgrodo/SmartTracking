@@ -1,0 +1,145 @@
+package it.univr.track.web.po;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+
+public class CreateShipmentPage extends BasePageObject {
+    @FindBy(xpath = "//a[@href='/web/shipments/list']")
+    public WebElement linkBackShipments;
+
+    @FindBy(xpath = "//h1")
+    public WebElement h1CreateShipment;
+
+    @FindBy(xpath = "//p[@id='error']")
+    public WebElement pError;
+
+    @FindBy(xpath = "//a[@href='/web/unitloads/new']")
+    public WebElement linkNewUnitLoad;
+
+    @FindBy(xpath = "//a[@href='/web/packages/new']")
+    public WebElement linkNewPackage;
+
+    @FindBy(xpath = "//textarea[@id='description']")
+    public WebElement textareaDescription;
+
+    @FindBy(xpath = "//table[@id='unit-loads-table']")
+    public WebElement tableUnitLoads;
+
+    @FindBy(xpath = "//table[@id='packages-table']")
+    public WebElement tablePackages;
+
+    @FindBy(xpath = "//input[@type='submit']")
+    public WebElement inputCreateShipment;
+
+    public CreateShipmentPage(WebDriver driver) {
+        super(driver);
+    }
+
+    public boolean hasError() {
+        return this.pError.isDisplayed();
+    }
+
+    public String getError() {
+        return hasError() ? this.pError.getText() : null;
+    }
+
+    public ShipmentListPage toShipmentListPage() {
+        this.linkBackShipments.click();
+        return new ShipmentListPage(this.driver);
+    }
+
+    public String getTitle() {
+        return this.h1CreateShipment.getText();
+    }
+
+    public CreateUnitLoadPage toCreateUnitLoadPage() {
+        this.linkNewUnitLoad.click();
+        return new CreateUnitLoadPage(this.driver);
+    }
+
+    public CreatePackagePage toCreatePackagePage() {
+        this.linkNewPackage.click();
+        return new CreatePackagePage(this.driver);
+    }
+
+    public void insertDescription(String description) {
+        this.textareaDescription.sendKeys(description);
+    }
+
+    public int getUnitLoadsCount() {
+        return this.tableUnitLoads.findElements(By.xpath(".//tbody/tr")).size();
+    }
+
+    public int getPackagesCount() {
+        return this.tablePackages.findElements(By.xpath(".//tbody/tr")).size();
+    }
+
+    public boolean selectUniLoad(int unitLoadId) {
+        try {
+            var checkbox = this.tableUnitLoads.findElement(By.xpath(".//tbody/tr[td[2][text()='" + unitLoadId + "']]/td[1]/input"));
+            if (!checkbox.isSelected()) {
+                checkbox.click();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean selectPackage(int packageId) {
+        try {
+            var checkbox = this.tablePackages.findElement(By.xpath(".//tbody/tr[td[2][text()='" + packageId + "']]/td[1]/input"));
+            if (!checkbox.isSelected()) {
+                checkbox.click();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Iterable<UnitLoadRow> getUnitLoads() {
+        return this.tableUnitLoads.findElements(By.xpath(".//tbody/tr")).stream()
+                .filter(tr -> tr.findElements(By.tagName("td")).size() == 4)
+                .map(tr -> {
+                            var columns = tr.findElements(By.tagName("td"));
+                            var selected = columns.get(0).findElement(By.tagName("input")).isSelected();
+                            var id = Long.parseLong(columns.get(1).getText());
+                            var description = columns.get(2).getText();
+                            var numPhysicalConstraints = Long.parseLong(columns.get(3).getText());
+                            return new UnitLoadRow(selected, id, description, numPhysicalConstraints);
+                        }
+                )
+                .toList();
+    }
+
+    public Iterable<PackageRow> getPackages() {
+        return this.tablePackages.findElements(By.xpath(".//tbody/tr")).stream()
+                .filter(tr -> tr.findElements(By.tagName("td")).size() == 4)
+                .map(tr -> {
+                            var columns = tr.findElements(By.tagName("td"));
+                            var selected = columns.get(0).findElement(By.tagName("input")).isSelected();
+                            var id = Long.parseLong(columns.get(1).getText());
+                            var description = columns.get(2).getText();
+                            var numUnitLoads = Long.parseLong(columns.get(3).getText());
+                            return new PackageRow(selected, id, description, numUnitLoads);
+                        }
+                )
+                .toList();
+    }
+
+    public ShipmentListPage createShipment() {
+        this.inputCreateShipment.click();
+        return new ShipmentListPage(this.driver);
+    }
+
+    public record UnitLoadRow(boolean selected, long id, String description, long numPhysicalConstraints) {
+    }
+
+    public record PackageRow(boolean selected, long id, String description, long numUnitLoads) {
+    }
+
+
+}

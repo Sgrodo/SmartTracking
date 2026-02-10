@@ -2,7 +2,7 @@
 
 <p> <a th:href="@{/web/newShipment}"> <button type="button">Create new shipment</button> </a> </p>
 
-<table th:border="1" th:cellpadding="6">
+<table id="active-shipments-table" th:border="1" th:cellpadding="6">
     <thead>
     <tr>
         <th>ID</th>
@@ -52,7 +52,7 @@
 
 <h2 style="margin-top: 24px;">Completed / Cancelled</h2>
 
-<table th:border="1" th:cellpadding="6">
+<table id="finalized-shipments-table" th:border="1" th:cellpadding="6">
     <thead>
     <tr>
         <th>ID</th>

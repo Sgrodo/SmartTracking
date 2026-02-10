@@ -9,7 +9,7 @@
 <p><a th:href="@{/web/shipments/list}">← Back to shipments</a></p>
 
 <h1>Create shipment</h1>
-<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
+<p id="error" th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
 
 <div style="margin-bottom:15px;">
     <a th:href="@{/web/unitloads/new}">
@@ -25,10 +25,8 @@
 
     <h2>Shipment info</h2>
     <div>
-        <label>Description:</label><br/>
-        <label>
-            <textarea name="description" rows="3" cols="60" maxlength="240" placeholder="Describe the shipment..."></textarea>
-        </label>
+        <label for="description-textarea">Description:</label><br/>
+        <textarea id="description-textarea" name="description" rows="3" cols="60" maxlength="240" placeholder="Describe the shipment..."></textarea>
     </div>
 
     <hr/>
@@ -36,7 +34,7 @@
     <h2>Select UnitLoads</h2>
     <p><small>Pick one or more UnitLoads already stored in DB.</small></p>
 
-    <table th:border="1" th:cellpadding="6">
+    <table id="unit-loads-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -71,7 +69,7 @@
     <h2>Select Packages</h2>
     <p><small>Pick one or more Packages already stored in DB.</small></p>
 
-    <table th:border="1" th:cellpadding="6">
+    <table id="packages-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -103,7 +101,7 @@
 
     <hr/>
 
-    <button type="submit">Create shipment</button>
+    <input type="submit" value="Create Shipment" />
 </form>
 
 </body>

@@ -22,9 +22,11 @@
     </small>
 </p>
 
-<p th:if="${error != null}" th:text="${error}" style="color:red;"></p>
+<p id="error" th:if="${error != null}" th:text="${error}" style="color:red;"></p>
 
-<div th:each="t : ${trackables}" style="margin-bottom:30px;">
+<div th:each="t : ${trackables}"
+     th:id="|trackable-${t.id}|"
+     style="margin-bottom:30px;">
     <h3>Trackable <span th:text="${t.id}">1</span></h3>
 
     <table th:border="1" th:cellpadding="6">

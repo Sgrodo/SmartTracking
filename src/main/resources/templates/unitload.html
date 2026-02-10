@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Create UnitLoad</title>
 </head>
 <body>
@@ -12,15 +12,13 @@
 </p>
 
 <h1>Create UnitLoad</h1>
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p id="error" style="color:red;" th:if="${error}" th:text="${error}"></p>
 
-<form th:action="@{/web/unitloads/new}" method="post">
+<form method="post" th:action="@{/web/unitloads/new}">
 
     <div>
-        <label>Description:</label><br/>
-        <label>
-            <input type="text" name="description" maxlength="240" style="width:420px;" />
-        </label>
+        <label for="description-input">Description:</label><br/>
+        <input id="description-input" maxlength="240" name="description" style="width:420px;" type="text"/>
     </div>
 
     <hr/>
@@ -29,24 +27,22 @@
 
     <!-- TEMPERATURE -->
     <div style="margin-bottom:12px;">
-        <label><b>Temperature</b></label><br/>
-        <label>
-            <input type="number"
-                   name="temperatureValue"
-                   step="0.1"
-                   min="-30"
-                   max="30"
-                   placeholder="e.g. 5"
-                   style="width:140px;" />
-        </label>
+        <b>Temperature</b><br/>
+        <label for="temperature-value-input">Value:</label>
+        <input id="temperature-value-input" max="30"
+               min="-30"
+               name="temperatureValue"
+               placeholder="e.g. 5"
+               step="0.1"
+               style="width:140px;"
+               type="number"/>
 
-        <label>
-            <select name="temperatureUnit">
-                <option value="CELSIUS" selected>CELSIUS</option>
-                <option value="FAHRENHEIT">FAHRENHEIT</option>
-                <option value="KELVIN">KELVIN</option>
-            </select>
-        </label>
+        <label for="temperature-unit-select" style="margin-left:12px;">Unit:</label>
+        <select id="temperature-unit-select" name="temperatureUnit">
+            <option selected value="CELSIUS">CELSIUS</option>
+            <option value="FAHRENHEIT">FAHRENHEIT</option>
+            <option value="KELVIN">KELVIN</option>
+        </select>
 
         <small style="display:block; margin-top:4px;">
             Optional. Leave empty if no temperature constraint.
@@ -55,16 +51,15 @@
 
     <!-- HUMIDITY -->
     <div style="margin-bottom:12px;">
-        <label><b>Humidity (%)</b></label><br/>
-        <label>
-            <input type="number"
-                   name="humidityValue"
-                   step="1"
-                   min="0"
-                   max="100"
-                   placeholder="e.g. 60"
-                   style="width:140px;" />
-        </label>
+        <label for="humidity-value-input"><b>Humidity (%)</b></label><br/>
+        <input id="humidity-value-input"
+               max="100"
+               min="0"
+               name="humidityValue"
+               placeholder="e.g. 60"
+               step="1"
+               style="width:140px;"
+               type="number"/>
         <small style="display:block; margin-top:4px;">
             Optional. Value in percent (0–100).
         </small>
@@ -73,7 +68,7 @@
     <hr/>
 
     <h2>Select LoadItems</h2>
-    <table th:border="1" th:cellpadding="6">
+    <table id="load-items-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -85,7 +80,7 @@
         <tr th:each="li : ${loadItems}">
             <td>
                 <label>
-                    <input type="checkbox" name="loadItemIds" th:value="${li.id}" />
+                    <input name="loadItemIds" th:value="${li.id}" type="checkbox"/>
                 </label>
             </td>
             <td th:text="${li.id}">1</td>
@@ -100,7 +95,7 @@
     <hr/>
 
     <h2>Select Devices (optional)</h2>
-    <table th:border="1" th:cellpadding="6">
+    <table id="devices-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -116,7 +111,7 @@
         <tr th:each="d : ${devices}">
             <td>
                 <label>
-                    <input type="checkbox" name="deviceIds" th:value="${d.id}" />
+                    <input name="deviceIds" th:value="${d.id}" type="checkbox"/>
                 </label>
             </td>
             <td th:text="${d.id}">1</td>
@@ -134,7 +129,7 @@
 
     <hr/>
 
-    <button type="submit">Create UnitLoad</button>
+    <input type="submit" value="Create UnitLoad"/>
 </form>
 
 </body>

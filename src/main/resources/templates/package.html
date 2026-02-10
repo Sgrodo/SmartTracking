@@ -12,7 +12,7 @@
 </p>
 
 <h1>Create Package</h1>
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p id="error" th:if="${error}" th:text="${error}" style="color:red;"></p>
 
 <form th:action="@{/web/packages/new}" method="post">
 
@@ -26,7 +26,7 @@
     <hr/>
 
     <h2>Select UnitLoads to include</h2>
-    <table th:border="1" th:cellpadding="6">
+    <table id="unit-loads-table" th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -56,8 +56,9 @@
 
     <hr/>
 
-    <button type="submit">Create Package</button>
+    <input type="submit" value="Create Package" />
 </form>
+
 
 </body>
 </html>
