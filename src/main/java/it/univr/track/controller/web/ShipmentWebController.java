@@ -92,12 +92,9 @@ public class ShipmentWebController {
                 shipmentService.create(null, description, trackables);
                 return "redirect:/web/shipments/list";
             } catch (InvalidDataException e) {
-                model.addAttribute("errorMessage", e.getMessage());
+                model.addAttribute("errorMessage", "ERROR\nYou must specify al least one Trackable object");
 
-                // IMPORTANTISSIMO: ricaricare anche i dati che servono alla pagina (liste unitload/package ecc)
-                //model.addAttribute("availableTrackables", trackableService.getAllTrackablesNotInShipments());
-                // + qualsiasi altra roba che la view usa (altrimenti NPE in thymeleaf)
-                // da controllare
+                // IMPORTANTISSIMO: ricaricare anche i dati che servono alla pagina
                 model.addAttribute("unitLoads",unitLoadService.getAllNotInShipmentAndNotInPackages());
                 model.addAttribute("packages",packageService.getAllPackagesNotInShipments());
 
@@ -239,10 +236,13 @@ public class ShipmentWebController {
             }
 
             // 2) LoadItems (null-safe)
-            Set<LoadItem> loadItems =
-                    (loadItemIds == null || loadItemIds.isEmpty())
-                            ? Set.of()
-                            : loadItemRepository.getLoadItemsByIdIn(loadItemIds);
+            Set<LoadItem> loadItems = new HashSet<>();
+            if(loadItemIds == null || loadItemIds.isEmpty()){
+                throw new InvalidDataException("loadItemIds is required");
+            }else{
+                loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
+            }
+
 
             // 3) Create UnitLoad
             UnitLoad u = unitLoadService.createUnitLoad(
@@ -253,10 +253,12 @@ public class ShipmentWebController {
             );
 
             // 4) Bind devices (null-safe)
-            if (deviceIds != null) {
-                for (Long deviceId : deviceIds) {
-                    deviceAssignmentService.bind(deviceId, u.getId());
-                }
+            if(deviceIds == null || deviceIds.isEmpty()){
+                throw new InvalidDataException("deviceIds is required");
+            }
+
+            for (Long deviceId : deviceIds) {
+                deviceAssignmentService.bind(deviceId, u.getId());
             }
 
             return "redirect:/web/newShipment";
@@ -287,15 +289,15 @@ public class ShipmentWebController {
             Model model
     ) {
         if (unitLoadIds == null){
-            model.addAttribute("unitLoads", unitLoadService.getAllUnitloadsNotInShipment());
-            return "redirect:/web/packages/new";
+            model.addAttribute("error","At least one UnitLoad must be selected to create a Package.");
+            model.addAttribute("unitLoads", unitLoadService.getAllNotInShipmentAndNotInPackages());
+            return "package";
         }
         Set<UnitLoad> unitloads = new HashSet<>();
         for(Long id : unitLoadIds) {
             unitloads.add(unitLoadService.getUnitLoadById(id));
         }
         packageService.createPackage(UUID.randomUUID().toString(),description, unitloads);
-        model.addAttribute("unitLoads", unitLoadService.getAllUnitloadsNotInShipment());
         return "redirect:/web/newShipment";
     }
 

@@ -9,7 +9,7 @@
 <p><a th:href="@{/web/shipments/list}">← Back to shipments</a></p>
 
 <h1>Create shipment</h1>
-<p th:if="${error}" th:text="${error}" style="color:red;"></p>
+<p th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
 
 <div style="margin-bottom:15px;">
     <a th:href="@{/web/unitloads/new}">
