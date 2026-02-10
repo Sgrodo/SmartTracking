@@ -214,30 +214,61 @@ public class ShipmentWebController {
     @PostMapping("/unitloads/new")
     public String createUnitLoad(
             @RequestParam String description,
-            @RequestParam(required = false) String constraintsRaw,
+            @RequestParam(required = false) Double temperatureValue,
+            @RequestParam(required = false) TemperatureUnit temperatureUnit,
+            @RequestParam(required = false) Integer humidityValue,
             @RequestParam(required = false) List<Long> loadItemIds,
             @RequestParam(required = false) List<Long> deviceIds,
             Model model
     ) {
-        // parse constraints raw
-        List<PhysicalConstraint> c = parseConstraintsRaw(constraintsRaw);
-        Set<PhysicalConstraint> constraints = new HashSet<>(c);
-        try{
-            Set<LoadItem> loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
+        try {
+            // 1) Build constraints
+            Set<PhysicalConstraint> constraints = new HashSet<>();
 
-            UnitLoad u = unitLoadService.createUnitLoad(description,null, constraints, loadItems);
-
-            for(Long id : deviceIds) {
-                deviceAssignmentService.bind(id,u.getId());
+            // TEMPERATURE
+            if (temperatureValue != null) {
+                if (temperatureUnit == null) {
+                    throw new InvalidDataException("Temperature unit is required");
+                }
+                constraints.add(new TemperatureConstraint(temperatureValue, temperatureUnit));
             }
+
+            // HUMIDITY
+            if (humidityValue != null) {
+                constraints.add(new HumidityConstraint(humidityValue.doubleValue()));
+            }
+
+            // 2) LoadItems (null-safe)
+            Set<LoadItem> loadItems =
+                    (loadItemIds == null || loadItemIds.isEmpty())
+                            ? Set.of()
+                            : loadItemRepository.getLoadItemsByIdIn(loadItemIds);
+
+            // 3) Create UnitLoad
+            UnitLoad u = unitLoadService.createUnitLoad(
+                    description,
+                    null,
+                    constraints,
+                    loadItems
+            );
+
+            // 4) Bind devices (null-safe)
+            if (deviceIds != null) {
+                for (Long deviceId : deviceIds) {
+                    deviceAssignmentService.bind(deviceId, u.getId());
+                }
+            }
+
+            return "redirect:/web/newShipment";
+
         } catch (Exception e) {
+            model.addAttribute("error", e.getMessage());
             model.addAttribute("loadItems", loadItemRepository.findAll());
             model.addAttribute("devices", deviceService.getAvailableDevices());
-            return "redirect:/web/unitloads/new";
+            return "unitload"; // view, non redirect
         }
-
-        return "redirect:/web/newShipment";
     }
+
 
     //PACKAGE
 
@@ -365,39 +396,6 @@ public class ShipmentWebController {
 */
 
     // HELPERS
-
-    private static List<PhysicalConstraint> parseConstraintsRaw(String constraintsRaw) {
-        List<PhysicalConstraint> out = new ArrayList<>();
-        if (constraintsRaw == null || constraintsRaw.isBlank()) return out;
-
-        String[] lines = constraintsRaw.split("\\R"); // split su newline
-        for (String line : lines) {
-            String s = line.trim();
-            if (s.isEmpty()) continue;
-
-            String[] parts = s.split("\\s*;\\s*");
-            if (parts.length < 2) {
-                throw new IllegalArgumentException("Invalid constraint line: " + line);
-            }
-
-            PhysicalConstraintType type = PhysicalConstraintType.valueOf(parts[0].trim().toUpperCase());
-
-            switch (type) {
-                case HUMIDITY -> {
-                    double percent = Double.parseDouble(parts[1]);
-                    out.add(new HumidityConstraint(percent));
-                }
-                case TEMPERATURE -> {
-                    double value = Double.parseDouble(parts[1]);
-                    TemperatureUnit unit = (parts.length >= 3 && !parts[2].isBlank())
-                            ? TemperatureUnit.valueOf(parts[2].trim().toUpperCase())
-                            : TemperatureUnit.CELSIUS;
-                    out.add(new TemperatureConstraint(value, unit));
-                }
-            }
-        }
-        return out;
-    }
 
     private void prepareShipmentEditModel(Shipment shipment,
                                           Set<Long> selectedUnitLoadIds,

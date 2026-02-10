@@ -18,24 +18,62 @@
 
     <div>
         <label>Description:</label><br/>
-        <input type="text" name="description" style="width:420px;" />
+        <label>
+            <input type="text" name="description" maxlength="240" style="width:420px;" />
+        </label>
     </div>
 
     <hr/>
 
     <h2>Physical constraints</h2>
-    <p><small>
-        One per line.<br/>
-        <code>TEMPERATURE;5;CELSIUS</code><br/>
-        <code>HUMIDITY;60</code>
-    </small></p>
 
-    <textarea name="constraintsRaw" rows="6" cols="60" placeholder="TYPE;value;unit(optional)"></textarea>
+    <!-- TEMPERATURE -->
+    <div style="margin-bottom:12px;">
+        <label><b>Temperature</b></label><br/>
+        <label>
+            <input type="number"
+                   name="temperatureValue"
+                   step="0.1"
+                   min="-30"
+                   max="30"
+                   placeholder="e.g. 5"
+                   style="width:140px;" />
+        </label>
+
+        <label>
+            <select name="temperatureUnit">
+                <option value="CELSIUS" selected>CELSIUS</option>
+                <option value="FAHRENHEIT">FAHRENHEIT</option>
+                <option value="KELVIN">KELVIN</option>
+            </select>
+        </label>
+
+        <small style="display:block; margin-top:4px;">
+            Optional. Leave empty if no temperature constraint.
+        </small>
+    </div>
+
+    <!-- HUMIDITY -->
+    <div style="margin-bottom:12px;">
+        <label><b>Humidity (%)</b></label><br/>
+        <label>
+            <input type="number"
+                   name="humidityValue"
+                   step="1"
+                   min="0"
+                   max="100"
+                   placeholder="e.g. 60"
+                   style="width:140px;" />
+        </label>
+        <small style="display:block; margin-top:4px;">
+            Optional. Value in percent (0–100).
+        </small>
+    </div>
 
     <hr/>
 
     <h2>Select LoadItems</h2>
-    <table border="1" cellpadding="6">
+    <table th:border="1" th:cellpadding="6">
         <thead>
         <tr>
             <th>Select</th>
@@ -45,7 +83,11 @@
         </thead>
         <tbody>
         <tr th:each="li : ${loadItems}">
-            <td><input type="checkbox" name="loadItemIds" th:value="${li.id}" /></td>
+            <td>
+                <label>
+                    <input type="checkbox" name="loadItemIds" th:value="${li.id}" />
+                </label>
+            </td>
             <td th:text="${li.id}">1</td>
             <td th:text="${li.description}">desc</td>
         </tr>
@@ -72,7 +114,11 @@
         </thead>
         <tbody>
         <tr th:each="d : ${devices}">
-            <td><input type="checkbox" name="deviceIds" th:value="${d.id}" /></td>
+            <td>
+                <label>
+                    <input type="checkbox" name="deviceIds" th:value="${d.id}" />
+                </label>
+            </td>
             <td th:text="${d.id}">1</td>
             <td th:text="${d.origin}">FORMULA</td>
             <td th:text="${d.isConnected}">true</td>
