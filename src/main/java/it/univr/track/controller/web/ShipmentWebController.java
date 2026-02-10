@@ -152,7 +152,7 @@ public class ShipmentWebController {
 
             Shipment shipment = shipmentService.getById(id);
 
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("errorMessage", "You must select at least one Unit Load or Package to update the shipment.");
 
             prepareShipmentEditModel(shipment, selectedUnitLoadIds, selectedPackageIds, model);
 
