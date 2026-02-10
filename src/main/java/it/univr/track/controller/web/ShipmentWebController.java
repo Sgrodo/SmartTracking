@@ -16,6 +16,7 @@ import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.enumeration.PhysicalConstraintType;
 import it.univr.track.entity.enumeration.TemperatureUnit;
+import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.entity.sensor.TemperatureConstraint;
@@ -28,6 +29,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -112,12 +114,12 @@ public class ShipmentWebController {
         Set<Long> selectedUnitLoadIds = shipment.getTrackables().stream()
                 .filter(t -> t instanceof UnitLoad)
                 .map(Trackable::getId)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         Set<Long> selectedPackageIds = shipment.getTrackables().stream()
                 .filter(t -> t instanceof Package)
                 .map(Trackable::getId)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         prepareShipmentEditModel(shipment, selectedUnitLoadIds, selectedPackageIds, model);
         return "shipment-edit";
@@ -134,10 +136,10 @@ public class ShipmentWebController {
         if (unitLoadIds == null) unitLoadIds = List.of();
         if (packageIds == null) packageIds = List.of();
 
-        Set<Long> selectedUnitLoadIds = new java.util.HashSet<>(unitLoadIds);
-        Set<Long> selectedPackageIds  = new java.util.HashSet<>(packageIds);
+        Set<Long> selectedUnitLoadIds = new HashSet<>(unitLoadIds);
+        Set<Long> selectedPackageIds  = new HashSet<>(packageIds);
 
-        Set<Long> allIds = new java.util.HashSet<>();
+        Set<Long> allIds = new HashSet<>();
         allIds.addAll(unitLoadIds);
         allIds.addAll(packageIds);
 
@@ -186,6 +188,15 @@ public class ShipmentWebController {
     @GetMapping("/shipments/{id}")
     public String shipmentDetails(@PathVariable Long id, Model model) {
         model.addAttribute("shipment", shipmentService.getById(id));
+        Set<Trackable> trackables = shipmentService.getById(id).getTrackables();
+        Set<DeviceAssignment> deviceAssignaments =deviceAssignmentService.getActiveDeviceAssignmentsByTrackables(trackables);
+        TrackingState t = TrackingState.INACTIVE;
+        for(DeviceAssignment d : deviceAssignaments){
+            t = d.getDevice().getTrackingState();
+            break;
+        }
+        model.addAttribute("trackingState",t);
+
         return "shipment-details";
     }
 
@@ -241,10 +252,13 @@ public class ShipmentWebController {
     @PostMapping("/packages/new")
     public String createPackage(
             @RequestParam(required = false) String description,
-            @RequestParam List<Long> unitLoadIds,
+            @RequestParam(required = false) List<Long> unitLoadIds,
             Model model
     ) {
-        if (unitLoadIds == null) unitLoadIds = List.of();
+        if (unitLoadIds == null){
+            model.addAttribute("unitLoads", unitLoadService.getAllUnitloadsNotInShipment());
+            return "redirect:/web/packages/new";
+        }
         Set<UnitLoad> unitloads = new HashSet<>();
         for(Long id : unitLoadIds) {
             unitloads.add(unitLoadService.getUnitLoadById(id));
@@ -301,6 +315,25 @@ public class ShipmentWebController {
         // oppure meglio: return "redirect:/web/shipments/" + shipmentId + "/trackables";
     }
 
+    //TRACKING
+
+    // ACTIVATE tracking
+    @PostMapping("/shipments/{id}/tracking/activate")
+    public String activateTracking(@PathVariable Long id, Model model) {
+        shipmentService.setTrackingState(id,TrackingState.ACTIVE);
+        model.addAttribute("shipment", shipmentService.getById(id));
+        model.addAttribute("trackingState",TrackingState.ACTIVE);
+        return "redirect:/web/shipments/" + id;
+    }
+
+    // DEACTIVATE tracking
+    @PostMapping("/shipments/{id}/tracking/deactivate")
+    public String deactivateTracking(@PathVariable Long id, Model model) {
+        shipmentService.setTrackingState(id, TrackingState.INACTIVE);
+        model.addAttribute("shipment", shipmentService.getById(id));
+        model.addAttribute("trackingState",TrackingState.INACTIVE);
+        return "redirect:/web/shipments/" + id;
+    }
 
 
 
@@ -391,11 +424,11 @@ public class ShipmentWebController {
         var availablePackages  = packageService.getAllPackagesNotInShipments();
 
         // merge senza duplicati (preserva ordine)
-        Map<Long, UnitLoad> unitLoadsToShow = new java.util.LinkedHashMap<>();
+        Map<Long, UnitLoad> unitLoadsToShow = new LinkedHashMap<>();
         for (UnitLoad ul : selectedUnitLoads) unitLoadsToShow.put(ul.getId(), ul);
         for (UnitLoad ul : availableUnitLoads) unitLoadsToShow.put(ul.getId(), ul);
 
-        Map<Long, Package> packagesToShow = new java.util.LinkedHashMap<>();
+        Map<Long, Package> packagesToShow = new LinkedHashMap<>();
         for (Package p : selectedPackages) packagesToShow.put(p.getId(), p);
         for (Package p : availablePackages) packagesToShow.put(p.getId(), p);
 
