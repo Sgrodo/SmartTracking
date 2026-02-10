@@ -21,7 +21,7 @@ import java.util.Set;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/unitloads")
-public class UnitLoadController implements CrudController<UnitLoad, UnitLoadRequest, UnitLoadResponse> {
+public class UnitLoadController implements CrdController<UnitLoad, UnitLoadRequest, UnitLoadResponse> {
 
     private final UnitLoadService unitLoadService;
     private final LoadItemRepository loadItemRepository;
@@ -57,13 +57,6 @@ public class UnitLoadController implements CrudController<UnitLoad, UnitLoadRequ
         return Arrays.stream(unitLoadService.getAllUnitLoads())
                 .map(UnitLoadResponse::new)
                 .toList();
-    }
-
-    @Override
-    @PutMapping("/{trackableId}")
-    public UnitLoadResponse update(@PathVariable Long trackableId, @Valid @RequestBody UnitLoadRequest request) {
-        // TODO implement update logic
-        return null;
     }
 
     @Override

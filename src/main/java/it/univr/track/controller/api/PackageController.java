@@ -17,7 +17,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/packages")
 @RequiredArgsConstructor
-public class PackageController implements CrudController<Package, PackageRequest, PackageResponse> {
+public class PackageController implements CrdController<Package, PackageRequest, PackageResponse> {
 
     private final TrackableService trackableService;
     private final PackageService packageService;
@@ -43,13 +43,6 @@ public class PackageController implements CrudController<Package, PackageRequest
         return packageService.getAllPackages().stream()
                 .map(PackageResponse::new)
                 .toList();
-    }
-
-    @Override
-    @PutMapping("/{trackableId}")
-    public PackageResponse update(@PathVariable Long trackableId, @Valid @RequestBody PackageRequest request) {
-        // TODO implement update functionality
-        return null;
     }
 
     @Override

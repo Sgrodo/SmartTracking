@@ -1,8 +1,7 @@
 package it.univr.track.exception;
 
 import it.univr.track.controller.api.ShipmentController;
-import it.univr.track.controller.api.CrudController;
-import jakarta.validation.ConstraintViolationException;
+import it.univr.track.controller.api.CrdController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -14,7 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {ShipmentController.class, CrudController.class})
+@RestControllerAdvice(assignableTypes = {ShipmentController.class, CrdController.class})
 public class ShipmentExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)

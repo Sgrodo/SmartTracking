@@ -1,11 +1,10 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.entity.data.Trackable;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-public interface CrudController<T, P, R> {
+public interface CrdController<T, P, R> {
 
     @PostMapping({"/", ""})
     @ResponseStatus(HttpStatus.CREATED)
@@ -18,10 +17,6 @@ public interface CrudController<T, P, R> {
     @GetMapping({"/", ""})
     @ResponseStatus(HttpStatus.OK)
     public Iterable<R> getAll();
-
-    @PutMapping("/{trackableId}")
-    @ResponseStatus(HttpStatus.OK)
-    public R update(@PathVariable Long trackableId, @Valid @RequestBody P request);
 
     @DeleteMapping("/{trackableId}")
     @ResponseStatus(HttpStatus.OK)
