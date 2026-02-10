@@ -19,12 +19,9 @@ import java.util.stream.Stream;
 public class DeviceService {
 
     private final DeviceRepository deviceRepository;
-    private final SendingFactory sendingFactory;
 
-    public DeviceService(DeviceRepository deviceRepository,
-                         SendingFactory sendingFactory) {
+    public DeviceService(DeviceRepository deviceRepository) {
         this.deviceRepository = deviceRepository;
-        this.sendingFactory = sendingFactory;
     }
 
     /**
@@ -43,22 +40,6 @@ public class DeviceService {
         deviceRepository.saveAll(devices);
     }
 
-    /**
-     * Simula "il device invia un report".
-     * Ora NON esiste più shipmentId: il target si risolve tramite DeviceAssignment attivo.
-     */
-    @Transactional
-    public Sending ingestMockSending(Long deviceId) {
-        if (deviceId == null) throw new IllegalArgumentException("deviceId is null");
-
-        // opzionale: fail fast se device non esiste
-        deviceRepository.findById(deviceId)
-                .orElseThrow(() -> new NotFoundException("Device not found: " + deviceId));
-
-        // la factory deve: (1) risolvere target attivo, (2) creare sending, (3) salvarlo sul Trackable
-        return sendingFactory.ingestSending(deviceId);
-    }
-
     public Device getDeviceById(Long deviceId) {
         if (deviceId == null) throw new InvalidDataException("deviceId is null");
         return deviceRepository.findById(deviceId)
@@ -67,21 +48,5 @@ public class DeviceService {
 
     public List<Device> getAvailableDevices() {
         return deviceRepository.findDevicesWithNoActiveAssignment();
-        /*//Un device è disponibile se non ha relazioni in deviceassignament OPPURE (inclusivo) se ha una relazione
-        // con device assignament ma lo shipment è in uno stato diverso da CREATED o IN_TRANSIT
-        List<ShipmentState> busyStates = List.of(ShipmentState.CREATED, ShipmentState.IN_TRANSIT);
-
-        List<Device> availables = deviceRepository.findDevicesWithNoActiveAssignment();
-        *//*
-        List<Device> notInBusy = deviceRepository.findDevicesNotInBusyShipments(busyStates);
-
-        return Stream.concat(availables.stream(), notInBusy.stream())
-                .collect(Collectors.toMap(Device::getId, d -> d, (x, y) -> x))
-                .values()
-                .stream()
-                .toList();
-        *//*
-        return availables;
-        */
     }
 }

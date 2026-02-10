@@ -42,7 +42,6 @@ public class Device extends AbstractEntity {
     @Check(name = "device_origin_not_empty_ck", constraints = "origin <> ''")
     @Column(nullable = false)
     private String origin;
-    //TODO  cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH}
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "device", orphanRemoval = true)
     private Set<DeviceAssignment> deviceAssignments;
 

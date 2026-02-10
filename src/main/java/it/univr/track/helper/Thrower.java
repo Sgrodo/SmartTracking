@@ -21,34 +21,4 @@ public final class Thrower {
             throw factory.apply(message);
         return value;
     }
-
-//    public static void state(boolean condition, String message) {
-//        state(condition, message, ExceptionFactory::illegalArgumentException);
-//    }
-//
-//    public static void state(boolean condition, String message, Function<String, ? extends RuntimeException> factory) {
-//        if (!condition)
-//            throw factory.apply(message);
-//    }
-//
-//
-//    public static void notFound(String message) {
-//        throw new ResponseStatusException(HttpStatus.NOT_FOUND, message);
-//    }
-//
-//    public static void badRequest(String message) {
-//        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
-//    }
-//
-//    public static void conflict(String message) {
-//        throw new ResponseStatusException(HttpStatus.CONFLICT, message);
-//    }
-//
-//    public static void forbidden(String message) {
-//        throw new ResponseStatusException(HttpStatus.FORBIDDEN, message);
-//    }
-//
-//    public static void unauthorized(String message) {
-//        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, message);
-//    }
 }

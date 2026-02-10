@@ -34,20 +34,8 @@ public abstract class Trackable extends AbstractEntity {
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
-    public void addSending(Sending sending) {
-        if (sending == null) throw new IllegalArgumentException("sending is null");
-        sendings.add(sending);
-    }
 
     public abstract Set<UnitLoad> getUnitLoads();
-
-    public Map<Device, TrackingState> getTrackingState() {
-        HashMap<Device, TrackingState> trackingStateHashMap = new HashMap<>();
-        for(DeviceAssignment deviceAssignment : devices){
-            Device device = deviceAssignment.getDevice();
-            trackingStateHashMap.put(device, device.getTrackingState());
-        }
-        return trackingStateHashMap;
-    }
+    
 
 }

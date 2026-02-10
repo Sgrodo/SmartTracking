@@ -2,25 +2,19 @@ package it.univr.track.service;
 
 import it.univr.track.BaseTest;
 import it.univr.track.entity.Device;
-import it.univr.track.entity.DeviceAssignment;
-import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.HumidityConstraint;
-import it.univr.track.exception.NotFoundException;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-public class DeviceAssignmentTest extends BaseTest {
+public class DeviceAssignmentServiceTest extends BaseTest {
 
     @Autowired
     private DeviceAssignmentService deviceAssignmentService;
@@ -54,6 +48,12 @@ public class DeviceAssignmentTest extends BaseTest {
     @AfterEach
     public void cleanDb() {
         super.cleanBaseDb();
+    }
+
+    @Transactional
+    @Test
+    public void getActiveAssignmentsByTrackablesTest(){
+        
     }
 
 

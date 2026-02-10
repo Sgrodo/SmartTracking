@@ -81,25 +81,6 @@ public class DeviceAssignmentService {
         assignmentRepository.save(active);
     }
 
-    /***
-     * Cerca il device attivo tramite l'istante di tempo passato come parametro, il quale deve essere
-     * > dell'istante in cui è stato assegnato e il timestamp di fine deve essere a null (spedizione non finita)
-     * @param deviceId id del device
-     * @param ts timestamp from
-     * @return il Trackable di riferimento...
-     */
-    @Transactional(readOnly = true)
-    public Trackable getActiveTarget(Long deviceId, ZonedDateTime ts) {
-        Thrower.notNullArgumentException(deviceId, "deviceId is null");
-        Thrower.notNullArgumentException(ts, "ts is null");
-
-        Device device = deviceService.getDeviceById(deviceId);
-
-        return assignmentRepository.findActiveAt(device, ts)
-                .orElseThrow(() -> new NotFoundException("No active assignment for device " + deviceId + " at " + ts))
-                .getTarget();
-    }
-
     @Transactional(readOnly = true)
     public Set<DeviceAssignment> getActiveDeviceAssignmentsByTrackables(Collection<Trackable> trackables) {
         if (trackables == null || trackables.isEmpty()) return Set.of();
