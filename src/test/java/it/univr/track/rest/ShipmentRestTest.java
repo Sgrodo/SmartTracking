@@ -3,6 +3,7 @@ package it.univr.track.rest;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.is;
 
 public class ShipmentRestTest extends BaseRestTest {
@@ -214,7 +215,44 @@ public class ShipmentRestTest extends BaseRestTest {
 
     @Test
     public void testSetTrackingState(){
-        // TODO
+        // Find shipment id in list of shipments
+        int id = given()
+                .when()
+                        .get("/api/shipments")
+                .then()
+                        .statusCode(200)
+                        .extract()
+                        .path("find { it.description == 'SAMPLE SHIPMENT' }.id");
+
+        // Set tracking state to ACTIVE
+        given()
+        .when()
+                .post("/api/shipment/tracking?shipmentId=" + id +"&state=1")
+        .then()
+                .statusCode(200);
+
+        // Check devices state is ACTIVE
+        given()
+        .when()
+                .get("/shipment/" + id)
+        .then()
+                .statusCode(200)
+                .body("trackables.devices.state.flatten()", everyItem(is("ACTIVE")));
+
+        // Set tracking state to INACTIVE
+        given()
+        .when()
+                .post("/api/shipment/tracking?shipmentId=" + id +"&state=0")
+        .then()
+                .statusCode(200);
+
+        // Check devices state is INACTIVE
+        given()
+        .when()
+                .get("/shipment/" + id)
+        .then()
+                .statusCode(200)
+                .body("trackables.devices.state.flatten()", everyItem(is("INACTIVE")));
     }
 
     @Test
