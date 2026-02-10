@@ -330,22 +330,24 @@ public class ShipmentWebController {
     @PostMapping("/trackables/{trackableId}/devices/bind")
     public String bindDeviceToTrackable(
             @PathVariable Long trackableId,
+            @RequestParam Long shipmentId,
             @RequestParam Long deviceId
     ) {
         deviceAssignmentService.bind(deviceId, trackableId);
-        return "redirect:/web/shipments/list";
-        // oppure meglio: return "redirect:/web/shipments/" + shipmentId + "/trackables";
+        //return "redirect:/web/shipments/list";
+        return "redirect:/web/shipments/" + shipmentId + "/trackables";
     }
 
     //UNBIND
 
     @PostMapping("/trackables/{trackableId}/devices/unbind")
     public String unbindDeviceToTrackable(
-            @RequestParam Long deviceId
+            @RequestParam Long deviceId,
+            @RequestParam Long shipmentId
     ) {
         deviceAssignmentService.unbind(deviceId);
-        return "redirect:/web/shipments/list";
-        // oppure meglio: return "redirect:/web/shipments/" + shipmentId + "/trackables";
+        //return "redirect:/web/shipments/list";
+        return "redirect:/web/shipments/" + shipmentId + "/trackables";
     }
 
     //TRACKING

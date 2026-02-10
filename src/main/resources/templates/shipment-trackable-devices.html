@@ -58,6 +58,7 @@
             <td>
                 <form th:action="@{/web/trackables/{trackableId}/devices/unbind(trackableId=${t.id},deviceId=${a.device.id})}"
                       method="post">
+                    <input type="hidden" name="shipmentId" th:value="${shipment.id}" />
                     <button type="submit">Unbind</button>
                 </form>
             </td>
@@ -69,6 +70,7 @@
     <!-- bind form -->
     <form th:action="@{/web/trackables/{trackableId}/devices/bind(trackableId=${t.id})}" method="post"
     style="margin-top:8px;">
+        <input type="hidden" name="shipmentId" th:value="${shipment.id}" />
         <label>
             <select name="deviceId" required>
                 <option value="" disabled selected>Choose device...</option>
