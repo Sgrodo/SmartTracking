@@ -1,6 +1,7 @@
 package it.univr.track.service;
 
 import it.univr.track.BaseTest;
+import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
@@ -8,12 +9,15 @@ import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.exception.NotFoundException;
 import jakarta.transaction.Transactional;
+import jakarta.validation.constraints.AssertTrue;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -23,11 +27,16 @@ public class TrackableServiceTest extends BaseTest {
 
     @Autowired
     private TrackableService trackableService;
+    @Autowired
+    private DeviceAssignmentService deviceAssignmentService;
 
     private UnitLoad ul1;
     private UnitLoad ul2;
     private Package pkg;
     private Shipment shipment;
+    @Autowired
+    private ShipmentService shipmentService;
+
 
     @BeforeEach
     public void initTrackableDb() {
@@ -122,5 +131,21 @@ public class TrackableServiceTest extends BaseTest {
         assertThrows(NotFoundException.class, () -> {
             trackableService.setShipment(89L,1L);
         });
+    }
+
+    @Transactional
+    @Test
+    public void testFreeTrackablesFromShipments(){
+        Device d = deviceRepository.save(new Device(true,true,true,new BigDecimal("10.0"),"Napoli"));
+        Device d1 = deviceRepository.save(new Device(true,true,true,new BigDecimal("10.0"),"Napoli"));
+
+        deviceAssignmentService.bind(d.getId(),ul1.getId());
+        deviceAssignmentService.bind(d1.getId(),pkg.getId());
+
+        Shipment s = shipmentService.create(null,"less",new HashSet<>(Set.of(ul1,pkg)));
+        trackableService.freeTrackablesFromShipments(s.getId());
+
+        assertNull(ul1.getShipment());
+        assertNull(pkg.getShipment());
     }
 }

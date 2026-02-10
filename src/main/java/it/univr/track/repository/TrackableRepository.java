@@ -17,7 +17,7 @@ public interface TrackableRepository extends JpaRepository<Trackable, Long> {
             where st = t
         )
     """)
-    List<Trackable> findAllNotInActiveShipments();
+    List<Trackable> findAllNotInShipments();
 
 
     @Query("""

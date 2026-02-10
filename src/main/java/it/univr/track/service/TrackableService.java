@@ -67,7 +67,7 @@ public class TrackableService {
 
     @Transactional
     public List<Trackable> getAllTrackablesNotInShipments(){
-        return trackableRepository.findAllNotInActiveShipments();
+        return trackableRepository.findAllNotInShipments();
     }
 
     @Transactional
@@ -76,13 +76,6 @@ public class TrackableService {
 
         for (Trackable t : trackables) {
             t.setShipment(null);
-            if(t instanceof Package){
-                Set<UnitLoad> unitLoads = t.getUnitLoads();
-                for (UnitLoad u : unitLoads) {
-                    u.setShipment(null);
-                    u.setShipment(null);
-                }
-            }
         }
     }
 }

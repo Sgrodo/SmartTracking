@@ -374,19 +374,19 @@ public class ShipmentWebController {
         model.addAttribute("selectedUnitLoadIds", selectedUnitLoadIds);
         model.addAttribute("selectedPackageIds", selectedPackageIds);
 
-        // trackables già dentro lo shipment
-        List<UnitLoad> selectedUnitLoads = shipment.getTrackables().stream()
-                .filter(t -> t instanceof UnitLoad)
-                .map(t -> (UnitLoad) t)
-                .toList();
+        Set<UnitLoad> selectedUnitLoads = new HashSet<>();
+        Set<Package> selectedPackages = new HashSet<>();
 
-        List<Package> selectedPackages = shipment.getTrackables().stream()
-                .filter(t -> t instanceof Package)
-                .map(t -> (Package) t)
-                .toList();
+        for  (Long id : selectedUnitLoadIds) {
+            selectedUnitLoads.add(unitLoadService.getUnitLoadById(id));
+        }
+        for  (Long id : selectedPackageIds) {
+            selectedPackages.add(packageService.getPackageById(id));
+        }
+
 
         // disponibili
-        var availableUnitLoads = unitLoadService.getAllUnitloadsNotInShipment();
+        var availableUnitLoads = unitLoadService.getAllNotInShipmentAndNotInPackages();
         var availablePackages  = packageService.getAllPackagesNotInShipments();
 
         // merge senza duplicati (preserva ordine)
