@@ -21,7 +21,7 @@
 # Scenario 2 – Creazione di una UnitLoad con LoadItems di magazzino e vincoli fisici
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Nel sistema sono presenti **LoadItems**, che rappresentano **oggetti/prodotti presenti in magazzino**.
 
 ## Flusso normale
@@ -45,7 +45,7 @@
 # Scenario 3 – Creazione di un Package selezionando UnitLoad
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Esistono UnitLoad disponibili.
 
 ## Flusso normale
@@ -65,7 +65,7 @@
 # Scenario 4 – Visualizzazione lista spedizioni e accesso ai dettagli
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Nel sistema possono essere presenti zero o più Shipment.
 
 ## Flusso normale
@@ -84,7 +84,7 @@
 # Scenario 5 – Attivazione e disattivazione del tracking di una Shipment
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Esiste una Shipment.
 
 ## Flusso normale
@@ -98,10 +98,10 @@
 ## Stato finale
 - Lo stato di tracking della Shipment è aggiornato correttamente.
 
-# Scenario 6 – Binding di un device a un Trackable
+# Scenario 6 – Associazione(Binding) di un device a una spedizione (Shipment)
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Esiste una **Shipment non terminata** con almeno due Trackable (T1 e T2).
 - Esiste un Device D1 inizialmente **available**.
 
@@ -111,7 +111,7 @@
 3. Conferma l’operazione di **Bind**.
 4. Il sistema crea l’associazione tra D1 e T1.
 5. La pagina viene aggiornata.
-6. La lista dei device disponibili **non include più D1**.
+6. La lista dei **Device associati al trackable T1 contiene D1** e inoltre la lista dei Device disponibili **non include più D1**.
 
 ## Cosa può andare storto
 - Nessun caso funzionale previsto.
@@ -119,10 +119,10 @@
 ## Stato finale
 - D1 è associato a T1 e non è più disponibile per altri Trackable.
 
-# Scenario 7 – Unbinding di un device da un Trackable
+# Scenario 7 – Dissociazione(Unbinding) di un device da una spedizione (Shipment)
 
 ## Assunzioni iniziali
-- L’utente è autenticato.
+- L’utente è autenticato e autorizzato.
 - Esiste una **Shipment non terminata**.
 - Un Trackable T1 ha un Device D1 associato.
 - D1 non è presente nella lista dei device disponibili.
@@ -132,7 +132,7 @@
 2. Nella sezione del Trackable **T1**, seleziona l’azione **Unbind** sul device D1.
 3. Il sistema rimuove l’associazione.
 4. La pagina viene aggiornata.
-5. La lista dei device disponibili **include nuovamente D1**.
+5. La lista dei device disponibili **include nuovamente D1** e **non è più incluso** nella lista dei device associati a T1.
 
 ## Cosa può andare storto
 - Nessun caso funzionale previsto.
