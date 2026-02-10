@@ -45,14 +45,6 @@ public class ShipmentService {
         for(Trackable tr : trackables){
             shipment.addTrackable(tr);
             trackableService.setShipment(tr.getId(),shipment.getId());
-            /*
-            if(tr instanceof Package){
-                Set<UnitLoad> unitLoads = tr.getUnitLoads();
-                for(UnitLoad ul : unitLoads){
-                    shipment.addTrackable(ul);
-                }
-            }
-            */
         }
 
         return shipmentRepository.save(shipment);
@@ -125,7 +117,6 @@ public class ShipmentService {
     @Transactional
     public List<Shipment> getAllFinalShipments(){return shipmentRepository.findFinalShipments(finalStates);}
 
-    //TODO fix enddate useless?
     @Transactional
     public void update(Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
         if(trackables == null || trackables.isEmpty()) {
@@ -213,6 +204,7 @@ public class ShipmentService {
 
     @Transactional
     protected void deActivateDevicesOfTrackablesInShipment (Shipment s){
+
         Set<DeviceAssignment> activeDeviceAssignments = deviceAssignmentService.getActiveDeviceAssignmentsByTrackables(s.getTrackables());
         for (DeviceAssignment da : activeDeviceAssignments){
             deviceAssignmentService.unbind(da.getDevice().getId());

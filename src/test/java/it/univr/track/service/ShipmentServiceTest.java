@@ -220,4 +220,19 @@ public class ShipmentServiceTest extends BaseTest {
 
     }
 
+    @Transactional
+    @Test
+    public void testCancelShipment(){
+        Shipment s = shipmentService.create(null, "test",new HashSet<>(Set.of(utSample1,utSample2)));
+
+        assertThrows(InvalidDataException.class, () ->{
+            shipmentService.cancelShipment(null);
+        });
+
+        shipmentService.cancelShipment(s.getId());
+
+        assertEquals(0,utSample1.getDevices().size());
+        assertEquals(0,utSample2.getDevices().size());
+    }
+
 }
