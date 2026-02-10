@@ -12,7 +12,7 @@ public class TrackablesDevicesPage extends BasePageObject {
     @FindBy(xpath = "//a[@href='/web/shipments/list']")
     public WebElement linkBackShipments;
 
-    @FindBy(xpath = "//a[@href='/web/shipments/1']")
+    @FindBy(xpath = "//a[contains(text(), 'Shipment Details')]")
     public WebElement linkShipmentDetails;
 
     @FindBy(xpath = "//h1")
