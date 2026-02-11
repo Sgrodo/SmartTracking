@@ -1,5 +1,6 @@
 package it.univr.track.bdd.steps;
 
+import io.cucumber.java.Before;
 import io.cucumber.java.PendingException;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
@@ -83,6 +84,13 @@ public class BddSteps {
             case "Create Package" -> "/packages/new";
             default -> throw new IllegalArgumentException("Unknown page: " + pageName);
         };
+    }
+
+    @Before
+    public void resetWorld() {
+        world.shipmentIdByDescription.clear();
+        world.trackableIdByDescription.clear();
+        world.deviceIdByOrigin.clear();
     }
 
 
@@ -549,47 +557,54 @@ public class BddSteps {
     @Transactional
     @Given("there is a non-terminated shipment with description {string}")
     public void thereIsANonTerminatedShipmentWithDescription(String description) {
-        // 1) Create LoadItem (oggetto presente in magazzino)
-        LoadItem item = new LoadItem("banana", UUID.randomUUID().toString(), "banana");// o name/sku, come hai tu
+
+        LoadItem item = new LoadItem("banana", UUID.randomUUID().toString(), "banana");
         item = loadItemRepository.save(item);
 
-        // 2) Create UnitLoad containing that LoadItem
-        UnitLoad ul1 = unitLoadService.createUnitLoad("T1",null,null,List.of(item));
-        UnitLoad ul2 = unitLoadService.createUnitLoad("T2",null,null,List.of(item));
-        // 3) Create an available Device
-        deviceRepository.save(new Device(true,true,true,new BigDecimal("10.0"),"D1"));
+        UnitLoad ul1 = unitLoadService.createUnitLoad("T1", null, null, List.of(item));
+        UnitLoad ul2 = unitLoadService.createUnitLoad("T2", null, null, List.of(item));
 
-        // 5) Create Shipment containing that unitload (non-terminated)
-        shipmentService.create(null, description,"Mialn","Venice", Set.of(ul1,ul2));
+        world.trackableIdByDescription.put("T1", ul1.getId());
+        world.trackableIdByDescription.put("T2", ul2.getId());
+
+        Device d1 = deviceRepository.save(new Device(true, true, true, new BigDecimal("10.0"), "D1"));
+        world.deviceIdByOrigin.put("D1", d1.getId());   // <-- QUESTO
+
+        Shipment created = shipmentService.create(null, description, "Mialn", "Venice", Set.of(ul1, ul2));
+        world.shipmentIdByDescription.put(description, created.getId());
     }
 
     @Transactional
     @And("shipment {string} has trackable {string}")
     public void shipmentHasTrackable(String shipmentDescription, String trackableDescription) {
-
-        Shipment shipment = shipmentService.getAllShipments()
-                .stream()
-                .filter(s -> shipmentDescription.equals(s.getDescription()))
-                .findFirst()
+        // Given: ok interrogare DB
+        Shipment shipment = shipmentRepository.findByDescription(shipmentDescription)
                 .orElseThrow(() -> new AssertionError("Shipment not found: " + shipmentDescription));
 
-        boolean found = shipment.getTrackables().stream().anyMatch(t -> {
-            if (t instanceof UnitLoad ul) {
-                return trackableDescription.equals(ul.getDescription());
-            }
-            if (t instanceof Package p) {
-                return trackableDescription.equals(p.getDescription());
-            }
+        Long trackableId = world.requireTrackableId(trackableDescription);
+
+        boolean present = shipment.getTrackables().stream().anyMatch(t -> {
+            if (t instanceof UnitLoad ul) return ul.getId().equals(trackableId);
+            if (t instanceof it.univr.track.entity.data.Package p) return p.getId().equals(trackableId);
             return false;
         });
 
-        assertTrue(found,
-                "Shipment " + shipmentDescription + " does not contain trackable with description: " + trackableDescription);
+        Assertions.assertTrue(
+                present,
+                "Shipment " + shipmentDescription + " does not contain trackable " + trackableDescription + " (id=" + trackableId + ")"
+        );
     }
 
+
+    @Transactional
     @And("there is an available device with code {string}")
-    public void thereIsAnAvailableDeviceWithCode(String code) {
-        assertTrue(deviceRepository.findByOrigin(code).isPresent());
+    public void thereIsAnAvailableDeviceWithCode(String origin) {
+        // Given: setup device (se già esiste, riusa)
+        Device d = deviceRepository.findByOrigin(origin)
+                .orElseGet(() -> deviceRepository.save(new Device(true, true, true, new BigDecimal("10.0"), origin)));
+
+        // cache id per uso futuro nei Given (e per debug)
+        world.deviceIdByOrigin.put(origin, d.getId());
     }
 
     @When("I open the {string} page for shipment {string}")
@@ -599,73 +614,32 @@ public class BddSteps {
             throw new IllegalArgumentException("Unsupported page: " + pageName);
         }
 
-        // 1) vai alla lista spedizioni
-        world.driver.get(world.baseUrl + resolveUrl("Shipments list"));
+        world.driver.get(world.baseUrl + "/shipments/list");
         world.shipmentListPage = new ShipmentListPage(world.driver);
 
-        // 2) trova la shipment tra quelle attive
-        ShipmentListPage.ShipmentRow row = null;
-        for (ShipmentListPage.ShipmentRow r : world.shipmentListPage.getActiveShipments()) {
-            if (shipmentDescription.equals(r.description())) {
-                row = r;
-                break;
-            }
-        }
-
-        if (row == null) {
-            throw new AssertionError("Active shipment not found in list: " + shipmentDescription);
-        }
-
-        // 3) click "Trackables and Devices"
-        world.trackablesDevicesPage = row.clickTrackablesAndDevices();
+        world.trackablesDevicesPage = world.shipmentListPage
+                .getActiveShipmentByDescription(shipmentDescription)
+                .clickTrackablesAndDevices();
     }
+
+
 
     @And("I bind device {string} to trackable {string}")
     public void iBindDeviceToTrackable(String origin, String trackableDescription) {
-        // 1) device id da origin
-        Device device = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin));
+        Long trackableId = world.requireTrackableId(trackableDescription);
 
-        // 2) trackable id da description (UnitLoad o Package)
-        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
-                .findFirst()
-                .map(UnitLoad::getId)
-                .orElseGet(() ->
-                        packageRepository.findByDescription(trackableDescription).stream()
-                                .findFirst()
-                                .map(it.univr.track.entity.data.Package::getId)
-                                .orElseThrow(() -> new AssertionError("Trackable not found with description: " + trackableDescription))
-                );
-
-        // 3) usa PageObject per eseguire il bind
         TrackablesDevicesPage.TrackableSection section =
                 world.trackablesDevicesPage.getTrackableSectionById(trackableId);
 
-        if (section == null) {
-            throw new AssertionError("Trackable section not found on page for trackableId: " + trackableId);
-        }
+        Assertions.assertNotNull(section, "Trackable section not found for id: " + trackableId);
 
-        world.trackablesDevicesPage = section.bindDevice(String.valueOf(device.getId()));
-
-
+        // SOLO selenium: select option by origin + submit
+        world.trackablesDevicesPage = section.bindDeviceByOrigin(origin);
     }
 
     @Then("trackable {string} should show device {string} as bound")
     public void trackableShouldShowDeviceAsBound(String trackableDescription, String origin) {
-
-        Long deviceId = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin))
-                .getId();
-
-        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
-                .findFirst()
-                .map(UnitLoad::getId)
-                .orElseGet(() ->
-                        packageRepository.findByDescription(trackableDescription).stream()
-                                .findFirst()
-                                .map(it.univr.track.entity.data.Package::getId)
-                                .orElseThrow(() -> new AssertionError("Trackable not found: " + trackableDescription))
-                );
+        Long trackableId = world.requireTrackableId(trackableDescription);
 
         TrackablesDevicesPage.TrackableSection section =
                 world.trackablesDevicesPage.getTrackableSectionById(trackableId);
@@ -673,28 +647,20 @@ public class BddSteps {
         Assertions.assertNotNull(section, "Trackable section not found for id: " + trackableId);
 
         Assertions.assertTrue(
-                section.containsBoundDeviceId(String.valueOf(deviceId)),
-                "Device " + origin + " (id=" + deviceId + ") is not shown as bound"
+                section.hasBoundDeviceWithOrigin(origin),
+                "Expected device " + origin + " to be bound in trackable " + trackableDescription + " (id=" + trackableId + ")"
         );
     }
 
 
     @And("device {string} should not be in the list of available devices")
     public void deviceShouldNotBeInTheListOfAvailableDevices(String origin) {
-        Device device = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin));
-
-        Long deviceId = device.getId();
-
-        boolean foundAsAvailable = world.trackablesDevicesPage.trackableSections.stream()
-                .map(sectionElement ->
-                        world.trackablesDevicesPage.new TrackableSection(sectionElement))
-                .flatMap(section -> section.getAvailableDeviceIds().stream())
-                .anyMatch(id -> id.equals(deviceId));
+        // SOLO selenium: non deve comparire in nessuna select "Choose device..."
+        boolean found = world.trackablesDevicesPage.isDeviceOriginAvailableSomewhere(origin);
 
         Assertions.assertFalse(
-                foundAsAvailable,
-                "Device " + origin + " (id=" + deviceId + ") is still shown as available"
+                found,
+                "Device " + origin + " is still shown as available in at least one trackable section"
         );
     }
 
@@ -703,107 +669,56 @@ public class BddSteps {
     @Transactional
     @And("device {string} is bound to trackable {string} in shipment {string}")
     public void deviceIsBoundToTrackableInShipment(String origin, String trackableDescription, String shipmentDescription) {
-        // 1) shipment esiste?
-        Shipment shipment = shipmentService.getAllShipments().stream()
-                .filter(s -> shipmentDescription.equals(s.getDescription()))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Shipment not found: " + shipmentDescription));
+        // Given -> ok usare service
+        Long shipmentId = world.requireShipmentId(shipmentDescription);
+        Long trackableId = world.requireTrackableId(trackableDescription);
+        Long deviceId = world.requireDeviceId(origin);
 
-        // 2) trackable id (UnitLoad o Package) da description
-        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
-                .findFirst()
-                .map(UnitLoad::getId)
-                .orElseGet(() ->
-                        packageRepository.findByDescription(trackableDescription).stream()
-                                .findFirst()
-                                .map(it.univr.track.entity.data.Package::getId)
-                                .orElseThrow(() -> new AssertionError("Trackable not found: " + trackableDescription))
-                );
+        // (optional) sanity check shipment exists
+        Assertions.assertTrue(shipmentRepository.findById(shipmentId).isPresent(),
+                "Shipment not found by cached id: " + shipmentId);
 
-        // controlla che il trackable sia nella shipment
-        boolean presentInShipment = shipment.getTrackables().stream().anyMatch(t -> {
-            if (t instanceof UnitLoad ul) return ul.getId().equals(trackableId);
-            if (t instanceof it.univr.track.entity.data.Package p) return p.getId().equals(trackableId);
-            return false;
-        });
-        if (!presentInShipment) {
-            throw new AssertionError("Trackable '" + trackableDescription + "' is not part of shipment '" + shipmentDescription + "'");
-        }
-
-        // 3) device id da code
-        Device device = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin));
-
-        // 4) bind
-        deviceAssignmentService.bind(device.getId(), trackableId);
+        // bind via service
+        deviceAssignmentService.bind(deviceId, trackableId);
     }
 
-    @Transactional
     @And("I unbind device {string} from trackable {string}")
     public void iUnbindDeviceFromTrackable(String origin, String trackableDescription) {
-
-        Long deviceId = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin))
-                .getId();
-
-        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
-                .findFirst()
-                .map(UnitLoad::getId)
-                .orElseGet(() ->
-                        packageRepository.findByDescription(trackableDescription).stream()
-                                .findFirst()
-                                .map(it.univr.track.entity.data.Package::getId)
-                                .orElseThrow(() -> new AssertionError("Trackable not found: " + trackableDescription))
-                );
+        Long trackableId = world.requireTrackableId(trackableDescription);
 
         TrackablesDevicesPage.TrackableSection section =
                 world.trackablesDevicesPage.getTrackableSectionById(trackableId);
 
-        Assertions.assertNotNull(section, "Trackable section not found for id: " + trackableId);
+        Assertions.assertNotNull(section, "Trackable section not found on page for id: " + trackableId);
 
-        world.trackablesDevicesPage = section.unbindDevice(String.valueOf(deviceId));
+        // SOLO selenium: click sul bottone Unbind della riga con origin
+        world.trackablesDevicesPage = section.unbindDeviceByOrigin(origin);
     }
 
-    @Transactional
     @Then("trackable {string} should not show any bound device")
     public void trackableShouldNotShowAnyBoundDevice(String trackableDescription) {
-
-        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
-                .findFirst()
-                .map(UnitLoad::getId)
-                .orElseGet(() ->
-                        packageRepository.findByDescription(trackableDescription).stream()
-                                .findFirst()
-                                .map(it.univr.track.entity.data.Package::getId)
-                                .orElseThrow(() -> new AssertionError("Trackable not found: " + trackableDescription))
-                );
+        Long trackableId = world.requireTrackableId(trackableDescription);
 
         TrackablesDevicesPage.TrackableSection section =
                 world.trackablesDevicesPage.getTrackableSectionById(trackableId);
 
-        Assertions.assertNotNull(section, "Trackable section not found for id: " + trackableId);
+        Assertions.assertNotNull(section, "Trackable section not found on page for id: " + trackableId);
 
-        // nessun bound device = non esiste nessuna riga con td[1] == deviceId
-        // quindi possiamo usare direttamente la tabella: se non hai id specifico, controlliamo che non ci siano righe dati
-        boolean hasAnyBound = section.tableDevices.findElements(By.xpath(".//tbody/tr[td]")).stream()
-                .anyMatch(tr -> tr.findElements(By.tagName("td")).size() == 7);
-
-        Assertions.assertFalse(hasAnyBound, "Expected no bound devices for trackable " + trackableDescription);
+        Assertions.assertFalse(
+                section.hasAnyBoundDevice(),
+                "Expected no bound devices for trackable " + trackableDescription + " (id=" + trackableId + ")"
+        );
     }
 
-    @Transactional
     @And("device {string} should be in the list of available devices")
     public void deviceShouldBeInTheListOfAvailableDevices(String origin) {
+        // SOLO selenium: il device deve comparire in ALMENO una select "Choose device"
+        boolean found = world.trackablesDevicesPage.isDeviceOriginAvailableSomewhere(origin);
 
-        Long deviceId = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new AssertionError("Device not found with code: " + origin))
-                .getId();
-
-        boolean found = world.trackablesDevicesPage.trackableSections.stream()
-                .map(sectionEl -> world.trackablesDevicesPage.new TrackableSection(sectionEl))
-                .anyMatch(section -> section.getAvailableDeviceIds().contains(deviceId));
-
-        Assertions.assertTrue(found, "Device " + origin + " (id=" + deviceId + ") is not shown as available");
+        Assertions.assertTrue(
+                found,
+                "Device " + origin + " is not shown as available in any trackable section"
+        );
     }
 
 

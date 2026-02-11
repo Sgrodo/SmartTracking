@@ -1,8 +1,6 @@
 package it.univr.track.web.po;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
@@ -12,17 +10,11 @@ public class TrackablesDevicesPage extends BasePageObject {
     @FindBy(xpath = "//a[@href='/web/shipments/list']")
     public WebElement linkBackShipments;
 
-    @FindBy(xpath = "//a[contains(text(), 'Shipment Details')]")
-    public WebElement linkShipmentDetails;
-
     @FindBy(xpath = "//h1")
     public WebElement h1TrackablesDevices;
 
     @FindBy(id = "error")
     public WebElement pError;
-
-    @FindBy(xpath = "//small")
-    public WebElement smallShipmentSample;
 
     @FindBy(xpath = "//div[contains(@id, 'trackable-')]")
     public List<WebElement> trackableSections;
@@ -41,91 +33,113 @@ public class TrackablesDevicesPage extends BasePageObject {
             this.h3Title = section.findElement(By.xpath(".//h3"));
             this.tableDevices = section.findElement(By.xpath(".//table"));
             this.selectDevice = section.findElement(By.xpath(".//form//select"));
-            this.buttonBindDevice = section.findElement(By.xpath(".//form//button"));
+            this.buttonBindDevice = section.findElement(By.xpath(".//form//button[normalize-space()='Bind device']"));
         }
 
-        public record DeviceRow(String id, String origin, boolean connected, boolean calibrated, boolean state,
-                                double price, WebElement unbindButton) {
-        }
+        public record DeviceRow(
+                String id,
+                String origin,
+                String connected,
+                String calibrated,
+                String state,
+                String price,
+                WebElement unbindButton
+        ) {}
 
-        public List<DeviceRow> getBoundDevices()  {
+        /**
+         * Ritorna solo le righe “bound” vere (quelle con 7 <td>).
+         * La riga “Nessun device assegnato” ha 1 td (colspan) e viene ignorata.
+         */
+        public List<DeviceRow> getBoundDevices() {
             return this.tableDevices.findElements(By.xpath(".//tbody/tr")).stream()
                     .filter(tr -> tr.findElements(By.tagName("td")).size() == 7)
                     .map(tr -> {
-                        var columns = tr.findElements(By.tagName("td"));
-                        var id = columns.get(0).getText();
-                        var origin = columns.get(1).getText();
-                        var connected = Boolean.parseBoolean(columns.get(2).getText());
-                        var calibrated = Boolean.parseBoolean(columns.get(3).getText());
-                        var state = Boolean.parseBoolean(columns.get(4).getText());
-                        var price = Double.parseDouble(columns.get(5).getText());
-                        WebElement unbindButton = columns.get(6).findElement(By.xpath(".//button[text()='Unbind']"));
-                        return new DeviceRow(id, origin, connected, calibrated, state, price, unbindButton);
+                        var tds = tr.findElements(By.tagName("td"));
+                        WebElement unbindButton = tds.get(6).findElement(By.xpath(".//button[normalize-space()='Unbind']"));
+                        return new DeviceRow(
+                                tds.get(0).getText().trim(), // device id
+                                tds.get(1).getText().trim(), // origin
+                                tds.get(2).getText().trim(),
+                                tds.get(3).getText().trim(),
+                                tds.get(4).getText().trim(),
+                                tds.get(5).getText().trim(),
+                                unbindButton
+                        );
                     })
                     .toList();
         }
 
-
-        public TrackablesDevicesPage bindDevice(String deviceId) {
-            this.selectDevice.findElement(By.xpath(".//option[@value='" + deviceId + "']")).click();
-            this.buttonBindDevice.click();
-            return new TrackablesDevicesPage(driver);
+        public boolean hasAnyBoundDevice() {
+            return !getBoundDevices().isEmpty();
         }
 
-        public TrackablesDevicesPage unbindDevice(String deviceId) {
+        public boolean hasBoundDeviceWithOrigin(String origin) {
+            return getBoundDevices().stream().anyMatch(d -> d.origin().equals(origin));
+        }
+
+        public TrackablesDevicesPage unbindDeviceByOrigin(String origin) {
             DeviceRow row = getBoundDevices().stream()
-                    .filter(d -> d.id().trim().equals(deviceId))
+                    .filter(d -> d.origin().equals(origin))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Bound device not found in table: " + deviceId));
+                    .orElseThrow(() -> new IllegalArgumentException("Bound device not found with origin: " + origin));
 
             row.unbindButton().click();
             return new TrackablesDevicesPage(driver);
         }
 
-
-
-
-        public boolean containsBoundDeviceId(String deviceId) {
-            try {
-                this.tableDevices.findElement(By.xpath(".//tbody/tr[td[1][text()='" + deviceId + "']]"));
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
+        /**
+         * Cerca un device “disponibile” per origin nella select (testo option tipo: "id - origin - price").
+         * Non usa repository.
+         */
+        public boolean isDeviceOriginAvailable(String origin) {
+            return this.selectDevice.findElements(By.xpath(".//option[not(@value='') and not(@disabled)]")).stream()
+                    .map(opt -> opt.getText() == null ? "" : opt.getText())
+                    .anyMatch(text -> text.contains(" - " + origin + " - ") || text.contains(origin));
         }
 
-        public List<Long> getAvailableDeviceIds() {
-            return this.selectDevice.findElements(By.xpath(".//option[not(@value='')]")).stream()
-                    .map(option -> Long.parseLong(option.getAttribute("value")))
-                    .toList();
+        /**
+         * Seleziona il device nella select tramite origin, poi submit.
+         */
+        public TrackablesDevicesPage bindDeviceByOrigin(String origin) {
+            WebElement option = this.selectDevice.findElements(By.xpath(".//option[not(@value='') and not(@disabled)]")).stream()
+                    .filter(opt -> {
+                        String text = opt.getText() == null ? "" : opt.getText();
+                        return text.contains(" - " + origin + " - ") || text.contains(origin);
+                    })
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Device not available in dropdown by origin: " + origin));
+
+            option.click();
+            this.buttonBindDevice.click();
+            return new TrackablesDevicesPage(driver);
         }
-
     }
 
-    public List<Long> getDisplayedTrackableIds() {
-        return this.trackableSections.stream()
-                .map(section -> section.findElement(By.xpath(".//h3")).getText())
-                .filter(text -> text.startsWith("Trackable "))
-                .map(text -> Long.parseLong(text.substring("Trackable ".length())))
-                .toList();
-    }
-
+    /**
+     * Trova la section guardando il titolo "Trackable <id>" (come nell'HTML).
+     */
     public TrackableSection getTrackableSectionById(Long trackableId) {
         return this.trackableSections.stream()
-                .filter(section -> section.findElement(By.xpath(".//h3")).getText().equals("Trackable " + trackableId))
+                .filter(section -> {
+                    String title = section.findElement(By.xpath(".//h3")).getText().trim();
+                    return title.equals("Trackable " + trackableId);
+                })
                 .findFirst()
                 .map(TrackableSection::new)
                 .orElse(null);
+    }
+
+    /**
+     * True se almeno una delle section mostra il device (origin) nella dropdown.
+     */
+    public boolean isDeviceOriginAvailableSomewhere(String origin) {
+        return this.trackableSections.stream()
+                .map(TrackableSection::new)
+                .anyMatch(section -> section.isDeviceOriginAvailable(origin));
     }
 
     public ShipmentListPage clickBackToShipments() {
         this.linkBackShipments.click();
         return new ShipmentListPage(this.driver);
     }
-
-    public ShipmentDetailsPage clickShipmentDetails() {
-        this.linkShipmentDetails.click();
-        return new ShipmentDetailsPage(this.driver);
-    }
-
 }
