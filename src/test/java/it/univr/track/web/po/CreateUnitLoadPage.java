@@ -5,9 +5,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-import java.util.List;
-
-public class CreateUnitLoadPage extends BasePageObject{
+public class CreateUnitLoadPage extends BasePageObject {
 
     @FindBy(xpath = "//a[@href='/web/newShipment']")
     public WebElement linkBackShipmentCreation;
@@ -17,10 +15,10 @@ public class CreateUnitLoadPage extends BasePageObject{
 
     @FindBy(id = "error")
     public WebElement pError;
-    
+
     @FindBy(xpath = "//h1")
     public WebElement h1CreateUnitLoad;
-    
+
     @FindBy(id = "description-input")
     public WebElement inputDescription;
 
@@ -46,35 +44,20 @@ public class CreateUnitLoadPage extends BasePageObject{
         super(driver);
     }
 
-    public CreateShipmentPage toCreateShipmentPage() {
-        this.linkBackShipmentCreation.click();
-        return new CreateShipmentPage(this.driver);
-    }
-
-    public ShipmentListPage toShipmentListPage() {
-        this.linkShipments.click();
-        return new ShipmentListPage(this.driver);
-    }
-
     public String getTitle() {
         return this.h1CreateUnitLoad.getText();
     }
 
-    public record LoadItemRow(boolean selected, long id, String description) {
+    public boolean hasError() {
+        try {
+            return pError != null && pError.isDisplayed() && !pError.getText().trim().isEmpty();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-     public record DeviceRow(boolean selected, long id, String origin, boolean connected, boolean calibrated, boolean state, double price) {
-    }
-
-    public record PhysicalConstraint(String type, String value, String unit) {
-    }
-
-    public int getLoadItemsCount() {
-        return this.tableLoadItems.findElements(org.openqa.selenium.By.xpath(".//tbody/tr")).size();
-    }
-
-    public int getDevicesCount() {
-        return this.tableDevices.findElements(org.openqa.selenium.By.xpath(".//tbody/tr")).size();
+    public String getError() {
+        return hasError() ? pError.getText() : null;
     }
 
     public void setDescription(String description) {
@@ -82,13 +65,8 @@ public class CreateUnitLoadPage extends BasePageObject{
         this.inputDescription.sendKeys(description);
     }
 
-    public String getDescription(){
+    public String getDescription() {
         return this.inputDescription.getAttribute("value");
-    }
-
-    public void setTemperatureConstraint(double value, String unit) {
-        this.inputTemperatureValue.sendKeys(String.valueOf(value));
-        this.selectTemperatureUnit.sendKeys(unit);
     }
 
     public void setHumidityConstraint(double value) {
@@ -97,32 +75,14 @@ public class CreateUnitLoadPage extends BasePageObject{
         this.inputHumidityValue.sendKeys(String.valueOf(value));
     }
 
-    public String getHumidityConstraintValue(){
+    public String getHumidityConstraintValue() {
         return this.inputHumidityValue.getAttribute("value").trim();
     }
 
-
-    public boolean selectLoadItem(Long loadItemId) {
+    public boolean selectLoadItemByDescription(String loadItemName) {
         try {
-            String xpath = ".//tbody/tr[normalize-space(td[2])='" + loadItemId + "']//td[1]//input[@type='checkbox']";
+            String xpath = ".//tbody/tr[normalize-space(td[3])='" + loadItemName + "']//td[1]//input[@type='checkbox']";
             WebElement checkbox = tableLoadItems.findElement(By.xpath(xpath));
-
-            if (!checkbox.isSelected()) checkbox.click();
-            return true;
-
-        } catch (Exception e) {
-            System.out.println("DEBUG tableLoadItems text:\n" + tableLoadItems.getText());
-            return false;
-        }
-    }
-
-
-
-    public boolean selectDevice(Long deviceId) {
-        try {
-            var checkbox = tableDevices.findElement(By.xpath(
-                    ".//tbody/tr[normalize-space(td[2])='" + deviceId + "']//td[1]//input[@type='checkbox']"
-            ));
             if (!checkbox.isSelected()) checkbox.click();
             return true;
         } catch (Exception e) {
@@ -131,33 +91,27 @@ public class CreateUnitLoadPage extends BasePageObject{
     }
 
 
-    public boolean containsLoadItemId(Long loadItemId) {
+    public boolean selectDeviceByOrigin(String origin) {
         try {
-            tableLoadItems.findElement(By.xpath(
-                    ".//tbody/tr[normalize-space(td[2])='" + loadItemId + "']"
-            ));
+            String xpath = ".//tbody/tr[normalize-space(td[3])='" + origin + "']//td[1]//input[@type='checkbox']";
+            WebElement checkbox = tableDevices.findElement(By.xpath(xpath));
+            if (!checkbox.isSelected()) checkbox.click();
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-
-    public boolean containsDeviceId(Long deviceId) {
+    public boolean containsDeviceOrigin(String origin) {
         try {
-            this.tableDevices.findElement(By.xpath(
-                    ".//tbody/tr[normalize-space(td[2])='" + deviceId + "']"
-            ));
+            this.tableDevices.findElement(By.xpath(".//tbody/tr[normalize-space(td[3])='" + origin + "']"));
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-
-    public CreateShipmentPage clickCreateUnitLoad() {
+    public void submit() {
         this.buttonCreateUnitLoad.click();
-        return new CreateShipmentPage(this.driver);
     }
-
 }

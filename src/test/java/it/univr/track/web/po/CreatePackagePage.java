@@ -5,20 +5,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-import java.util.List;
-
 public class CreatePackagePage extends BasePageObject {
 
     @FindBy(xpath = "//h1")
     public WebElement h1CreatePackage;
-
-    // se la tabella non ha id, puoi usare un xpath sul testo "Select UnitLoads to include"
-    @FindBy(xpath = "//input[@type='checkbox' and @name='unitLoadIds']")
-    public List<WebElement> unitLoadCheckboxes;
-
-    @FindBy(xpath = "//input[@type='submit' and @value='Create Package']")
-    public WebElement buttonCreatePackage;
-
 
     @FindBy(xpath = "//a[@href='/web/newShipment']")
     public WebElement linkBackShipmentCreation;
@@ -35,70 +25,27 @@ public class CreatePackagePage extends BasePageObject {
     @FindBy(id = "description-input")
     public WebElement inputDescription;
 
+    @FindBy(xpath = "//input[@type='submit' and @value='Create Package']")
+    public WebElement buttonCreatePackage;
 
     public CreatePackagePage(WebDriver driver) {
         super(driver);
-    }
-
-    public boolean hasError(){
-        return pError.isDisplayed();
-    }
-
-    public String getError(){
-        return pError.getText();
-    }
-    public CreateShipmentPage toCreateShipmentPage() {
-        this.linkBackShipmentCreation.click();
-        return new CreateShipmentPage(this.driver);
-    }
-
-    public ShipmentListPage toShipmentListPage() {
-        this.linkShipments.click();
-        return new ShipmentListPage(this.driver);
     }
 
     public String getTitle() {
         return this.h1CreatePackage.getText();
     }
 
-    public List<CreateShipmentPage.UnitLoadRow> getUnitLoads() {
-        return this.tableUnitLoads.findElements(org.openqa.selenium.By.xpath(".//tbody/tr")).stream()
-                .filter(tr -> tr.findElements(org.openqa.selenium.By.tagName("td")).size() == 4)
-                .map(tr -> {
-                    var columns = tr.findElements(org.openqa.selenium.By.tagName("td"));
-                    var selected = columns.get(0).findElement(org.openqa.selenium.By.tagName("input")).isSelected();
-                    var id = Long.parseLong(columns.get(1).getText());
-                    var description = columns.get(2).getText();
-                    var numPhysicalConstraints = Long.parseLong(columns.get(3).getText());
-                    return new CreateShipmentPage.UnitLoadRow(selected, id, description, numPhysicalConstraints);
-                })
-                .toList();
-    }
-
-    public void selectUnitLoad(String unitLoadId) {
-        WebElement checkbox = this.driver.findElement(
-                By.xpath("//input[@type='checkbox' and @name='unitLoadIds' and @value='" + unitLoadId + "']")
-        );
-        if (!checkbox.isSelected()) {
-            checkbox.click();
-        }
-    }
-
-    public boolean containsUnitLoadId(long id) {
+    public boolean hasError() {
         try {
-            this.tableUnitLoads.findElement(By.xpath(
-                    ".//tbody/tr[normalize-space(td[2])='" + id + "']"
-            ));
-            return true;
+            return pError != null && pError.isDisplayed() && !pError.getText().trim().isEmpty();
         } catch (Exception e) {
             return false;
         }
     }
 
-
-    public ShipmentListPage createPackage() {
-        this.buttonCreatePackage.click();
-        return new ShipmentListPage(this.driver);
+    public String getError() {
+        return hasError() ? pError.getText() : null;
     }
 
     public void setDescription(String description) {
@@ -110,10 +57,18 @@ public class CreatePackagePage extends BasePageObject {
         return this.inputDescription.getAttribute("value");
     }
 
-    public void submit() {
-        // Se il form usa <button type="submit">Create Package</button>
-        buttonCreatePackage.click();
+    public boolean selectUnitLoadByDescription(String unitLoadDescription) {
+        try {
+            String xpath = ".//tbody/tr[normalize-space(td[3])='" + unitLoadDescription + "']//td[1]//input[@type='checkbox' and @name='unitLoadIds']";
+            WebElement checkbox = tableUnitLoads.findElement(By.xpath(xpath));
+            if (!checkbox.isSelected()) checkbox.click();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-
+    public void submit() {
+        this.buttonCreatePackage.click();
+    }
 }

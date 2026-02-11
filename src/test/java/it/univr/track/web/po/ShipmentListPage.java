@@ -80,7 +80,6 @@ public class ShipmentListPage extends BasePageObject {
         return getShipmentsRows(this.tableFinalizedShipments);
     }
 
-    // ✅ QUI: dentro ShipmentListPage, NON dentro altri blocchi, NON dentro record
     public ShipmentRow getActiveShipmentByDescription(String description) {
         for (ShipmentRow row : getActiveShipments()) {
             if (description.equals(row.description())) {

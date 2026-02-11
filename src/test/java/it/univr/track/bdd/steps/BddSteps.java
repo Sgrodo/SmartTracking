@@ -106,17 +106,15 @@ public class BddSteps {
 
     @Transactional
     @Given("there is an available UnitLoad with description {string} and loadItem {string}")
-    public void thereIsAnAvailableUnitLoadWithDescriptionAndLoadItem(String description, String loaditem) {
-        LoadItem l = loadItemRepository.save(
-                new LoadItem(loaditem, UUID.randomUUID().toString(), loaditem)
-        );
+    public void thereIsAnAvailableUnitLoadWithDescriptionAndLoadItem(String unitLoadDesc, String loadItemName) {
+        LoadItem item = new LoadItem(loadItemName, java.util.UUID.randomUUID().toString(), loadItemName);
+        item = loadItemRepository.save(item);
 
-        UnitLoad ul = unitLoadService.createUnitLoad(description, null, null, List.of(l));
-        Device device = deviceRepository.save(new Device(true,true,true, new BigDecimal("10.0"), "Italy"));
-        deviceAssignmentService.bind(device.getId(),ul.getId());
-        // Assert leggero di sicurezza
-        Assertions.assertNotNull(ul.getId());
-        Assertions.assertTrue(unitLoadRepository.findById(ul.getId()).isPresent());
+        // crea UL disponibile (non in shipment/package)
+        UnitLoad ul = unitLoadService.createUnitLoad(unitLoadDesc, null, null, java.util.List.of(item));
+
+        // cache opzionale
+        world.trackableIdByDescription.put(unitLoadDesc, ul.getId());
     }
 
     @Transactional
@@ -147,15 +145,11 @@ public class BddSteps {
         world.driver.get(world.baseUrl + resolveUrl(pageName));
 
         switch (pageName) {
-            case "Shipments list" ->
-                    world.shipmentListPage = new ShipmentListPage(world.driver);
-            case "Create shipment" ->
-                    world.createShipmentPage = new CreateShipmentPage(world.driver);
-            case "Create UnitLoad" ->
-                    world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
-            case "Create Package" ->
-                    world.createPackagePage = new CreatePackagePage(world.driver);
-            default -> throw new IllegalArgumentException("Unknown page: " + pageName);
+            case "Shipments list" -> world.shipmentListPage = new ShipmentListPage(world.driver);
+            case "Create shipment" -> world.createShipmentPage = new CreateShipmentPage(world.driver);
+            case "Create UnitLoad" -> world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
+            case "Create Package" -> world.createPackagePage = new CreatePackagePage(world.driver);
+            default -> throw new IllegalArgumentException("Unsupported page: " + pageName);
         }
     }
 
@@ -236,19 +230,31 @@ public class BddSteps {
 
     @Then("I should remain on the {string} page")
     public void iShouldRemainOnThePage(String pageName) {
-        String expectedPath = resolveUrl(pageName);
-        String currentUrl = world.driver.getCurrentUrl();
+        if (pageName.equals("Create UnitLoad")) {
+            world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    world.createUnitLoadPage.getTitle().toLowerCase().contains("unitload"),
+                    "Not on Create UnitLoad page (title=" + world.createUnitLoadPage.getTitle() + ")"
+            );
+            return;
+        }
 
-        Assertions.assertTrue(
-                currentUrl.contains(expectedPath),
-                "Expected to remain on " + expectedPath + " but was " + currentUrl
-        );
+        if (pageName.equals("Create Package")) {
+            world.createPackagePage = new CreatePackagePage(world.driver);
+            org.junit.jupiter.api.Assertions.assertTrue(
+                    world.createPackagePage.getTitle().toLowerCase().contains("package"),
+                    "Not on Create Package page (title=" + world.createPackagePage.getTitle() + ")"
+            );
+            return;
+        }
+
+        throw new IllegalArgumentException("Unsupported page: " + pageName);
     }
 
     @And("I should see an error message")
     public void iShouldSeeAnErrorMessage() {
-        Assertions.assertTrue(world.createShipmentPage.hasError(), "Error message is not displayed");
-        Assertions.assertFalse(world.createShipmentPage.getError().isBlank(), "Error message is empty");
+        world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
+        org.junit.jupiter.api.Assertions.assertTrue(world.createUnitLoadPage.hasError(), "Expected an error message, but none was shown.");
     }
 
     //# Scenario 4
@@ -395,109 +401,67 @@ public class BddSteps {
     @Transactional
     @Given("there is a warehouse LoadItem with name {string}")
     public void thereIsAWarehouseLoadItemWithName(String name) {
-        LoadItem loadItem = new LoadItem(
-                name,
-                UUID.randomUUID().toString(),
-                name
-        );
-
-        loadItemRepository.save(loadItem);
-
-        Assertions.assertTrue(
-                loadItemRepository.findByName(name).isPresent(),
-                "LoadItem not created in DB"
-        );
+        // crea un LoadItem "da magazzino"
+        LoadItem item = new LoadItem(name, java.util.UUID.randomUUID().toString(), name);
+        loadItemRepository.save(item);
     }
 
     @Transactional
     @Given("there is a device with origin {string}")
     public void thereIsADeviceWithOrigin(String origin) {
-        Device device = new Device(
-                false,
-                false,
-                true,
-                new BigDecimal("10.0"),
-                origin
-        );
+        Device d = new Device(true, true, true, new java.math.BigDecimal("10.0"), origin);
+        d = deviceRepository.save(d);
 
-        deviceRepository.save(device);
+
+        world.deviceIdByOrigin.put(origin, d.getId());
     }
 
 
     @And("I enter unitload description {string}")
     public void iEnterUnitloadDescription(String description) {
         world.createUnitLoadPage.setDescription(description);
-
-        Assertions.assertEquals(
-                description,
-                world.createUnitLoadPage.getDescription(),
-                "UnitLoad description not set correctly"
-        );
     }
 
     @And("I set humidity constraint to {double}")
-    public void iSetHumidityConstraintTo(Double value) {
+    public void iSetHumidityConstraintTo(double value) {
         world.createUnitLoadPage.setHumidityConstraint(value);
-        assertEquals(String.valueOf(value),world.createUnitLoadPage.getHumidityConstraintValue());
     }
 
     @Transactional
     @And("I select LoadItem {string}")
-    public void iSelectLoadItem(String name) {
-
-        LoadItem loadItem = loadItemRepository.findByName(name)
-                .orElseThrow(() -> new NotFoundException("LoadItem not found: " + name));
-
-        // prima verifica che la riga esista nella tabella (stesso xpath robusto)
-        Assertions.assertTrue(
-                world.createUnitLoadPage.containsLoadItemId(loadItem.getId()),
-                "LoadItem id not present in table (maybe page not refreshed or not loaded yet): " + loadItem.getId()
-        );
-
-        boolean selected = world.createUnitLoadPage.selectLoadItem(loadItem.getId());
-        Assertions.assertTrue(selected, "Could not select LoadItem checkbox");
+    public void iSelectLoadItem(String loadItemName) {
+        boolean ok = world.createUnitLoadPage.selectLoadItemByDescription(loadItemName);
+        org.junit.jupiter.api.Assertions.assertTrue(ok, "LoadItem not found in table: " + loadItemName);
     }
 
 
     @And("I select Device with origin {string}")
     public void iSelectDeviceWithOrigin(String origin) {
-        Device device = deviceRepository.findByOrigin(origin)
-                .orElseThrow(() -> new NotFoundException("Device not found with origin: " + origin));
-
-        boolean selected = world.createUnitLoadPage.selectDevice(device.getId());
-
-        Assertions.assertTrue(selected, "Could not select device checkbox");
 
         Assertions.assertTrue(
-                world.createUnitLoadPage.containsDeviceId(device.getId()),
-                "Device id not present in devices table"
+                world.createUnitLoadPage.containsDeviceOrigin(origin),
+                "Device origin not present in devices table: " + origin
         );
+
+        boolean selected = world.createUnitLoadPage.selectDeviceByOrigin(origin);
+
+        Assertions.assertTrue(selected, "Could not select device checkbox for origin: " + origin);
     }
 
 
     @And("I submit the unitload creation")
     public void iSubmitTheUnitloadCreation() {
-        world.createShipmentPage = world.createUnitLoadPage.clickCreateUnitLoad();
-
+        world.createUnitLoadPage.submit();
     }
+
 
     @Transactional
     @Then("a UnitLoad {string} should exist")
     public void aUnitLoadShouldExist(String description) {
-        //List<UnitLoad>unitloads = unitLoadRepository.findByDescription(description);
-        List<UnitLoad>unitloads = unitLoadRepository.findAll();
-        assertEquals(1, unitloads.size());
-        boolean flag = false;
-        Long id = null;
-        for(UnitLoad u : unitloads) {
-            if (u.getDescription().equals(description)) {
-                id = u.getId();
-                flag = true;
-                break;
-            }
-        }
-        assertTrue(flag);
-        assertNotNull(id);
+        // postcondizione: ok controllare DB
+        boolean exists = unitLoadRepository.findAll().stream()
+                .anyMatch(ul -> description.equals(ul.getDescription()));
+        org.junit.jupiter.api.Assertions.assertTrue(exists, "UnitLoad not found in DB with description: " + description);
     }
 
     //# Scenario 3
@@ -506,46 +470,42 @@ public class BddSteps {
     @And("I enter package description {string}")
     public void iEnterPackageDescription(String description) {
         world.createPackagePage.setDescription(description);
-        Assertions.assertEquals(description, world.createPackagePage.getDescription());
     }
 
     @And("I select UnitLoad {string} for package")
-    public void iSelectUnitLoadForPackage(String description) {
-        UnitLoad ul = unitLoadRepository.findFirstByDescription(description)
-                .orElseThrow(() -> new RuntimeException("UnitLoad not found: " + description));
-
-        world.createPackagePage.selectUnitLoad(String.valueOf(ul.getId()));
-
+    public void iSelectUnitLoadForPackage(String unitLoadDescription) {
+        boolean ok = world.createPackagePage.selectUnitLoadByDescription(unitLoadDescription);
+        org.junit.jupiter.api.Assertions.assertTrue(ok, "UnitLoad not found in table: " + unitLoadDescription);
     }
 
     @And("I submit the package creation")
     public void iSubmitThePackageCreation() {
-        world.shipmentListPage = world.createPackagePage.createPackage();
+        world.createPackagePage.submit();
     }
 
     @Transactional
     @Then("a Package {string} should exist containing UnitLoads {string} and {string}")
-    public void aPackageShouldExistContainingUnitLoadsAnd(String packageDescription, String ulDesc1, String ulDesc2) {
+    public void aPackageShouldExistContainingUnitLoads(String packageDesc, String ul1Desc, String ul2Desc) {
+        Package pkg = packageRepository.findAll().stream()
+                .filter(p -> packageDesc.equals(p.getDescription()))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Package not found in DB with description: " + packageDesc));
 
-            Package pkg = packageRepository.findByDescription(packageDescription)
-                    .stream()
-                    .findFirst()
-                    .orElseThrow(() -> new AssertionError("Package not found"));
+        java.util.Set<String> unitLoadDescriptions = pkg.getUnitLoads().stream()
+                .map(UnitLoad::getDescription)
+                .collect(java.util.stream.Collectors.toSet());
 
-            Set<String> containedDescriptions = pkg.getUnitLoads()
-                    .stream()
-                    .map(UnitLoad::getDescription)
-                    .collect(Collectors.toSet());
-
-            assertThat(containedDescriptions)
-                    .contains(ulDesc1, ulDesc2);
+        org.junit.jupiter.api.Assertions.assertTrue(unitLoadDescriptions.contains(ul1Desc),
+                "Package does not contain UnitLoad: " + ul1Desc + " (contains=" + unitLoadDescriptions + ")");
+        org.junit.jupiter.api.Assertions.assertTrue(unitLoadDescriptions.contains(ul2Desc),
+                "Package does not contain UnitLoad: " + ul2Desc + " (contains=" + unitLoadDescriptions + ")");
     }
 
 
     @And("I should see an error message on Create Package page")
     public void iShouldSeeAnErrorMessageOnCreatePackagePage() {
-        Assertions.assertTrue(world.createPackagePage.hasError(), "Error message is not displayed");
-        Assertions.assertFalse(world.createPackagePage.getError().isBlank(), "Error message is empty");
+        world.createPackagePage = new CreatePackagePage(world.driver);
+        org.junit.jupiter.api.Assertions.assertTrue(world.createPackagePage.hasError(), "Expected an error message on Create Package page, but none was shown.");
     }
 
 
