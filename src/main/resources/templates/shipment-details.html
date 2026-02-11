@@ -23,6 +23,8 @@
     <b>Description:</b>
     <span id="shipment-description" th:text="${(shipment.description != null && !#strings.isEmpty(shipment.description))
                     ? shipment.description : '-'}">-</span><br/>
+    <b>Current state: </b>
+    <span id="shipment-status" th:text="${shipment.state}">CREATED</span>
 </p>
 
 <!-- ========================= -->
@@ -36,11 +38,11 @@
 
     <p style="margin:0;">
         <span th:if="${shipment.isFinalState()}">Final shipment: tracking cannot be modified.</span><br/>
-        Current state: <b id="shipment-status" th:text="${shipment.state}">CREATED</b>
+        <span>Tracking state: </span>
+        <b id="shipment-tracking-state" th:text="${trackingState}"></b>
     </p>
 
-    <div th:if="${!shipment.isFinalState()}">
-        " style="display:flex; gap:10px;">
+    <div th:if="${!shipment.isFinalState()}" style="display:flex; gap:10px; margin: 5px 0 0 0;">
         <form method="post" th:action="@{/web/shipments/{id}/tracking/activate(id=${shipment.id})}">
             <input id="activate-btn" type="submit" value="Activate"/>
         </form>
