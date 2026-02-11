@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
     <title>Edit Shipment</title>
 </head>
 <body>
@@ -9,9 +9,9 @@
 <h1>Edit Shipment</h1>
 
 <!-- ERROR MESSAGE -->
-<p id="error" th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
+<p id="error" style="color:red;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
 
-<form th:action="@{/web/shipments/{id}/edit(id=${shipment.id})}" method="post">
+<form method="post" th:action="@{/web/shipments/{id}/edit(id=${shipment.id})}">
 
     <p>
         <b>Shipment ID:</b>
@@ -21,10 +21,23 @@
     <div>
         <label for="description-input">Description:</label>
         <input id="description-input"
-               type="text"
-               name="description"
                maxlength="240"
-               th:value="${shipment.description}" />
+               name="description"
+               th:value="${shipment.description}"
+               type="text"/>
+        <label for="from-input">From:</label>
+        <input id="from-input"
+               maxlength="255"
+               name="fromLocation"
+               th:value="${shipment.from}"
+               type="text"/>
+        <label for="to-input">To:</label>
+        <input id="to-input"
+               maxlength="255"
+               name="toLocation"
+               th:value="${shipment.to}"
+               type="text"/>
+
     </div>
 
     <!-- ================= UNIT LOADS ================= -->
@@ -45,10 +58,10 @@
         <tr th:each="ul : ${unitLoadsToShow}">
             <td>
                 <label>
-                    <input type="checkbox"
-                           name="unitLoadIds"
+                    <input name="unitLoadIds"
+                           th:checked="${selectedUnitLoadIds != null and selectedUnitLoadIds.contains(ul.id)}"
                            th:value="${ul.id}"
-                           th:checked="${selectedUnitLoadIds != null and selectedUnitLoadIds.contains(ul.id)}" />
+                           type="checkbox"/>
                 </label>
             </td>
 
@@ -81,10 +94,10 @@
         <tr th:each="pkg : ${packagesToShow}">
             <td>
                 <label>
-                    <input type="checkbox"
-                           name="packageIds"
+                    <input name="packageIds"
+                           th:checked="${selectedPackageIds != null and selectedPackageIds.contains(pkg.id)}"
                            th:value="${pkg.id}"
-                           th:checked="${selectedPackageIds != null and selectedPackageIds.contains(pkg.id)}" />
+                           type="checkbox"/>
                 </label>
             </td>
 
@@ -108,7 +121,7 @@
     <!-- ================= ACTIONS ================= -->
 
     <div style="margin-top:16px;">
-        <input type="submit" value="Save" />
+        <input type="submit" value="Save"/>
         <a th:href="@{/web/shipments/list}">
             <button type="button">Cancel</button>
         </a>

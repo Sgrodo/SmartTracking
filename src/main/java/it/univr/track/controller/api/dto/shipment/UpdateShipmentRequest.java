@@ -12,6 +12,10 @@ import java.util.Set;
 public class UpdateShipmentRequest {
     private String description;
 
+    private String from;
+
+    private String to;
+
     @NotNull(message = "endDate is required")
     private ZonedDateTime endDate;
 

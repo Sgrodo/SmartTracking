@@ -14,6 +14,12 @@ public class CreateShipmentRequest {
 
     private String description;
 
+    @NotNull(message = "from location is required")
+    private String from;
+
+    @NotNull(message = "to location is required")
+    private String to;
+
     @NotNull(message = "trackableIds is required")
     @NotEmpty(message = "At least one trackable id is needed")
     private Set<@NotNull(message = "trackableId can't be null") Long> trackableIds;

@@ -35,11 +35,11 @@ public class ShipmentService {
     private final List<ShipmentState> finalStates = List.of(ShipmentState.COMPLETED,ShipmentState.CANCELLED);
 
     @Transactional
-    public Shipment create(ZonedDateTime startDate, String description, Set<Trackable> trackables) {
+    public Shipment create(ZonedDateTime startDate, String description, String from, String to, Set<Trackable> trackables) {
         if(trackables == null || trackables.isEmpty()) {
             throw new InvalidDataException("trackables is null or empty");
         }
-        Shipment shipment = new Shipment(startDate, description);
+        Shipment shipment = new Shipment(startDate, description, from, to);
         shipment = shipmentRepository.save(shipment);
 
         for(Trackable tr : trackables){
@@ -118,7 +118,7 @@ public class ShipmentService {
     public List<Shipment> getAllFinalShipments(){return shipmentRepository.findFinalShipments(finalStates);}
 
     @Transactional
-    public void update(Shipment shipment, String description, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
+    public void update(Shipment shipment, String description, String from, String to, ZonedDateTime endDate, ShipmentState state, Set<Trackable> trackables) {
         if(trackables == null || trackables.isEmpty()) {
             throw new InvalidDataException("trackables is null or empty");
         }
@@ -154,6 +154,9 @@ public class ShipmentService {
                 default -> s.setState(state);
             }
         }
+        if(from != null) s.setFromLocation(from);
+        if(to != null) s.setToLocation(to);
+
         s.setDescription(description);
         //s è managed, save non necessario (in teoria)
         shipmentRepository.save(s);

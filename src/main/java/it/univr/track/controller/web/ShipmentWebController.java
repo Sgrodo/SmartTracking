@@ -79,6 +79,8 @@ public class ShipmentWebController {
             @RequestParam(required = false) String description,
             @RequestParam(required = false) List<Long> unitLoadIds,
             @RequestParam(required = false) List<Long> packageIds,
+            @RequestParam(required = false) String fromLocation,
+            @RequestParam(required = false) String toLocation,
             Model model
     ) {
         if (unitLoadIds == null) unitLoadIds = List.of();
@@ -89,7 +91,7 @@ public class ShipmentWebController {
         trackables.addAll(trackableService.getAllTrackablesById(packageIds));
 
             try {
-                shipmentService.create(null, description, trackables);
+                shipmentService.create(null, description, fromLocation, toLocation, trackables);
                 return "redirect:/web/shipments/list";
             } catch (InvalidDataException e) {
                 model.addAttribute("errorMessage", "ERROR\nYou must specify al least one Trackable object");
@@ -128,6 +130,8 @@ public class ShipmentWebController {
             @RequestParam(required = false) String description,
             @RequestParam(required = false) List<Long> unitLoadIds,
             @RequestParam(required = false) List<Long> packageIds,
+            @RequestParam(required = false) String fromLocation,
+            @RequestParam(required = false) String toLocation,
             Model model
     ) {
         if (unitLoadIds == null) unitLoadIds = List.of();
@@ -145,7 +149,7 @@ public class ShipmentWebController {
 
             Set<Trackable> trackables = new HashSet<>(trackableService.getAllTrackablesById(allIds));
 
-            shipmentService.update(shipment, description, null, null, trackables);
+            shipmentService.update(shipment, description, fromLocation, toLocation, null, null, trackables);
             return "redirect:/web/shipments/list";
 
         } catch (InvalidDataException e) {

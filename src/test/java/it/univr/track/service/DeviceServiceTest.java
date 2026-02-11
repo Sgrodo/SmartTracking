@@ -65,9 +65,9 @@ public class DeviceServiceTest extends BaseTest {
         //all'inizio il device è disponibile
         assertEquals(1, deviceService.getAvailableDevices().size());
 
-        Shipment shipment = shipmentRepository.save(new Shipment("Olive"));
+        Shipment shipment = shipmentRepository.save(new Shipment("Olive", "from", "to"));
         //creo uno shipment e lo imposto in transito
-        shipmentService.update(shipment,null,null, ShipmentState.IN_TRANSIT, Set.of(t));
+        shipmentService.update(shipment,null,"from", "to", null, ShipmentState.IN_TRANSIT, Set.of(t));
         //associo il device al trackable
         deviceAssignmentService.bind(device.getId(), t.getId());
         //ora il device non è più disponibile

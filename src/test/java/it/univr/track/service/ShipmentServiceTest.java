@@ -67,21 +67,21 @@ public class ShipmentServiceTest extends BaseTest {
     public void testCreateShipment() {
         // Test creating a shipment with null trackables
         assertThrows(InvalidDataException.class, () -> {
-            shipmentService.create(null, "Test Shipment", null);
+            shipmentService.create(null, "Test Shipment", "from", "to", null);
         });
 
         assertThrows(InvalidDataException.class, () -> {
-            shipmentService.create(null, "Test Shipment", new HashSet<>());
+            shipmentService.create(null, "Test Shipment", "from", "to",  new HashSet<>());
         });
 
-        Shipment shipment = shipmentService.create(null, "Test Shipment", Set.of(utSample1, utSample2));
+        Shipment shipment = shipmentService.create(null, "Test Shipment", "from", "to", Set.of(utSample1, utSample2));
 
     }
 
     @Transactional
     @Test
     public void testPersistShipment() {
-        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", Set.of(utSample1, utSample2));
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", "from", "to", Set.of(utSample1, utSample2));
         assertNotNull(shipment.getId());
 
         Shipment fetchedShipment = shipmentService.getById(shipment.getId());
@@ -103,27 +103,27 @@ public class ShipmentServiceTest extends BaseTest {
     @Transactional
     @Test
     public void testUpdateShipment() {
-        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", Set.of(utSample1));
-        Shipment unsavedShipment = new Shipment("Unsave Shipment");
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", "from", "to", Set.of(utSample1));
+        Shipment unsavedShipment = new Shipment("Unsave Shipment", "from", "to");
 // No more need to test
 //        assertThrows(IllegalArgumentException.class, () -> {
 //            shipmentService.update(shipment, "Updated Shipment", null, null, Set.of(utSample1, utSample2));
 //        });
 
         assertThrows(InvalidDataException.class, () -> {
-            shipmentService.update(shipment, "Updated Shipment", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, null);
+            shipmentService.update(shipment, "Updated Shipment","from", "to", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, null);
         });
 
         assertThrows(InvalidDataException.class, () -> {
-            shipmentService.update(shipment, "Updated Shipment", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, new HashSet<>());
+            shipmentService.update(shipment, "Updated Shipment", "from", "to", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, new HashSet<>());
         });
 
         assertThrows(InvalidDataException.class, () -> {
-            shipmentService.update(null, "Updated Shipment", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
+            shipmentService.update(null, "Updated Shipment", "from", "to", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
         });
 
         assertThrows(NotFoundException.class, () -> {
-            shipmentService.update(unsavedShipment, "Updated Shipment", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
+            shipmentService.update(unsavedShipment, "Updated Shipment", "from", "to", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
         });
 
         Shipment updatedShipment = shipmentService.getById(shipment.getId());
@@ -131,7 +131,7 @@ public class ShipmentServiceTest extends BaseTest {
         assertEquals(1, updatedShipment.getTrackables().size());
 
         ZonedDateTime newEndDate = ZonedDateTime.now();
-        shipmentService.update(updatedShipment, "changed description", newEndDate, ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
+        shipmentService.update(updatedShipment, "changed description", "from", "to", newEndDate, ShipmentState.IN_TRANSIT, Set.of(utSample1, utSample2));
 
         assertEquals("changed description", updatedShipment.getDescription());
         assertEquals(2, updatedShipment.getTrackables().size());
@@ -141,7 +141,7 @@ public class ShipmentServiceTest extends BaseTest {
     @Transactional
     @Test
     public void testDeleteShipment() {
-        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", Set.of(utSample1));
+        Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", "from", "to", Set.of(utSample1));
         Long shipmentId = shipment.getId();
 
         shipmentService.deleteById(shipmentId);
@@ -155,7 +155,7 @@ public class ShipmentServiceTest extends BaseTest {
     @Test
     public void testTrackingState() {
         Shipment shipment = shipmentService.create(ZonedDateTime.now(),
-                "Test Shipment", Set.of(utSample1, utSample2));
+                "Test Shipment", "from", "to", Set.of(utSample1, utSample2));
 
         TrackingState expectedState = TrackingState.INACTIVE;
         Device device1 = new Device(true,true,true, new BigDecimal("1.0"),"Italy");
@@ -178,12 +178,12 @@ public class ShipmentServiceTest extends BaseTest {
     public void testCompleteShipment() {
         // Create shipment and verify initial state
         Shipment shipment = shipmentService.create(ZonedDateTime.now(),
-                "Test Shipment", Set.of(utSample1, utSample2));
+                "Test Shipment", "from", "to", Set.of(utSample1, utSample2));
 
         assertEquals(ShipmentState.CREATED, shipment.getState());
 
         // Update shipment state to COMPLETED and verify
-        shipmentService.update(shipment, shipment.getDescription(), ZonedDateTime.now(),
+        shipmentService.update(shipment, shipment.getDescription(), "from", "to", ZonedDateTime.now(),
                 ShipmentState.COMPLETED, shipment.getTrackables());
 
         Shipment completedShipment = shipmentService.getById(shipment.getId());
@@ -201,14 +201,14 @@ public class ShipmentServiceTest extends BaseTest {
 
         //illegale se non completi
         assertThrows(IllegalStateException.class, ()->{
-            Shipment s = shipmentService.create(null,"test shipment",Set.of(utSample1,utSample2));
+            Shipment s = shipmentService.create(null,"test shipment", "from", "to", Set.of(utSample1,utSample2));
         });
 
         // Testing dell'associazione di un device prima appartenente ad uno shipment completato (dovrebbe essere possibile)
         UnitLoad unitLoad = unitLoadService.createUnitLoad(
                 null, null, null, List.of(loadItems[0]));
 
-        Shipment newShipment = shipmentService.create(null,"test shipment",Set.of(unitLoad));
+        Shipment newShipment = shipmentService.create(null,"test shipment", "from", "to", Set.of(unitLoad));
 
         deviceAssignmentService.bind(device1.getId(), unitLoad.getId());
 
@@ -223,7 +223,7 @@ public class ShipmentServiceTest extends BaseTest {
     @Transactional
     @Test
     public void testCancelShipment(){
-        Shipment s = shipmentService.create(null, "test",new HashSet<>(Set.of(utSample1,utSample2)));
+        Shipment s = shipmentService.create(null, "test", "from", "to", new HashSet<>(Set.of(utSample1,utSample2)));
 
         assertThrows(InvalidDataException.class, () ->{
             shipmentService.cancelShipment(null);

@@ -38,7 +38,7 @@ public class ShipmentController {
         Set<Long> trackableIds = request.getTrackableIds();
 
         Set<Trackable> trackables = trackableService.getAllTrackablesById(trackableIds);
-        shipmentService.create(request.getStartDate(), request.getDescription(), trackables);
+        shipmentService.create(request.getStartDate(), request.getDescription(), request.getFrom(), request.getTo(), trackables);
 
         return true;
     }
@@ -58,7 +58,7 @@ public class ShipmentController {
         ZonedDateTime endDate = request.getEndDate();
         ShipmentState state = request.getState();
         Set<Trackable> allTrackablesById = trackableService.getAllTrackablesById(request.getTrackableIds());
-        shipmentService.update(shipment, description, endDate, state, allTrackablesById);
+        shipmentService.update(shipment, description, request.getFrom(), request.getTo(), endDate, state, allTrackablesById);
         return true;
     }
 

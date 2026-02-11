@@ -79,7 +79,7 @@ public class DataInitializer {
             DeviceAssignment brazilAssignment = deviceAssignmentRepository.save(new DeviceAssignment(brazilDevice, pkgSample, ZonedDateTime.now()));
 
             // Create sample shipment
-            Shipment shipment = new Shipment("SAMPLE SHIPMENT");
+            Shipment shipment = new Shipment("SAMPLE SHIPMENT", "Italy", "Germany");
             shipment.addTrackable(utSample1);
             shipment.addTrackable(pkgSample);
 

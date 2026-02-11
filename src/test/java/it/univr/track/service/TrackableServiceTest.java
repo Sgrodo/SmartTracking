@@ -59,7 +59,7 @@ public class TrackableServiceTest extends BaseTest {
         pkg = packageRepository.save(pkg);
 
         // shipment per test setShipment
-        shipment = new Shipment("Shipment test");
+        shipment = new Shipment("Shipment test", "from", "to");
         shipment = shipmentRepository.save(shipment);
     }
 
@@ -142,7 +142,7 @@ public class TrackableServiceTest extends BaseTest {
         deviceAssignmentService.bind(d.getId(),ul1.getId());
         deviceAssignmentService.bind(d1.getId(),pkg.getId());
 
-        Shipment s = shipmentService.create(null,"less",new HashSet<>(Set.of(ul1,pkg)));
+        Shipment s = shipmentService.create(null,"less", "from", "to", new HashSet<>(Set.of(ul1,pkg)));
         trackableService.freeTrackablesFromShipments(s.getId());
 
         assertNull(ul1.getShipment());

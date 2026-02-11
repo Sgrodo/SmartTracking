@@ -59,14 +59,24 @@ public class Shipment extends AbstractEntity {
     @OneToMany(mappedBy = "shipment")
     private Set<Trackable> trackables = new HashSet<>();
 
-    public Shipment(ZonedDateTime startDate, String description) {
+    @Setter
+    @Column(nullable = false)
+    private String fromLocation;
+
+    @Setter
+    @Column(nullable = false)
+    private String toLocation;
+
+    public Shipment(ZonedDateTime startDate, String description, String from, String to) {
+        this.fromLocation = from;
+        this.toLocation = to;
         this.startDate = Objects.requireNonNullElse(startDate, ZonedDateTime.now());
         this.description = description;
         this.state = ShipmentState.CREATED;
     }
 
-    public Shipment(String description) {
-        this(ZonedDateTime.now(), description);
+    public Shipment(String description, String from, String to) {
+        this(ZonedDateTime.now(), description, from ,to);
     }
 
     // DOMAIN METHODS

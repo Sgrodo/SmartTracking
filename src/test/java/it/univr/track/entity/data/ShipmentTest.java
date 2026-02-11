@@ -54,7 +54,7 @@ public class ShipmentTest extends BaseTest {
     @Test
     public void testAddTrackable() {
         // Test adding a trackable to a shipment
-        Shipment s = new Shipment(ZonedDateTime.now(), "shipment");
+        Shipment s = new Shipment(ZonedDateTime.now(), "shipment", "from", "to");
         s.addTrackable(utSample1);
         s.addTrackable(utSample2);
         assertArrayEquals(List.of(utSample1, utSample2).toArray(), s.getTrackables().toArray());
@@ -66,7 +66,7 @@ public class ShipmentTest extends BaseTest {
 
     @Test
     public void testUniqueness() {
-        Shipment s1 = new Shipment(ZonedDateTime.now(), "shipment");
+        Shipment s1 = new Shipment(ZonedDateTime.now(), "shipment", "from", "to");
         s1.addTrackable(utSample1);
         s1.addTrackable(utSample1);
 
@@ -76,8 +76,8 @@ public class ShipmentTest extends BaseTest {
 
     @Test
     public void testAddTrackableAssignedToAnotherShipment() {
-        Shipment s1 = new Shipment(ZonedDateTime.now(), "shipment1");
-        Shipment s2 = new Shipment(ZonedDateTime.now(), "shipment2");
+        Shipment s1 = new Shipment(ZonedDateTime.now(), "shipment1", "from1", "to1");
+        Shipment s2 = new Shipment(ZonedDateTime.now(), "shipment2", "from2", "to2");
 
         s1.addTrackable(utSample1);
 
@@ -93,7 +93,7 @@ public class ShipmentTest extends BaseTest {
 
     @Test
     public void testOverlappedTrackablesInShipment() {
-        Shipment shipment = new Shipment("Test Shipment with Overlapped Trackables");
+        Shipment shipment = new Shipment("Test Shipment with Overlapped Trackables", "from", "to");
         shipment.addTrackable(utSample1);
         shipment.addTrackable(pkgSample);
         Exception exception = assertThrows(InvalidDataException.class, () -> {
@@ -106,7 +106,7 @@ public class ShipmentTest extends BaseTest {
 
     @Test
     public void testStates() {
-        Shipment s = new Shipment("shipment");
+        Shipment s = new Shipment("shipment", "from", "to");
 
         s.setState(ShipmentState.IN_TRANSIT);
         assertEquals(ShipmentState.IN_TRANSIT, s.getState());
@@ -146,7 +146,7 @@ public class ShipmentTest extends BaseTest {
     @Test
     public void testFields(){
         ZonedDateTime startDate = ZonedDateTime.now();
-        Shipment s = new Shipment( startDate,"Test Shipment");
+        Shipment s = new Shipment( startDate,"Test Shipment", "from", "to");
         assertEquals(startDate, s.getStartDate());
         assertNull(s.getEndDate());
         assertEquals("Test Shipment", s.getDescription());
@@ -159,7 +159,7 @@ public class ShipmentTest extends BaseTest {
         UnitLoad ul1 = unitLoadRepository.findById(utSample1.getId()).orElseThrow();
         UnitLoad ul2 = unitLoadRepository.findById(utSample2.getId()).orElseThrow();
 
-        Shipment s = shipmentRepository.saveAndFlush(new Shipment("Persistent Shipment"));
+        Shipment s = shipmentRepository.saveAndFlush(new Shipment("Persistent Shipment", "from", "to"));
 
         s.addTrackable(ul1);
         s.addTrackable(ul2);

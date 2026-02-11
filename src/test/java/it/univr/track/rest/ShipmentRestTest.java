@@ -15,6 +15,8 @@ public class ShipmentRestTest extends BaseRestTest {
                 {
                     "description": "Test Shipment",
                     "startDate": "2024-06-01T10:00:00Z",
+                    "from": "Location A",
+                    "to": "Location B",
                     "trackableIds": [2, 3]
                 }
                 """;
