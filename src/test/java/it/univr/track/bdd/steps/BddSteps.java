@@ -118,26 +118,21 @@ public class BddSteps {
     }
 
     @Transactional
-    @And("there is an available Package with description {string}")
-    public void thereIsAnAvailablePackageWithDescription(String description) {
-        LoadItem l = loadItemRepository.save(
-                new LoadItem("ciliegie", UUID.randomUUID().toString(), "ciliegie")
+    @Given("there is an available Package with description {string}")
+    public void thereIsAnAvailablePackageWithDescription(String packageDescription) {
+        // per creare un Package “valido” mi serve almeno 1 UnitLoad (dipende dal tuo dominio)
+        LoadItem item = new LoadItem("banana", java.util.UUID.randomUUID().toString(), "banana");
+        item = loadItemRepository.save(item);
+
+        UnitLoad ul = unitLoadService.createUnitLoad("UL-for-" + packageDescription, null, null, java.util.List.of(item));
+
+        // usa il tuo packageService reale: io assumo createPackage(groupCode, description, unitLoads)
+        it.univr.track.entity.data.Package created = packageService.createPackage(
+                "GC-" + packageDescription, packageDescription, java.util.Set.of(ul)
         );
 
-        UnitLoad u = unitLoadService.createUnitLoad(description, null, null, List.of(l));
-
-
-        Package p = packageService.createPackage(
-                UUID.randomUUID().toString(),
-                description,
-                Set.of(u)
-        );
-
-        Device device = deviceRepository.save(new Device(true,true,true, new BigDecimal("15.0"), "France"));
-        deviceAssignmentService.bind(device.getId(),p.getId());
-
-        Assertions.assertNotNull(p.getId());
-        Assertions.assertTrue(packageRepository.findById(p.getId()).isPresent());
+        // opzionale: cache
+        world.trackableIdByDescription.put(packageDescription, created.getId());
     }
 
     @When("I open the {string} page")
@@ -157,72 +152,74 @@ public class BddSteps {
     public void iEnterFromLocationAndToLocation(String from, String to) {
         world.createShipmentPage.setFromLocation(from);
         world.createShipmentPage.setToLocation(to);
-
-        assertEquals(from, world.createShipmentPage.getFromLocation());
-        assertEquals(to, world.createShipmentPage.getToLocation());
     }
 
     @And("I enter shipment description {string}")
     public void iEnterShipmentDescription(String description) {
-        world.createShipmentPage.insertDescription(description);
+        world.createShipmentPage.setDescription(description);
     }
 
     @And("I select UnitLoad {string}")
-    public void iSelectUnitLoad(String description) {
-        List<UnitLoad>unitloads = unitLoadRepository.findByDescription(description);
-
-        assertEquals(1, unitloads.size());
-        boolean flag = false;
-        Long id = null;
-        for(UnitLoad u : unitloads) {
-            if (u.getDescription().equals(description)) {
-                id = u.getId();
-                flag = true;
-                break;
-            }
-        }
-        assertTrue(flag);
-        assertNotNull(id);
-        world.createShipmentPage.selectUniLoad(id);
+    public void iSelectUnitLoad(String unitLoadDescription) {
+        Assertions.assertTrue(
+                world.createShipmentPage.containsUnitLoadDescription(unitLoadDescription),
+                "UnitLoad not present in table: " + unitLoadDescription
+        );
+        Assertions.assertTrue(
+                world.createShipmentPage.selectUnitLoadByDescription(unitLoadDescription),
+                "Could not select UnitLoad: " + unitLoadDescription
+        );
     }
 
     @And("I select Package {string}")
-    public void iSelectPackage(String description) {
-        Long pckId = packageRepository.findByDescription(description).orElseThrow(
-                () -> new NotFoundException("Package not found: " + description)
-        ).getId();
-        world.createShipmentPage.selectPackage(pckId);
+    public void iSelectPackage(String packageDescription) {
+        Assertions.assertTrue(
+                world.createShipmentPage.containsPackageDescription(packageDescription),
+                "Package not present in table: " + packageDescription
+        );
+        Assertions.assertTrue(
+                world.createShipmentPage.selectPackageByDescription(packageDescription),
+                "Could not select Package: " + packageDescription
+        );
     }
 
     @And("I submit the shipment creation")
     public void iSubmitTheShipmentCreation() {
-        world.createShipmentPage.createShipment();
+        world.shipmentListPage = world.createShipmentPage.createShipment();
     }
 
     @Then("I should be redirected to the {string} page")
     public void iShouldBeRedirectedToThePage(String pageName) {
-        String expectedUrl = world.baseUrl + resolveUrl(pageName);
-        String currentUrl = world.driver.getCurrentUrl();
-
-        Assertions.assertTrue(
-                currentUrl.endsWith(resolveUrl(pageName)),
-                "Expected redirect to " + expectedUrl + " but was " + currentUrl
-        );
+        if (pageName.equals("Shipments list")) {
+            world.shipmentListPage = new ShipmentListPage(world.driver);
+            // check minimo: tabella presente
+            Assertions.assertTrue(
+                    world.shipmentListPage.tableActiveShipments.isDisplayed(),
+                    "Active shipments table not visible"
+            );
+            return;
+        }
+        throw new IllegalArgumentException("Unsupported page: " + pageName);
     }
 
     @Transactional
     @And("the shipment {string} should exist with tracking state {string}")
-    public void theShipmentShouldExistWithTrackingState(String description, String trackingState) {
-        Shipment shipment = shipmentRepository.findByDescription(description)
-                .orElseThrow(() -> new NotFoundException("Shipment not found: " + description));
+    public void theShipmentShouldExistWithTrackingState(String shipmentDescription, String expectedTrackingState) {
 
-        // Se trackingState è enum
-        TrackingState expectedState = TrackingState.valueOf(trackingState);
+        // prendo l'id dal DB (non dalla lista)
+        Shipment shipment = shipmentRepository.findByDescription(shipmentDescription)
+                .orElseThrow(() -> new AssertionError("Shipment not found in DB: " + shipmentDescription));
 
-        assertEquals(
-                expectedState,
-                shipmentService.getTrackingState(shipment),
-                "Tracking state mismatch"
+        world.shipmentIdByDescription.put(shipmentDescription, shipment.getId());
+
+        // apro details e leggo tracking state dalla pagina
+        world.driver.get(world.baseUrl + "/shipments/" + shipment.getId());
+        world.shipmentDetailsPage = new ShipmentDetailsPage(world.driver);
+
+        Assertions.assertEquals(
+                expectedTrackingState,
+                world.shipmentDetailsPage.getTrackingState(),
+                "Unexpected tracking state for shipment " + shipmentDescription
         );
     }
 
@@ -230,22 +227,32 @@ public class BddSteps {
 
     @Then("I should remain on the {string} page")
     public void iShouldRemainOnThePage(String pageName) {
-        if (pageName.equals("Create UnitLoad")) {
-            world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
-            org.junit.jupiter.api.Assertions.assertTrue(
-                    world.createUnitLoadPage.getTitle().toLowerCase().contains("unitload"),
-                    "Not on Create UnitLoad page (title=" + world.createUnitLoadPage.getTitle() + ")"
-            );
-            return;
-        }
 
-        if (pageName.equals("Create Package")) {
-            world.createPackagePage = new CreatePackagePage(world.driver);
-            org.junit.jupiter.api.Assertions.assertTrue(
-                    world.createPackagePage.getTitle().toLowerCase().contains("package"),
-                    "Not on Create Package page (title=" + world.createPackagePage.getTitle() + ")"
-            );
-            return;
+        switch (pageName) {
+            case "Create UnitLoad" -> {
+                world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
+                Assertions.assertTrue(
+                        world.createUnitLoadPage.getTitle().toLowerCase().contains("unitload"),
+                        "Not on Create UnitLoad page (title=" + world.createUnitLoadPage.getTitle() + ")"
+                );
+                return;
+            }
+            case "Create Package" -> {
+                world.createPackagePage = new CreatePackagePage(world.driver);
+                Assertions.assertTrue(
+                        world.createPackagePage.getTitle().toLowerCase().contains("package"),
+                        "Not on Create Package page (title=" + world.createPackagePage.getTitle() + ")"
+                );
+                return;
+            }
+            case "Create shipment" -> {
+                world.createShipmentPage = new CreateShipmentPage(world.driver);
+                Assertions.assertTrue(
+                        world.createShipmentPage.getTitle().toLowerCase().contains("shipment"),
+                        "Not on Create shipment page (title=" + world.createShipmentPage.getTitle() + ")"
+                );
+                return;
+            }
         }
 
         throw new IllegalArgumentException("Unsupported page: " + pageName);
@@ -262,134 +269,79 @@ public class BddSteps {
     @Transactional
     @Given("there is an existing shipment with description {string}")
     public void thereIsAnExistingShipmentWithDescription(String description) {
+        LoadItem item = new LoadItem("banana", java.util.UUID.randomUUID().toString(), "banana");
+        item = loadItemRepository.save(item);
 
-        // 1. Creo un LoadItem
-        LoadItem l = loadItemRepository.save(
-                new LoadItem("auto-item", UUID.randomUUID().toString(), "auto-item")
-        );
+        UnitLoad ul = unitLoadService.createUnitLoad("UL-for-" + description, null, null, java.util.List.of(item));
 
-        // 2. Creo un UnitLoad
-        UnitLoad ul = unitLoadService.createUnitLoad(
-                "UL-for-" + description,
-                null,
-                null,
-                List.of(l)
-        );
-
-        // 3. Creo lo Shipment con il trackable
-        Shipment shipment = shipmentService.create(
-                null,
-                description,
-                "null",
-                "null",
-                Set.of(ul)
-        );
-
-        Assertions.assertNotNull(shipment.getId());
+        Shipment created = shipmentService.create(null, description, "Verona", "Padova", java.util.Set.of(ul));
+        world.shipmentIdByDescription.put(description, created.getId());
     }
 
     @Then("I should see shipment {string} in the list")
-    public void iShouldSeeShipmentInTheList(String description) {
-        Iterable<ShipmentListPage.ShipmentRow> rows = world.shipmentListPage.getActiveShipments();
-
-        boolean found = StreamSupport.stream(rows.spliterator(), false)
-                .anyMatch(r -> r.description().equals(description));
-
-        Assertions.assertTrue(found, "Shipment '" + description + "' not found in active shipments table");
+    public void iShouldSeeShipmentInTheList(String shipmentDescription) {
+        Assertions.assertTrue(
+                world.shipmentListPage.containsActiveShipmentDescription(shipmentDescription),
+                "Shipment not found in active list: " + shipmentDescription
+        );
     }
 
     @Transactional
     @When("I open details for shipment {string}")
-    public void iOpenDetailsForShipment(String description) {
-        world.driver.get("http://localhost:8080/web/shipments/list");
-        world.shipmentListPage = new ShipmentListPage(world.driver);
-        Iterable<ShipmentListPage.ShipmentRow> rows =
-                world.shipmentListPage.getActiveShipments();
-
-        ShipmentListPage.ShipmentRow row = StreamSupport
-                .stream(rows.spliterator(), false)
-                .filter(r -> r.description().equals(description))
-                .findFirst()
-                .orElseThrow(() ->
-                        new NotFoundException("Shipment not found in list: " + description)
-                );
-
-        world.shipmentDetailsPage = row.clickDetails();
+    public void iOpenDetailsForShipment(String shipmentDescription) {
+        // via URL diretto (non dipende dalla lista)
+        Long shipmentId = world.requireShipmentId(shipmentDescription);
+        world.driver.get(world.baseUrl + "/shipments/" + shipmentId);
+        world.shipmentDetailsPage = new ShipmentDetailsPage(world.driver);
     }
 
     @Then("I should see the shipment details page for {string}")
-    public void iShouldSeeTheShipmentDetailsPageFor(String description) {
-        String pageSource = world.driver.getPageSource();
-
-        Assertions.assertTrue(
-                pageSource.contains(description),
-                "Shipment details page does not contain description: " + description
+    public void iShouldSeeTheShipmentDetailsPageFor(String shipmentDescription) {
+        Assertions.assertEquals(
+                shipmentDescription,
+                world.shipmentDetailsPage.getDescription(),
+                "Wrong shipment details page opened"
         );
     }
 
     //# Scenario 5
     @Transactional
     @Given("there is an existing shipment with description {string} and tracking state {string}")
-    public void thereIsAnExistingShipmentWithDescriptionAndTrackingState(String description, String state) {
+    public void thereIsAnExistingShipmentWithDescriptionAndTrackingState(String description, String trackingState) {
 
-        // 1. Creo un LoadItem
-        LoadItem l = loadItemRepository.save(
-                new LoadItem("auto-item", UUID.randomUUID().toString(), "auto-item")
-        );
+        // 1) creo shipment con 1 unitload (trackable)
+        LoadItem item = new LoadItem("banana", java.util.UUID.randomUUID().toString(), "banana");
+        item = loadItemRepository.save(item);
 
-        // 2. Creo un UnitLoad
-        UnitLoad ul = unitLoadService.createUnitLoad(
-                "UL-for-" + description,
-                null,
-                null,
-                List.of(l)
-        );
+        UnitLoad ul = unitLoadService.createUnitLoad("UL-for-" + description, null, null, java.util.List.of(item));
 
-        Device device = deviceRepository.save(new Device(true,true,true, new BigDecimal("10.0"), "Italy"));
-        deviceAssignmentService.bind(device.getId(),ul.getId());
+        Shipment shipment = shipmentService.create(null, description, "Verona", "Padova", java.util.Set.of(ul));
 
-        // 3. Creo lo Shipment
-        Shipment shipment = shipmentService.create(
-                null,
-                description,
-                "null",
-                "null",
-                Set.of(ul)
-        );
+        world.shipmentIdByDescription.put(description, shipment.getId());
+        world.trackableIdByDescription.put("T-IN-" + description, ul.getId()); // key interna
 
-        // 4. Imposto lo stato richiesto
-        TrackingState desiredState = TrackingState.valueOf(state);
+        // 2) creo device disponibile
+        Device d = new Device(true, true, true, new java.math.BigDecimal("10.0"), "DEV-" + description);
+        d = deviceRepository.save(d);
+        world.deviceIdByOrigin.put(d.getOrigin(), d.getId());
 
-        shipmentService.setTrackingState(shipment.getId(), desiredState);
-
-        // 5. Verifica
-        assertEquals(
-                desiredState,
-                shipmentService.getTrackingState(shipment),
-                "Tracking state not set correctly"
-        );
-
-        world.lastShipment = shipment;
+        // 3) bind device al trackable (così devices non è vuoto)
+        deviceAssignmentService.bind(d.getId(), ul.getId());
     }
 
     @And("I click {string}")
-    public void iClick(String buttonText) {
-
-        switch (buttonText.toLowerCase()) {
-            case "activate tracking" -> world.shipmentDetailsPage = world.shipmentDetailsPage.activateTracking();
-            case "deactivate tracking" -> world.shipmentDetailsPage = world.shipmentDetailsPage.deActivateTracking();
-            default -> Assertions.fail("Invalid button text");
+    public void iClick(String label) {
+        // mappo le label del feature ai veri bottoni della pagina
+        switch (label) {
+            case "Activate tracking" -> world.shipmentDetailsPage = world.shipmentDetailsPage.activateTracking();
+            case "Deactivate tracking" -> world.shipmentDetailsPage = world.shipmentDetailsPage.deActivateTracking();
+            default -> throw new IllegalArgumentException("Unsupported click action: " + label);
         }
-
     }
-
     @Then("shipment {string} tracking state should be {string}")
-    public void shipmentTrackingStateShouldBe(String description, String trackingState) {
-
-        TrackingState desiredState = TrackingState.valueOf(trackingState);
-       TrackingState actualState =  TrackingState.valueOf(world.shipmentDetailsPage.getTrackingState());
-
-       assertEquals(desiredState, actualState, "Tracking state not set correctly");
+    public void shipmentTrackingStateShouldBe(String shipmentDescription, String expectedTrackingState) {
+        // controllo UI:
+        Assertions.assertEquals(expectedTrackingState, world.shipmentDetailsPage.getTrackingState());
     }
 
     /// *

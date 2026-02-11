@@ -98,6 +98,24 @@ public class ShipmentListPage extends BasePageObject {
         }
     }
 
+    public boolean containsActiveShipmentDescription(String description) {
+        try {
+            getActiveShipmentByDescription(description);
+            return true;
+        } catch (AssertionError e) {
+            return false;
+        }
+    }
+
+    public ShipmentDetailsPage openDetailsForActiveShipment(String description) {
+        return getActiveShipmentByDescription(description).clickDetails();
+    }
+
+    public TrackablesDevicesPage openTrackablesAndDevicesForActiveShipment(String description) {
+        return getActiveShipmentByDescription(description).clickTrackablesAndDevices();
+    }
+
+
     public boolean containsActiveShipmentId(Long id) {
         return containsShipmentId(this.tableActiveShipments, id);
     }

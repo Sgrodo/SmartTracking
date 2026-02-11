@@ -51,6 +51,53 @@ public class CreateShipmentPage extends BasePageObject {
         return hasError() ? this.pError.getText() : null;
     }
 
+    public void setDescription(String description) {
+        this.textareaDescription.clear();
+        this.textareaDescription.sendKeys(description);
+    }
+
+    public boolean selectUnitLoadByDescription(String unitLoadDescription) {
+        try {
+            var checkbox = tableUnitLoads.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[3])='" + unitLoadDescription + "']//td[1]//input[@type='checkbox' and @name='unitLoadIds']"
+            ));
+            if (!checkbox.isSelected()) checkbox.click();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean selectPackageByDescription(String packageDescription) {
+        try {
+            var checkbox = tablePackages.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[3])='" + packageDescription + "']//td[1]//input[@type='checkbox' and @name='packageIds']"
+            ));
+            if (!checkbox.isSelected()) checkbox.click();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean containsUnitLoadDescription(String unitLoadDescription) {
+        try {
+            tableUnitLoads.findElement(By.xpath(".//tbody/tr[normalize-space(td[3])='" + unitLoadDescription + "']"));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean containsPackageDescription(String packageDescription) {
+        try {
+            tablePackages.findElement(By.xpath(".//tbody/tr[normalize-space(td[3])='" + packageDescription + "']"));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public ShipmentListPage toShipmentListPage() {
         this.linkBackShipments.click();
         return new ShipmentListPage(this.driver);

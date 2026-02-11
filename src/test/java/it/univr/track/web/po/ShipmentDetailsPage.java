@@ -1,5 +1,6 @@
 package it.univr.track.web.po;
 
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -96,9 +97,18 @@ public class ShipmentDetailsPage extends BasePageObject {
         return this.spanStatus.getText();
     }
 
-    public String getTrackingState(){
-        return  this.spanTrackingState.getText();
+    public String getTrackingState() {
+        try {
+            // prova 1: se esiste un id (se un giorno lo metti)
+            return driver.findElement(By.id("shipment-tracking-state")).getText().trim();
+        } catch (Exception ignored) {}
+
+        // fallback: cerca una riga che contiene "Tracking" e prende la cella successiva
+        return driver.findElement(By.xpath(
+                "//*[self::th or self::td][contains(normalize-space(.),'Tracking')]/following-sibling::*[1]"
+        )).getText().trim();
     }
+
 
     public boolean isTrackableTableVisible() {
         return this.tableTrackables == null || this.tableTrackables.isDisplayed();
