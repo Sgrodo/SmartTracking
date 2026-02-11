@@ -1,5 +1,6 @@
 package it.univr.track.controller.api.dto.shipment;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -15,9 +16,11 @@ public class CreateShipmentRequest {
     private String description;
 
     @NotNull(message = "from location is required")
+    @NotBlank(message = "from location can't be blank")
     private String from;
 
     @NotNull(message = "to location is required")
+    @NotBlank(message = "to location can't be blank")
     private String to;
 
     @NotNull(message = "trackableIds is required")

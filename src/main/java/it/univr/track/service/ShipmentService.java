@@ -47,6 +47,15 @@ public class ShipmentService {
             trackableService.setShipment(tr.getId(),shipment.getId());
         }
 
+        if(from == null || from.isBlank()){
+            throw new InvalidDataException("from is require and cannot be blank");
+        }
+        if(to == null || to.isBlank()){
+            throw new InvalidDataException("to is require and cannot be blank");
+        }
+        shipment.setFromLocation(from);
+        shipment.setToLocation(to);
+
         return shipmentRepository.save(shipment);
     }
 
@@ -154,8 +163,18 @@ public class ShipmentService {
                 default -> s.setState(state);
             }
         }
-        if(from != null) s.setFromLocation(from);
-        if(to != null) s.setToLocation(to);
+        if(from != null) {
+            if(from.isBlank()){
+                throw new InvalidDataException("from is blank");
+            }
+            s.setFromLocation(from);
+        }
+        if(to != null) {
+            if(to.isBlank()){
+                throw new InvalidDataException("to is blank");
+            }
+            s.setToLocation(to);
+        }
 
         s.setDescription(description);
         //s è managed, save non necessario (in teoria)
