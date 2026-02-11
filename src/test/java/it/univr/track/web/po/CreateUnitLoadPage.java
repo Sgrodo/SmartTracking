@@ -77,8 +77,13 @@ public class CreateUnitLoadPage extends BasePageObject{
         return this.tableDevices.findElements(org.openqa.selenium.By.xpath(".//tbody/tr")).size();
     }
 
-    public void insertDescription(String description) {
+    public void setDescription(String description) {
+        this.inputDescription.clear();
         this.inputDescription.sendKeys(description);
+    }
+
+    public String getDescription(){
+        return this.inputDescription.getAttribute("value");
     }
 
     public void setTemperatureConstraint(double value, String unit) {
@@ -86,49 +91,71 @@ public class CreateUnitLoadPage extends BasePageObject{
         this.selectTemperatureUnit.sendKeys(unit);
     }
 
-    public boolean selectLoadItem(int loadItemId){
+    public void setHumidityConstraint(double value) {
+        this.inputHumidityValue.click();
+        this.inputHumidityValue.clear();
+        this.inputHumidityValue.sendKeys(String.valueOf(value));
+    }
+
+    public String getHumidityConstraintValue(){
+        return this.inputHumidityValue.getAttribute("value").trim();
+    }
+
+
+    public boolean selectLoadItem(Long loadItemId) {
         try {
-            var checkbox = this.tableLoadItems.findElement(By.xpath(".//tbody/tr[td[2][text()='" + loadItemId + "']]/td[1]/input"));
-            if (!checkbox.isSelected()) {
-                checkbox.click();
-            }
+            String xpath = ".//tbody/tr[normalize-space(td[2])='" + loadItemId + "']//td[1]//input[@type='checkbox']";
+            WebElement checkbox = tableLoadItems.findElement(By.xpath(xpath));
+
+            if (!checkbox.isSelected()) checkbox.click();
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("DEBUG tableLoadItems text:\n" + tableLoadItems.getText());
+            return false;
+        }
+    }
+
+
+
+    public boolean selectDevice(Long deviceId) {
+        try {
+            var checkbox = tableDevices.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[2])='" + deviceId + "']//td[1]//input[@type='checkbox']"
+            ));
+            if (!checkbox.isSelected()) checkbox.click();
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public boolean selectDevice(int deviceId){
+
+    public boolean containsLoadItemId(Long loadItemId) {
         try {
-            var checkbox = this.tableDevices.findElement(By.xpath(".//tbody/tr[td[2][text()='" + deviceId + "']]/td[1]/input"));
-            if (!checkbox.isSelected()) {
-                checkbox.click();
-            }
+            tableLoadItems.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[2])='" + loadItemId + "']"
+            ));
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public boolean containsLoadItemId(int loadItemId) {
+
+    public boolean containsDeviceId(Long deviceId) {
         try {
-            this.tableLoadItems.findElement(By.xpath(".//tbody/tr[td[2][text()='" + loadItemId + "']]"));
+            this.tableDevices.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[2])='" + deviceId + "']"
+            ));
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public boolean containsDeviceId(int deviceId) {
-        try {
-            this.tableDevices.findElement(By.xpath(".//tbody/tr[td[2][text()='" + deviceId + "']]"));
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
 
-     public CreateShipmentPage clickCreateUnitLoad() {
+    public CreateShipmentPage clickCreateUnitLoad() {
         this.buttonCreateUnitLoad.click();
         return new CreateShipmentPage(this.driver);
     }

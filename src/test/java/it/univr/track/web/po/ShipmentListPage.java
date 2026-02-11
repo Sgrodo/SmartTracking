@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 public class ShipmentListPage extends BasePageObject {
 
-    @FindBy(xpath = "//table[@id='active-shipments-table']")
+    @FindBy(id = "active-shipments-table")
     public WebElement tableActiveShipments;
 
     @FindBy(xpath = "//table[@id='finalized-shipments-table']")
@@ -34,12 +34,15 @@ public class ShipmentListPage extends BasePageObject {
                             var description = columns.get(2).getText();
                             var trackableIds = columns.get(3).getText().isBlank() ? new Long[0] :
                                     Stream.of(columns.get(3).getText().split(",")).map(String::trim).map(Long::parseLong).toArray(Long[]::new);
-                            var endDate = columns.get(4).getText().isBlank() ? null : ZonedDateTime.parse(columns.get(4).getText());
+                            var endText = columns.get(4).getText().trim();
+                            var endDate = (endText.isBlank() || endText.equals("-")) ? null : ZonedDateTime.parse(endText);
 
                             var actions = columns.get(5).findElements(By.xpath(".//button"));
                             WebElement detailsButton = actions.stream().filter(b -> b.getText().equals("Details")).findFirst().orElse(null);
-                            WebElement trkAndDevicesButton = actions.stream().filter(b -> b.getText().equals("Trackables and Devices")).findFirst().orElse(null);
-                            WebElement editButton = actions.stream().filter(b -> b.getText().equals("Edit ")).findFirst().orElse(null);
+                    WebElement trkAndDevicesButton = actions.stream()
+                            .filter(b -> b.getText() != null && b.getText().trim().contains("Trackables"))
+                            .findFirst().orElse(null);
+                    WebElement editButton = actions.stream().filter(b -> b.getText().equals("Edit ")).findFirst().orElse(null);
                             WebElement completeButton = actions.stream().filter(b -> b.getText().equals("Complete")).findFirst().orElse(null);
                             WebElement cancelButton = actions.stream().filter(b -> b.getText().equals("Cancel")).findFirst().orElse(null);
 

@@ -6,10 +6,11 @@
 
 ## Flusso normale
 1. L’utente accede alla pagina **Create shipment**.
-2. Inserisce la descrizione della spedizione.
-3. Seleziona una o più **UnitLoad** e/o uno o più **Package**.
-4. Conferma la creazione.
-5. Il sistema crea la Shipment con identificativo automatico.
+2. Inserisce la partenza e la destinazione
+3. Inserisce la descrizione della spedizione.
+4. Seleziona una o più **UnitLoad** e/o uno o più **Package**.
+5. Conferma la creazione.
+6. Il sistema crea la Shipment con identificativo automatico.
 
 ## Cosa può andare storto
 - Nessun trackable selezionato → il sistema blocca la creazione e mostra un messaggio di validazione.

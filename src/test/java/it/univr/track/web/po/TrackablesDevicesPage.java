@@ -65,10 +65,25 @@ public class TrackablesDevicesPage extends BasePageObject {
                     .toList();
         }
 
-        public void bindDevice(String deviceId) {
+
+        public TrackablesDevicesPage bindDevice(String deviceId) {
             this.selectDevice.findElement(By.xpath(".//option[@value='" + deviceId + "']")).click();
             this.buttonBindDevice.click();
+            return new TrackablesDevicesPage(driver);
         }
+
+        public TrackablesDevicesPage unbindDevice(String deviceId) {
+            DeviceRow row = getBoundDevices().stream()
+                    .filter(d -> d.id().trim().equals(deviceId))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Bound device not found in table: " + deviceId));
+
+            row.unbindButton().click();
+            return new TrackablesDevicesPage(driver);
+        }
+
+
+
 
         public boolean containsBoundDeviceId(String deviceId) {
             try {

@@ -217,7 +217,7 @@ public class ShipmentWebController {
             @RequestParam String description,
             @RequestParam(required = false) Double temperatureValue,
             @RequestParam(required = false) TemperatureUnit temperatureUnit,
-            @RequestParam(required = false) Integer humidityValue,
+            @RequestParam(required = false) Double humidityValue,
             @RequestParam(required = false) List<Long> loadItemIds,
             @RequestParam(required = false) List<Long> deviceIds,
             Model model
@@ -236,7 +236,7 @@ public class ShipmentWebController {
 
             // HUMIDITY
             if (humidityValue != null) {
-                constraints.add(new HumidityConstraint(humidityValue.doubleValue()));
+                constraints.add(new HumidityConstraint(humidityValue));
             }
 
             // 2) LoadItems (null-safe)

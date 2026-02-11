@@ -1,10 +1,12 @@
 package it.univr.track.repository;
 
 import it.univr.track.entity.data.Package;
+import it.univr.track.entity.data.UnitLoad;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface PackageRepository extends JpaRepository<Package, Long> {
     @Query("""
@@ -19,4 +21,6 @@ public interface PackageRepository extends JpaRepository<Package, Long> {
 """)
     List<Package> findAllNotInAnyShipment();
 
+    //Mi serve per il seleniumTest, non serve per la logica del sistema -> non lo metto nel Service
+    Optional<Package> findByDescription(String description);
 }

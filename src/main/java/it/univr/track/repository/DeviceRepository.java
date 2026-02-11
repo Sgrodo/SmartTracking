@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface DeviceRepository extends JpaRepository<Device, Long> {
 
@@ -59,4 +60,7 @@ where not exists (
 )
 """)
     List<Device> findDevicesNotInBusyShipments(@Param("busyStates") Collection<ShipmentState> busyStates);
+
+    //per selenium Test
+    Optional<Device> findByOrigin(String origin);
 }

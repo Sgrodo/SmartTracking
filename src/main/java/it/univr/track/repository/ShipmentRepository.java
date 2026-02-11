@@ -1,6 +1,8 @@
 package it.univr.track.repository;
 
+import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
+import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
 
@@ -32,4 +35,7 @@ public interface ShipmentRepository extends JpaRepository<Shipment, Long> {
     );
 
 
+    //Mi serve per il seleniumTest, non serve per la logica del sistema -> non lo metto nel Service
+    Optional<Shipment> findByDescription(String description);
+    Optional<Shipment> findFirstByDescription(String description);
 }

@@ -1,6 +1,7 @@
 package it.univr.track.repository;
 
 import it.univr.track.entity.data.LoadItem;
+import it.univr.track.entity.data.Package;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Collection;
@@ -11,4 +12,6 @@ public interface LoadItemRepository extends JpaRepository<LoadItem, Long> {
 
     Set<LoadItem> getLoadItemsByIdIn(Collection<Long> ids);
 
+    //Mi serve per il seleniumTest, non serve per la logica del sistema -> non lo metto nel Service
+    Optional<LoadItem> findByName(String name);
 }

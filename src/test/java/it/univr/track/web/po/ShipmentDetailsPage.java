@@ -31,6 +31,9 @@ public class ShipmentDetailsPage extends BasePageObject {
     @FindBy(id = "shipment-status")
     public WebElement spanStatus;
 
+    @FindBy(id = "shipment-tracking-state")
+    public WebElement spanTrackingState;
+
     @FindBy(id = "activate-btn")
     public WebElement buttonActivate;
 
@@ -76,11 +79,25 @@ public class ShipmentDetailsPage extends BasePageObject {
         return this.spanDescription.getText();
     }
 
+    public ShipmentDetailsPage activateTracking(){
+        this.buttonActivate.click();
+        return  new ShipmentDetailsPage(this.driver);
+    }
+
+    public ShipmentDetailsPage deActivateTracking(){
+        this.buttonDeactivate.click();
+        return  new ShipmentDetailsPage(this.driver);
+    }
+
     public record TrackableRow(long id, String description, String type) {
     }
 
     public String getStatus() {
         return this.spanStatus.getText();
+    }
+
+    public String getTrackingState(){
+        return  this.spanTrackingState.getText();
     }
 
     public boolean isTrackableTableVisible() {

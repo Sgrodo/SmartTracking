@@ -9,6 +9,12 @@ public class CreateShipmentPage extends BasePageObject {
     @FindBy(xpath = "//a[@href='/web/shipments/list']")
     public WebElement linkBackShipments;
 
+    @FindBy(id = "from-input")
+    public WebElement fromLocation;
+
+    @FindBy(id = "to-input")
+    public WebElement toLocation;
+
     @FindBy(xpath = "//h1")
     public WebElement h1CreateShipment;
 
@@ -21,7 +27,7 @@ public class CreateShipmentPage extends BasePageObject {
     @FindBy(xpath = "//a[@href='/web/packages/new']")
     public WebElement linkNewPackage;
 
-    @FindBy(xpath = "//textarea[@id='description']")
+    @FindBy(id = "description-textarea")
     public WebElement textareaDescription;
 
     @FindBy(xpath = "//table[@id='unit-loads-table']")
@@ -50,6 +56,25 @@ public class CreateShipmentPage extends BasePageObject {
         return new ShipmentListPage(this.driver);
     }
 
+    public void setFromLocation(String fromLocation) {
+        this.fromLocation.clear();
+        this.fromLocation.sendKeys(fromLocation);
+    }
+
+    public void setToLocation(String toLocation) {
+        this.toLocation.clear();
+        this.toLocation.sendKeys(toLocation);
+    }
+
+    public String getFromLocation() {
+        return this.fromLocation.getAttribute("value");
+    }
+
+    public String getToLocation() {
+        return this.toLocation.getAttribute("value");
+    }
+
+
     public String getTitle() {
         return this.h1CreateShipment.getText();
     }
@@ -76,29 +101,30 @@ public class CreateShipmentPage extends BasePageObject {
         return this.tablePackages.findElements(By.xpath(".//tbody/tr")).size();
     }
 
-    public boolean selectUniLoad(int unitLoadId) {
+    public boolean selectUniLoad(Long unitLoadId) {
         try {
-            var checkbox = this.tableUnitLoads.findElement(By.xpath(".//tbody/tr[td[2][text()='" + unitLoadId + "']]/td[1]/input"));
-            if (!checkbox.isSelected()) {
-                checkbox.click();
-            }
+            var checkbox = tableUnitLoads.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[2])='" + unitLoadId + "']//td[1]//input[@type='checkbox' and @name='unitLoadIds']"
+            ));
+            if (!checkbox.isSelected()) checkbox.click();
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    public boolean selectPackage(int packageId) {
+    public boolean selectPackage(Long packageId) {
         try {
-            var checkbox = this.tablePackages.findElement(By.xpath(".//tbody/tr[td[2][text()='" + packageId + "']]/td[1]/input"));
-            if (!checkbox.isSelected()) {
-                checkbox.click();
-            }
+            var checkbox = tablePackages.findElement(By.xpath(
+                    ".//tbody/tr[normalize-space(td[2])='" + packageId + "']//td[1]//input[@type='checkbox' and @name='packageIds']"
+            ));
+            if (!checkbox.isSelected()) checkbox.click();
             return true;
         } catch (Exception e) {
             return false;
         }
     }
+
 
     public Iterable<UnitLoadRow> getUnitLoads() {
         return this.tableUnitLoads.findElements(By.xpath(".//tbody/tr")).stream()

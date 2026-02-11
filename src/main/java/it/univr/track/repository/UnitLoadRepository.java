@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UnitLoadRepository extends JpaRepository<UnitLoad, Long> {
 
@@ -37,5 +38,11 @@ public interface UnitLoadRepository extends JpaRepository<UnitLoad, Long> {
     )
 """)
     List<UnitLoad> findAllNotInShipmentsAndNotInPackages();
+
+
+    //Mi serve per il seleniumTest, non serve per la logica del sistema -> non lo metto nel Service
+    Optional<UnitLoad> findFirstByDescription(String description);
+    List<UnitLoad> findByDescription(String description);
+
 
 }
