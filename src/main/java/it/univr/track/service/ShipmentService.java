@@ -224,6 +224,13 @@ public class ShipmentService {
                     return deviceAssignment.getDevice().getTrackingState();
                 }
             }
+            for(UnitLoad u : tr.getUnitLoads()){
+                for (DeviceAssignment deviceAssignment : u.getDevices()){
+                    if(deviceAssignment.isActive()){
+                        return deviceAssignment.getDevice().getTrackingState();
+                    }
+                }
+            }
         }
         return TrackingState.INACTIVE;
     }

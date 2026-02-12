@@ -12,7 +12,11 @@
 
 <h1>Shipment details</h1>
 
-<p id="error" style="color:red;" th:if="${error}" th:text="${error}"></p>
+<p id="error"
+   style="color:red;"
+   th:if="${error != null}"
+   th:text="${error}">
+</p>
 
 <p>
     <b>ID:</b> <span id="shipment-id" th:text="${shipment.id}">1</span><br/>

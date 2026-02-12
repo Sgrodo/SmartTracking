@@ -392,18 +392,32 @@ public class ShipmentWebController {
     // ACTIVATE tracking
     @PostMapping("/shipments/{id}/tracking/activate")
     public String activateTracking(@PathVariable Long id, Model model) {
-        shipmentService.setTrackingState(id,TrackingState.ACTIVE);
-        model.addAttribute("shipment", shipmentService.getById(id));
-        model.addAttribute("trackingState",TrackingState.ACTIVE);
+        try{
+            shipmentService.setTrackingState(id,TrackingState.ACTIVE);
+        } catch (InvalidDataException e) {
+            //ignore
+            model.addAttribute("error", "Nessun Device è assegnato ai Trackable");
+            model.addAttribute("shipment", shipmentService.getById(id));
+            model.addAttribute("trackingState",TrackingState.INACTIVE);
+            return "shipment-details";
+        }
+
         return "redirect:/web/shipments/" + id;
     }
 
     // DEACTIVATE tracking
     @PostMapping("/shipments/{id}/tracking/deactivate")
     public String deactivateTracking(@PathVariable Long id, Model model) {
-        shipmentService.setTrackingState(id, TrackingState.INACTIVE);
-        model.addAttribute("shipment", shipmentService.getById(id));
-        model.addAttribute("trackingState",TrackingState.INACTIVE);
+        try{
+            shipmentService.setTrackingState(id, TrackingState.INACTIVE);
+        }catch (InvalidDataException e) {
+            //ignore
+            model.addAttribute("error", "Nessun Device è assegnato ai Trackable");
+            model.addAttribute("shipment", shipmentService.getById(id));
+            model.addAttribute("trackingState",TrackingState.INACTIVE);
+            return "shipment-details";
+        }
+
         return "redirect:/web/shipments/" + id;
     }
 
