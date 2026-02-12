@@ -60,6 +60,28 @@
 
 
 ## Scenari (Disponibili nel seguente file: [src/test/scenari.md](./src/test/Scenari.md))
+Gli scenari funzionali del sistema sono stati formalizzati e successivamente implementati tramite il framework Cucumber, con l’obiettivo di trasformare i requisiti identificati in fase di analisi in acceptance test automatizzati e verificabili.
+
+Gli scenari coprono i principali processi del modulo di gestione logistica, in particolare:
+ - creazione e gestione di Shipment,
+ - creazione e composizione di UnitLoad e Package,
+ - visualizzazione delle spedizioni,
+ - attivazione e disattivazione del tracking,
+ - associazione e dissociazione (binding/unbinding) dei device ai Trackable.
+
+Ogni scenario è stato strutturato secondo uno schema coerente composto da:
+ - Assunzioni iniziali (precondizioni): stato del sistema prima dell’esecuzione.
+ - Flusso normale: sequenza principale di interazioni utente-sistema.
+ - Casi di errore o alternativi: condizioni che impediscono il completamento corretto dell’’operazione.
+ - Stato finale (postcondizioni): stato consistente del sistema al termine dell’esecuzione.
+
+Gli scenari includono sia casi funzionali positivi (creazione, associazione, attivazione), sia casi di validazione (campi mancanti, valori non validi, selezioni obbligatorie assenti), garantendo così copertura dei vincoli applicativi e delle regole di dominio.
+L’integrazione con Cucumber ha permesso di:
+- mantenere coerenza tra requisiti, scenari e comportamento implementato
+- garantire tracciabilità tra requisito funzionale e test di accettazione
+- validare automaticamente il rispetto delle regole di business, ridurre ambiguità tra specifica e implementazione.
+  In questo modo, gli scenari non rappresentano solo documentazione descrittiva, ma costituiscono una specifica eseguibile del comportamento atteso del sistema.
+
 
 ## Quality Assurance
 ### Test Selection
@@ -90,4 +112,21 @@ Per ogni test case sono stati definiti set di dati specifici:
 * **Dati Non Validi:** Valori nulli, ID inesistenti, caratteri speciali non ammessi, JSON invalidi.
 * **Dati di Confine:** Valori minimi e massimi (es. Temperature estreme definite nei vincoli).
 
-## Test Coverage
+## Test Coverage (Unit Testing)
+La valutazione dell'efficacia dei test è stata analizzata solo per i seguenti sottomoduli relativi all'implementazione del modulo delle spedizioni:
+- Service
+- Entity
+- Repository
+- Controller (ShipmentController, UnitLoadController, PackageController, ShipmentWebController)
+
+### Metriche di copertura
+Per valutare l'efficacia dei test, sono state utilizzate le seguenti metriche di copertura:
+#### RCI (Requirements Coverage Index)
+Indica la capacità dei test di validare i requisiti idenitficati nella sezione [Requisiti](#requisiti).
+  * **Copertura dei Requisiti di Dominio (RD):** 100%.
+  * **Copertura dei Requisiti Funzionali (RF):** >95%.
+#### Code Coverage
+Rappresenta l'analisi quantitativa del codice sorgente effettivamente eseguito durante i test.
+  * **Branch Coverage:** >80%.
+  * **Line Coverage:** >90%.
+  * **Method Coverage:** >80%.
