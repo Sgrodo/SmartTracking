@@ -115,4 +115,9 @@ public class UnitLoad extends Trackable {
         return Set.of(this);
     }
 
+    @Override
+    public String getDisplayName() {
+        return "Unit Load";
+    }
+
 }

@@ -202,9 +202,21 @@ public class ShipmentService {
         HashSet<Device> devices = new HashSet<>();
         for(Trackable tr : shipment.getTrackables()){
             for (DeviceAssignment deviceAssignment : tr.getDevices()){
-                devices.add(deviceAssignment.getDevice());
+                if(deviceAssignment.isActive()){
+                    devices.add(deviceAssignment.getDevice());
+                }
+            }
+
+            for(UnitLoad ut : tr.getUnitLoads()){
+                for (DeviceAssignment deviceAssignment : ut.getDevices()){
+                    if(deviceAssignment.isActive()){
+                        devices.add(deviceAssignment.getDevice());
+                    }
+                }
             }
         }
+
+
         deviceService.setDeviceTrackingState(devices, state);
     }
 
@@ -212,7 +224,9 @@ public class ShipmentService {
     public TrackingState getTrackingState(Shipment shipment) {
         for(Trackable tr : shipment.getTrackables()){
             for (DeviceAssignment deviceAssignment : tr.getDevices()){
-                return deviceAssignment.getDevice().getTrackingState();
+                if(deviceAssignment.isActive()){
+                    return deviceAssignment.getDevice().getTrackingState();
+                }
             }
         }
         return null;

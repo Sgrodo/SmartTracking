@@ -37,5 +37,5 @@ public abstract class Trackable extends AbstractEntity {
 
     public abstract Set<UnitLoad> getUnitLoads();
     
-
+    public abstract String getDisplayName();
 }
