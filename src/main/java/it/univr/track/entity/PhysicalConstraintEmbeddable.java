@@ -38,10 +38,6 @@ public class PhysicalConstraintEmbeddable {
             e.numberValue = t.value();
             e.temperatureUnit = t.unit();
 
-        } else {
-            throw new IllegalArgumentException(
-                    "Unsupported PhysicalConstraint type: " + c.getClass()
-            );
         }
         return e;
     }
