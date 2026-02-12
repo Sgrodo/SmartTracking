@@ -23,6 +23,7 @@ import it.univr.track.entity.sensor.TemperatureConstraint;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.service.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -94,12 +95,22 @@ public class ShipmentWebController {
                 shipmentService.create(null, description, fromLocation, toLocation, trackables);
                 return "redirect:/web/shipments/list";
             } catch (InvalidDataException e) {
-                model.addAttribute("errorMessage", "ERROR\nYou must specify al least one Trackable object");
-
+                String errorMessage ="";
+                if(fromLocation == null || fromLocation.isBlank()){
+                    errorMessage ="Invalid fromLocation, it cannot be Empty.\n";
+                }
+                if(toLocation == null || toLocation.isBlank()){
+                    errorMessage +="Invalid toLocation, it cannot be Empty.\n";
+                }
+                if(trackables.isEmpty()){
+                    errorMessage +="No trackables found.\n";
+                }
+                model.addAttribute("errorMessage", errorMessage);
                 // IMPORTANTISSIMO: ricaricare anche i dati che servono alla pagina
                 model.addAttribute("unitLoads",unitLoadService.getAllNotInShipmentAndNotInPackages());
                 model.addAttribute("packages",packageService.getAllPackagesNotInShipments());
-
+                model.addAttribute("fromLocation", fromLocation);
+                model.addAttribute("toLocation", toLocation);
                 return "shipment-new";
             }
     }
@@ -121,51 +132,85 @@ public class ShipmentWebController {
                 .collect(Collectors.toSet());
 
         prepareShipmentEditModel(shipment, selectedUnitLoadIds, selectedPackageIds, model);
+        model.addAttribute("descriptionDraft", shipment.getDescription());
+        model.addAttribute("fromLocationDraft", shipment.getFromLocation());
+        model.addAttribute("toLocationDraft", shipment.getToLocation());
+
         return "shipment-edit";
     }
+
 
     @PostMapping("/shipments/{id}/edit")
     public String editShipment(
             @PathVariable Long id,
             @RequestParam(required = false) String description,
-            @RequestParam(required = false) List<Long> unitLoadIds,
-            @RequestParam(required = false) List<Long> packageIds,
             @RequestParam(required = false) String fromLocation,
             @RequestParam(required = false) String toLocation,
+            @RequestParam(required = false) List<Long> unitLoadIds,
+            @RequestParam(required = false) List<Long> packageIds,
             Model model
     ) {
+        Shipment shipment = shipmentService.getById(id);
+
+        // checkbox non spuntati
         if (unitLoadIds == null) unitLoadIds = List.of();
         if (packageIds == null) packageIds = List.of();
 
+        // per th:checked
         Set<Long> selectedUnitLoadIds = new HashSet<>(unitLoadIds);
         Set<Long> selectedPackageIds  = new HashSet<>(packageIds);
 
-        Set<Long> allIds = new HashSet<>();
-        allIds.addAll(unitLoadIds);
-        allIds.addAll(packageIds);
+        // trackables selezionati dall'utente
+        Set<Trackable> newTrackables = new HashSet<>();
+        newTrackables.addAll(trackableService.getAllTrackablesById(unitLoadIds));
+        newTrackables.addAll(trackableService.getAllTrackablesById(packageIds));
 
         try {
-            Shipment shipment = shipmentService.getById(id);
+            if (newTrackables.isEmpty()) {
+                throw new InvalidDataException(
+                        "You must select at least one Unit Load or Package to update the shipment."
+                );
+            }
 
-            Set<Trackable> trackables = new HashSet<>(trackableService.getAllTrackablesById(allIds));
+            shipmentService.update(
+                    shipment,
+                    description,
+                    fromLocation,
+                    toLocation,
+                    shipment.getEndDate(),
+                    shipment.getState(),
+                    newTrackables
+            );
 
-            shipmentService.update(shipment, description, fromLocation, toLocation, null, null, trackables);
             return "redirect:/web/shipments/list";
 
-        } catch (InvalidDataException e) {
+        } catch (Exception e) {
+            String errorMessage ="";
+            if(fromLocation == null || fromLocation.isBlank()){
+                errorMessage ="Invalid fromLocation, it cannot be Empty.\n";
+            }
+            if(toLocation == null || toLocation.isBlank()){
+                errorMessage +="Invalid toLocation, it cannot be Empty.\n";
+            }
+            if(newTrackables.isEmpty()){
+                errorMessage += "Trackables need to be present";
+            }
+            // messaggio errore
+            model.addAttribute("errorMessage", errorMessage);
 
-            Shipment shipment = shipmentService.getById(id);
-
-            model.addAttribute("errorMessage", "You must select at least one Unit Load or Package to update the shipment.");
-
-            prepareShipmentEditModel(shipment, selectedUnitLoadIds, selectedPackageIds, model);
-
-            // opzionale: per mostrare quello che l’utente aveva scritto anche se non salvato
+            // quello che l’utente ha scritto
             model.addAttribute("descriptionDraft", description);
+            model.addAttribute("fromLocationDraft", fromLocation);
+            model.addAttribute("toLocationDraft", toLocation);
+
+            //ricostruisco la pagina
+            prepareShipmentEditModel(shipment, selectedUnitLoadIds, selectedPackageIds, model);
 
             return "shipment-edit";
         }
     }
+
+
 
     @GetMapping("/shipments/{id}/complete")
     public String completeShipment(@PathVariable Long id, Model model) {
@@ -411,37 +456,48 @@ public class ShipmentWebController {
                                           Set<Long> selectedPackageIds,
                                           Model model) {
 
+        if (selectedUnitLoadIds == null) selectedUnitLoadIds = Set.of();
+        if (selectedPackageIds == null) selectedPackageIds = Set.of();
+
         model.addAttribute("shipment", shipment);
         model.addAttribute("selectedUnitLoadIds", selectedUnitLoadIds);
         model.addAttribute("selectedPackageIds", selectedPackageIds);
 
-        Set<UnitLoad> selectedUnitLoads = new HashSet<>();
-        Set<Package> selectedPackages = new HashSet<>();
+        Set<UnitLoad> inShipmentUnitLoads = shipment.getTrackables().stream()
+                .filter(t -> t instanceof UnitLoad)
+                .map(t -> (UnitLoad) t)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
 
-        for  (Long id : selectedUnitLoadIds) {
-            selectedUnitLoads.add(unitLoadService.getUnitLoadById(id));
-        }
-        for  (Long id : selectedPackageIds) {
-            selectedPackages.add(packageService.getPackageById(id));
-        }
-
+        Set<Package> inShipmentPackages = shipment.getTrackables().stream()
+                .filter(t -> t instanceof Package)
+                .map(t -> (Package) t)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
 
         // disponibili
         var availableUnitLoads = unitLoadService.getAllNotInShipmentAndNotInPackages();
         var availablePackages  = packageService.getAllPackagesNotInShipments();
 
-        // merge senza duplicati (preserva ordine)
+        // merge senza duplicati: prima quelli già nello shipment, poi gli available
         Map<Long, UnitLoad> unitLoadsToShow = new LinkedHashMap<>();
-        for (UnitLoad ul : selectedUnitLoads) unitLoadsToShow.put(ul.getId(), ul);
+        for (UnitLoad ul : inShipmentUnitLoads) unitLoadsToShow.put(ul.getId(), ul);
         for (UnitLoad ul : availableUnitLoads) unitLoadsToShow.put(ul.getId(), ul);
 
         Map<Long, Package> packagesToShow = new LinkedHashMap<>();
-        for (Package p : selectedPackages) packagesToShow.put(p.getId(), p);
+        for (Package p : inShipmentPackages) packagesToShow.put(p.getId(), p);
         for (Package p : availablePackages) packagesToShow.put(p.getId(), p);
 
         model.addAttribute("unitLoadsToShow", unitLoadsToShow.values());
         model.addAttribute("packagesToShow", packagesToShow.values());
+
+        // draft di default SOLO se non già presenti (così nel POST errore non li sovrascrive)
+        model.addAttribute("descriptionDraft",
+                model.containsAttribute("descriptionDraft") ? model.getAttribute("descriptionDraft") : shipment.getDescription());
+        model.addAttribute("fromLocationDraft",
+                model.containsAttribute("fromLocationDraft") ? model.getAttribute("fromLocationDraft") : shipment.getFromLocation());
+        model.addAttribute("toLocationDraft",
+                model.containsAttribute("toLocationDraft") ? model.getAttribute("toLocationDraft") : shipment.getToLocation());
     }
+
 
 
 }

@@ -71,12 +71,28 @@ public class DataInitializer {
                     )
             );
 
-            Device chinaDevice = deviceRepository.save(new Device(false, true, false, new BigDecimal("110.00"), "China"));
+            //Devices already assigned to UnitLoads and Packages
+            Device chinaDevice = deviceRepository.save(
+                    new Device(false, true, false, new BigDecimal("110.00"), "China"));
 
-            Device brazilDevice = deviceRepository.save(new Device(true, true, true, new BigDecimal("200.00"), "Brazil"));
+            Device brazilDevice = deviceRepository.save(
+                    new Device(true, true, true, new BigDecimal("200.00"), "Brazil"));
 
-            DeviceAssignment chinaAssignment = deviceAssignmentRepository.save(new DeviceAssignment(chinaDevice, utSample1, ZonedDateTime.now()));
-            DeviceAssignment brazilAssignment = deviceAssignmentRepository.save(new DeviceAssignment(brazilDevice, pkgSample, ZonedDateTime.now()));
+            Device canadaDevice = deviceRepository.save(
+                    new Device(true, false, true, new BigDecimal("150.00"), "Canada"));
+
+            Device portugalnDevice = deviceRepository.save(
+                    new Device(false, true, true, new BigDecimal("320.00"), "Portugal"));
+
+            Device englandDevice = deviceRepository.save(
+                    new Device(true, true, false, new BigDecimal("180.00"), "England"));
+
+
+            deviceAssignmentRepository.save(new DeviceAssignment(chinaDevice, utSample1, ZonedDateTime.now()));
+            deviceAssignmentRepository.save(new DeviceAssignment(brazilDevice, pkgSample, ZonedDateTime.now()));
+            deviceAssignmentRepository.save(new DeviceAssignment(canadaDevice, utSample2, ZonedDateTime.now()));
+            deviceAssignmentRepository.save(new DeviceAssignment(portugalnDevice, utSample3, ZonedDateTime.now()));
+            deviceAssignmentRepository.save(new DeviceAssignment(englandDevice, utSample4, ZonedDateTime.now()));
 
             // Create sample shipment
             Shipment shipment = new Shipment("SAMPLE SHIPMENT", "Italy", "Germany");

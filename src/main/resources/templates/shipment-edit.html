@@ -23,20 +23,25 @@
         <input id="description-input"
                maxlength="240"
                name="description"
-               th:value="${shipment.description}"
-               type="text"/>
+               th:value="${descriptionDraft ?: ''}"
+               type="text"
+        />
         <label for="from-input">From:</label>
         <input id="from-input"
                maxlength="255"
                name="fromLocation"
-               th:value="${shipment.from}"
-               type="text"/>
+               th:value="${fromLocationDraft ?: ''}"
+               type="text"
+               required
+        />
         <label for="to-input">To:</label>
         <input id="to-input"
                maxlength="255"
                name="toLocation"
-               th:value="${shipment.to}"
-               type="text"/>
+               th:value="${toLocationDraft ?: ''}"
+               type="text"
+               required
+        />
 
     </div>
 

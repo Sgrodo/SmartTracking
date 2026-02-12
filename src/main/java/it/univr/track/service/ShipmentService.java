@@ -96,8 +96,8 @@ public class ShipmentService {
         }else{
             throw new NotFoundException("Shipment not found: " + shipment.getId());
         }
-
-        this.deActivateDevicesOfTrackablesInShipment(s);
+        //i device restano attaccati per evitare di avbere Trackables senza device
+        //this.deActivateDevicesOfTrackablesInShipment(s);
 
         s.cancel();
         //libero i Trackables

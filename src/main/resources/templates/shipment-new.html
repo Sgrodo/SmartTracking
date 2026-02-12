@@ -27,10 +27,26 @@
     <div>
         <label for="description-textarea">Description:</label><br/>
         <textarea id="description-textarea" name="description" rows="3" cols="60" maxlength="240" placeholder="Describe the shipment..."></textarea>
+    </div>
+
+    <hr/>
+
+    <h2>From location / To location</h2>
+    <div>
         <label for="from-input">From:</label>
-        <input id="from-input" name="fromLocation" type="text" maxlength="255" placeholder="Origin location..." />
+        <input id="from-input"
+                name="fromLocation"
+                type="text"
+                maxlength="240"
+                placeholder="Origin location..."
+                th:value="${fromLocation}" />
         <label for="to-input">To:</label>
-        <input id="to-input" name="toLocation" type="text" maxlength="255" placeholder="Destination location..." />
+        <input id="to-input"
+               name="toLocation"
+               type="text"
+               maxlength="240"
+               placeholder="Destination location..."
+               th:value="${toLocation}" />
     </div>
 
     <hr/>
