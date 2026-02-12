@@ -79,28 +79,28 @@ public class ShipmentWebController {
         trackables.addAll(trackableService.getAllTrackablesById(unitLoadIds));
         trackables.addAll(trackableService.getAllTrackablesById(packageIds));
 
-            try {
-                shipmentService.create(null, description, fromLocation, toLocation, trackables);
-                return "redirect:/web/shipments/list";
-            } catch (InvalidDataException e) {
-                String errorMessage ="";
-                if(fromLocation == null || fromLocation.isBlank()){
-                    errorMessage ="Invalid fromLocation, it cannot be Empty.\n";
-                }
-                if(toLocation == null || toLocation.isBlank()){
-                    errorMessage +="Invalid toLocation, it cannot be Empty.\n";
-                }
-                if(trackables.isEmpty()){
-                    errorMessage +="No trackables found.\n";
-                }
-                model.addAttribute("errorMessage", errorMessage);
-                // IMPORTANTISSIMO: ricaricare anche i dati che servono alla pagina
-                model.addAttribute("unitLoads",unitLoadService.getAllNotInShipmentAndNotInPackages());
-                model.addAttribute("packages",packageService.getAllPackagesNotInShipments());
-                model.addAttribute("fromLocation", fromLocation);
-                model.addAttribute("toLocation", toLocation);
-                return "shipment-new";
+        try {
+            shipmentService.create(null, description, fromLocation, toLocation, trackables);
+            return "redirect:/web/shipments/list";
+        } catch (InvalidDataException e) {
+            String errorMessage ="";
+            if(fromLocation == null || fromLocation.isBlank()){
+                errorMessage ="Invalid fromLocation, it cannot be Empty.\n";
             }
+            if(toLocation == null || toLocation.isBlank()){
+                errorMessage +="Invalid toLocation, it cannot be Empty.\n";
+            }
+            if(trackables.isEmpty()){
+                errorMessage +="No trackables found.\n";
+            }
+            model.addAttribute("errorMessage", errorMessage);
+            // IMPORTANTISSIMO: ricaricare anche i dati che servono alla pagina
+            model.addAttribute("unitLoads",unitLoadService.getAllNotInShipmentAndNotInPackages());
+            model.addAttribute("packages",packageService.getAllPackagesNotInShipments());
+            model.addAttribute("fromLocation", fromLocation);
+            model.addAttribute("toLocation", toLocation);
+            return "shipment-new";
+        }
     }
 
     //EDIT SHIPMENT
