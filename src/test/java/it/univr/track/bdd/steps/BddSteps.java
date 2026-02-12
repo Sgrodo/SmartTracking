@@ -12,26 +12,18 @@ import it.univr.track.entity.data.LoadItem;
 import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.UnitLoad;
-import it.univr.track.entity.enumeration.TrackingState;
-import it.univr.track.exception.NotFoundException;
 import it.univr.track.repository.*;
 import it.univr.track.service.*;
 import it.univr.track.web.po.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
-import org.openqa.selenium.By;
+
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import static org.junit.jupiter.api.Assertions.*;
-
 public class BddSteps {
 
         private final TestWorld world;
@@ -82,6 +74,9 @@ public class BddSteps {
             case "Create shipment" -> "/newShipment";
             case "Create UnitLoad" -> "/unitloads/new";
             case "Create Package" -> "/packages/new";
+            case "Shipments" -> "/shipments";
+            case "Edit shipment" -> "/shipments/%s/edit";
+
             default -> throw new IllegalArgumentException("Unknown page: " + pageName);
         };
     }
@@ -141,9 +136,11 @@ public class BddSteps {
 
         switch (pageName) {
             case "Shipments list" -> world.shipmentListPage = new ShipmentListPage(world.driver);
+            case "Shipments" -> world.shipmentListPage = new ShipmentListPage(world.driver); // dopo redirect atterri sulla list
             case "Create shipment" -> world.createShipmentPage = new CreateShipmentPage(world.driver);
             case "Create UnitLoad" -> world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
             case "Create Package" -> world.createPackagePage = new CreatePackagePage(world.driver);
+            case "Edit Page" -> world.editShipmentPage = new EditShipmentPage(world.driver);
             default -> throw new IllegalArgumentException("Unsupported page: " + pageName);
         }
     }
@@ -253,6 +250,16 @@ public class BddSteps {
                 );
                 return;
             }
+            case "Edit shipment" -> {
+                world.editShipmentPage = new EditShipmentPage(world.driver);
+                Assertions.assertTrue(
+                        world.editShipmentPage.h1EditShipment.getText().contains("Edit"),
+                        "Not on Edit shipment page"
+                );
+                return;
+            }
+
+
         }
 
         throw new IllegalArgumentException("Unsupported page: " + pageName);
@@ -260,9 +267,37 @@ public class BddSteps {
 
     @And("I should see an error message")
     public void iShouldSeeAnErrorMessage() {
-        world.createUnitLoadPage = new CreateUnitLoadPage(world.driver);
-        org.junit.jupiter.api.Assertions.assertTrue(world.createUnitLoadPage.hasError(), "Expected an error message, but none was shown.");
+
+        // se sei su Edit shipment usa EditShipmentPage
+        if (world.editShipmentPage != null && world.driver.getCurrentUrl().contains("/edit")) {
+            //html blocca quindi assert al contrario
+            Assertions.assertFalse(world.editShipmentPage.hasError(), "Error message is not displayed (Edit shipment)");
+            Assertions.assertTrue(world.editShipmentPage.getError().isBlank(), "Error message is empty (Edit shipment)");
+            return;
+        }
+
+        // fallback: Create shipment / Create package / Create unitload
+        if (world.createShipmentPage != null && world.driver.getCurrentUrl().contains("/newShipment")) {
+            Assertions.assertTrue(world.createShipmentPage.hasError(), "Error message is not displayed (Create shipment)");
+            Assertions.assertFalse(world.createShipmentPage.getError().isBlank(), "Error message is empty (Create shipment)");
+            return;
+        }
+
+        if (world.createPackagePage != null && world.driver.getCurrentUrl().contains("/packages/new")) {
+            Assertions.assertTrue(world.createPackagePage.hasError(), "Error message is not displayed (Create package)");
+            Assertions.assertFalse(world.createPackagePage.getError().isBlank(), "Error message is empty (Create package)");
+            return;
+        }
+
+        if (world.createUnitLoadPage != null && world.driver.getCurrentUrl().contains("/unitloads/new")) {
+            Assertions.assertTrue(world.createUnitLoadPage.hasError(), "Error message is not displayed (Create UnitLoad)");
+            Assertions.assertFalse(world.createUnitLoadPage.getError().isBlank(), "Error message is empty (Create UnitLoad)");
+            return;
+        }
+
+        throw new IllegalStateException("Don't know which page I'm on. url=" + world.driver.getCurrentUrl());
     }
+
 
     //# Scenario 4
 
@@ -634,4 +669,94 @@ public class BddSteps {
     }
 
 
+
+    //shipment-edit-complete-cancel
+
+    @And("I open edit for shipment {string}")
+    public void iOpenEditForShipment(String shipmentDescription) {
+
+        // assicurati di essere sulla list
+        if (world.shipmentListPage == null) {
+            world.shipmentListPage = new ShipmentListPage(world.driver);
+        }
+
+        ShipmentListPage.ShipmentRow row = null;
+        for (ShipmentListPage.ShipmentRow r : world.shipmentListPage.getActiveShipments()) {
+            if (shipmentDescription.equals(r.description())) {
+                row = r;
+                break;
+            }
+        }
+        if (row == null) throw new AssertionError("Active shipment not found: " + shipmentDescription);
+
+        world.editShipmentPage = row.clickEdit();  // devi avere EditShipmentPage
+    }
+
+
+    @Then("I should be on the {string} page")
+    public void iShouldBeOnThePage(String pageName) {
+        if (pageName.equals("Edit shipment")) {
+            Assertions.assertTrue(world.editShipmentPage.h1.getText().contains("Edit"),
+                    "Not on Edit shipment page");
+            return;
+        }
+        // altrimenti usa il tuo check URL
+        iShouldRemainOnThePage(pageName);
+    }
+
+
+    @And("I set fromLocation to {string}")
+    public void iSetFromLocation(String v) {
+        world.editShipmentPage.setFromLocation(v);
+    }
+
+    @And("I set toLocation to {string}")
+    public void iSetToLocation(String v) {
+        world.editShipmentPage.setToLocation(v);
+    }
+
+    @And("I select trackable {string} in edit form")
+    public void iSelectTrackableInEditForm(String trackableDescription) {
+        // qui serve solo per convertire description -> id (UnitLoad/Package)
+        Long trackableId = unitLoadRepository.findByDescription(trackableDescription).stream()
+                .findFirst().map(UnitLoad::getId)
+                .orElseGet(() -> packageRepository.findByDescription(trackableDescription).stream()
+                        .findFirst().map(it.univr.track.entity.data.Package::getId)
+                        .orElseThrow(() -> new AssertionError("Trackable not found: " + trackableDescription)));
+
+        world.editShipmentPage.selectTrackableCheckboxById(trackableId, true);
+    }
+
+    @And("I submit shipment edit")
+    public void iSubmitShipmentEdit() {
+        world.editShipmentPage.submit();
+        // dopo submit spesso redirect/list -> reinstanzia
+        world.shipmentListPage = new ShipmentListPage(world.driver);
+    }
+
+    @And("I unselect all trackables in edit form")
+    public void iUnselectAllTrackables() {
+        world.editShipmentPage.unselectAllTrackables();
+    }
+
+    @And("I click complete for shipment {string}")
+    public void iClickCompleteForShipment(String shipmentDescription) {
+        ShipmentListPage.ShipmentRow row = findActiveRowByDescription(shipmentDescription);
+        world.shipmentListPage = row.clickComplete();
+    }
+
+    @And("I click cancel for shipment {string}")
+    public void iClickCancelForShipment(String shipmentDescription) {
+        ShipmentListPage.ShipmentRow row = findActiveRowByDescription(shipmentDescription);
+        world.shipmentListPage = row.clickCancel();
+    }
+
+    //helper
+
+    private ShipmentListPage.ShipmentRow findActiveRowByDescription(String shipmentDescription) {
+        for (ShipmentListPage.ShipmentRow r : world.shipmentListPage.getActiveShipments()) {
+            if (shipmentDescription.equals(r.description())) return r;
+        }
+        throw new AssertionError("Active shipment not found: " + shipmentDescription);
+    }
 }

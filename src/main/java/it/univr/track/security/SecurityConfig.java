@@ -20,24 +20,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                // Permetti l'uso dei Frame (la console H2 ne abusa)
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/login", "/css/**", "/js/**").permitAll()
-//                        .requestMatchers("/api/**").authenticated()
-//                        .requestMatchers("/api/shipment").hasAuthority(UserRoles.WAREHOUSE_WORKER.name())
-//                        .requestMatchers("/shipment").hasAuthority(UserRoles.WAREHOUSE_WORKER.name())
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(form -> form
-//                        .loginPage("/login")
-//                        .permitAll()
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/logout")
-//                        .logoutSuccessUrl("/login?logout")
-//                );
-
         return http.build();
     }
 

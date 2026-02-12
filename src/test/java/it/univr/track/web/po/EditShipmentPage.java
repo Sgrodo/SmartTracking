@@ -13,6 +13,22 @@ public class EditShipmentPage extends BasePageObject {
     @FindBy(xpath = "//h1")
     public WebElement h1EditShipment;
 
+    @FindBy(xpath = "//h1")
+    public WebElement h1;
+
+    @FindBy(id = "errorMessage")
+    public WebElement error;
+
+    @FindBy(name = "fromLocation")
+    public WebElement inputFrom;
+
+    @FindBy(name = "toLocation")
+    public WebElement inputTo;
+
+    @FindBy(id = "errorMessage")
+    public WebElement pErrorMessage;
+
+
     @FindBy(id = "error")
     public WebElement pError;
 
@@ -22,13 +38,13 @@ public class EditShipmentPage extends BasePageObject {
     @FindBy(xpath = "//input[@id='description-input']")
     public WebElement inputDescription;
 
-    @FindBy(xpath = "//table[@id='unit-loads-table']")
+    @FindBy(id = "unit-loads-table")
     public WebElement tableUnitLoads;
 
-    @FindBy(xpath = "//table[@id='packages-table']")
+    @FindBy(id = "packages-table")
     public WebElement tablePackages;
 
-    @FindBy(xpath = "//input[@type='submit']")
+    @FindBy(xpath = "//button[@type='submit' or @type='submit'] | //input[@type='submit']")
     public WebElement buttonSave;
 
     @FindBy(xpath = "//button[@type='button']")
@@ -162,4 +178,41 @@ public class EditShipmentPage extends BasePageObject {
         this.buttonCancel.click();
         return new ShipmentListPage(this.driver);
     }
+
+    public void setFromLocation(String v) { inputFrom.clear(); inputFrom.sendKeys(v); }
+    public void setToLocation(String v) { inputTo.clear(); inputTo.sendKeys(v); }
+
+    public void selectTrackableCheckboxById(Long trackableId, boolean selected) {
+        WebElement cb = driver.findElement(By.xpath(
+                "//input[@type='checkbox' and (@name='unitLoadIds' or @name='packageIds') and @value='" + trackableId + "']"
+        ));
+        if (cb.isSelected() != selected) cb.click();
+    }
+
+    public void unselectAllTrackables() {
+        driver.findElements(By.xpath("//input[@type='checkbox' and (@name='unitLoadIds' or @name='packageIds')]"))
+                .forEach(cb -> { if (cb.isSelected()) cb.click(); });
+    }
+
+    public ShipmentListPage submit() {
+        buttonSave.click();
+        return new ShipmentListPage(driver);
+    }
+
+    public boolean hasError() {
+        try {
+            return pError != null && pError.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String getError() {
+        try {
+            return pError.getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
 }
