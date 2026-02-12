@@ -1,3 +1,7 @@
+# Autori
+- **Mattia Cappelletti** (VR543935)
+- **Matteo Baldi** (VR536965)
+
 # Modulo Spedizioni
 
 ## Assunzioni
