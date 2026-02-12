@@ -233,15 +233,9 @@ public class ShipmentWebController {
     // SHIPMENT DETAILS
     @GetMapping("/shipments/{id}")
     public String shipmentDetails(@PathVariable Long id, Model model) {
-        model.addAttribute("shipment", shipmentService.getById(id));
-        Set<Trackable> trackables = shipmentService.getById(id).getTrackables();
-        Set<DeviceAssignment> deviceAssignaments =deviceAssignmentService.getActiveDeviceAssignmentsByTrackables(trackables);
-        TrackingState t = TrackingState.INACTIVE;
-        for(DeviceAssignment d : deviceAssignaments){
-            t = d.getDevice().getTrackingState();
-            break;
-        }
-        model.addAttribute("trackingState",t);
+        Shipment shipment = shipmentService.getById(id);
+        model.addAttribute("shipment", shipment);
+        model.addAttribute("trackingState",shipmentService.getTrackingState(shipment));
 
         return "shipment-details";
     }
@@ -358,10 +352,17 @@ public class ShipmentWebController {
 
         Shipment shipment = shipmentService.getById(id);
         Set<Trackable> trackables = shipment.getTrackables();
+        Set<Trackable> flatTrackables = new HashSet<>();
+        for(Trackable t : shipment.getTrackables()){
+            flatTrackables.add(trackableService.getById(t.getId()));
+            for(UnitLoad ut : t.getUnitLoads()){
+                flatTrackables.add(trackableService.getById(ut.getId()));
+            }
+        }
 
         // SOLO assegnamenti attivi (toTs is null)
         Map<Long, List<DeviceAssignment>> assignmentsByTrackableId =
-                deviceAssignmentService.getActiveAssignmentsByTrackables(trackables);
+                deviceAssignmentService.getActiveAssignmentsByTrackables(flatTrackables);
 
         // SOLO device disponibili da poter bindare
         List<Device> availableDevices = deviceService.getAvailableDevices();

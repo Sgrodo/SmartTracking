@@ -59,4 +59,8 @@ public class Package extends Trackable {
         unitLoad.setPackage(null);
     }
 
+    @Override
+    public String getDisplayName() {
+        return "Package";
+    }
 }
