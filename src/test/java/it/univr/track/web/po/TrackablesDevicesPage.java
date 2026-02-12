@@ -24,16 +24,22 @@ public class TrackablesDevicesPage extends BasePageObject {
     }
 
     public class TrackableSection {
+        public Long trackableId;
         public WebElement h3Title;
         public WebElement tableDevices;
         public WebElement selectDevice;
         public WebElement buttonBindDevice;
+        public List<WebElement> subSectionsContainers;
+        public boolean isPackage;
 
         public TrackableSection(WebElement section) {
+            this.trackableId = Long.parseLong(section.getAttribute("id").replaceAll("\\D+", ""));
             this.h3Title = section.findElement(By.xpath(".//h3"));
             this.tableDevices = section.findElement(By.xpath(".//table"));
             this.selectDevice = section.findElement(By.xpath(".//form//select"));
             this.buttonBindDevice = section.findElement(By.xpath(".//form//button[normalize-space()='Bind device']"));
+            this.subSectionsContainers = section.findElements(By.xpath(".//div[contains(@id, 'trackable-')]"));
+            this.isPackage = this.h3Title.getText().toLowerCase().trim().contains("package");
         }
 
         public record DeviceRow(
@@ -67,6 +73,10 @@ public class TrackablesDevicesPage extends BasePageObject {
                         );
                     })
                     .toList();
+        }
+
+        public List<TrackableSection> getSubSections() {
+            return this.subSectionsContainers.stream().map(TrackableSection::new).toList();
         }
 
         public boolean hasAnyBoundDevice() {
@@ -113,6 +123,10 @@ public class TrackablesDevicesPage extends BasePageObject {
             this.buttonBindDevice.click();
             return new TrackablesDevicesPage(driver);
         }
+
+        public Long getTrackableId() {
+            return this.trackableId;
+        }
     }
 
     /**
@@ -120,13 +134,10 @@ public class TrackablesDevicesPage extends BasePageObject {
      */
     public TrackableSection getTrackableSectionById(Long trackableId) {
         return this.trackableSections.stream()
-                .filter(section -> {
-                    String title = section.findElement(By.xpath(".//h3")).getText().trim();
-                    return title.equals("Trackable " + trackableId);
-                })
-                .findFirst()
                 .map(TrackableSection::new)
-                .orElse(null);
+                .filter(s -> s.getTrackableId().equals(trackableId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Trackable section not found with id: " + trackableId));
     }
 
     /**

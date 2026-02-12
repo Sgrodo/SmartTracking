@@ -229,7 +229,7 @@ public class ShipmentService {
                 }
             }
         }
-        return null;
+        return TrackingState.INACTIVE;
     }
 
     @Transactional
