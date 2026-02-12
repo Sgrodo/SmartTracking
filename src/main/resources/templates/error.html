@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Error</title>
+</head>
+<body>
+
+<h1>Something went wrong</h1>
+
+<p>
+    <b>Status:</b> <span th:text="${status}">500</span><br/>
+    <b>Error:</b> <span th:text="${error}">Internal Server Error</span><br/>
+    <b>Path:</b> <span th:text="${path}">/</span><br/>
+    <span th:if="${message != null and !#strings.isEmpty(message)}">
+    <b>Message:</b> <span th:text="${message}">-</span><br/>
+  </span>
+    <b>Timestamp:</b> <span th:text="${timestamp}">-</span><br/>
+</p>
+
+<p>
+    <a th:href="@{/web/shipments/list}">Go to shipments</a>
+</p>
+
+<hr/>
+
+<details>
+    <summary>Technical details</summary>
+    <pre th:text="${'Request: ' + path + '\nStatus: ' + status + '\nError: ' + error + (message != null ? '\nMessage: ' + message : '')}"></pre>
+</details>
+
+</body>
+</html>

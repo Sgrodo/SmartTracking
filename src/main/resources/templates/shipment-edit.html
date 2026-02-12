@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Edit Shipment</title>
+</head>
+<body>
+
+<h1>Edit Shipment</h1>
+
+<!-- ERROR MESSAGE -->
+<p id="error" style="color:red;" th:if="${errorMessage}" th:text="${errorMessage}"></p>
+
+<form method="post" th:action="@{/web/shipments/{id}/edit(id=${shipment.id})}">
+
+    <p>
+        <b>Shipment ID:</b>
+        <span th:text="${shipment.id}">1</span>
+    </p>
+
+    <div>
+        <label for="description-input">Description:</label>
+        <input id="description-input"
+               maxlength="240"
+               name="description"
+               th:value="${descriptionDraft ?: ''}"
+               type="text"
+        />
+        <label for="from-input">From:</label>
+        <input id="from-input"
+               maxlength="255"
+               name="fromLocation"
+               th:value="${fromLocationDraft ?: ''}"
+               type="text"
+               required
+        />
+        <label for="to-input">To:</label>
+        <input id="to-input"
+               maxlength="255"
+               name="toLocation"
+               th:value="${toLocationDraft ?: ''}"
+               type="text"
+               required
+        />
+
+    </div>
+
+    <!-- ================= UNIT LOADS ================= -->
+
+    <h2>UnitLoads</h2>
+
+    <table id="unit-loads-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Physical constraints</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="ul : ${unitLoadsToShow}">
+            <td>
+                <label>
+                    <input name="unitLoadIds"
+                           th:checked="${selectedUnitLoadIds != null and selectedUnitLoadIds.contains(ul.id)}"
+                           th:value="${ul.id}"
+                           type="checkbox"/>
+                </label>
+            </td>
+
+            <td th:text="${ul.id}">1</td>
+            <td th:text="${ul.description != null ? ul.description : '-'}">desc</td>
+            <td th:text="${ul.physicalConstraints == null ? 0 : ul.physicalConstraints.size()}">0</td>
+        </tr>
+
+        <tr th:if="${unitLoadsToShow == null or unitLoadsToShow.isEmpty()}">
+            <td colspan="4">No UnitLoads.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- ================= PACKAGES ================= -->
+
+    <h2>Packages</h2>
+
+    <table id="packages-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>UnitLoad(s)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="pkg : ${packagesToShow}">
+            <td>
+                <label>
+                    <input name="packageIds"
+                           th:checked="${selectedPackageIds != null and selectedPackageIds.contains(pkg.id)}"
+                           th:value="${pkg.id}"
+                           type="checkbox"/>
+                </label>
+            </td>
+
+            <td th:text="${pkg.id}">1</td>
+            <td th:text="${pkg.description != null ? pkg.description : '-'}">desc</td>
+
+            <!-- NUMBER OF UNIT LOADS IN PACKAGE -->
+            <td>
+                <span th:if="${pkg.unitLoads == null or pkg.unitLoads.isEmpty()}">-</span>
+                <span th:if="${pkg.unitLoads != null and not pkg.unitLoads.isEmpty()}"
+                      th:text="${pkg.unitLoads.size()}">0</span>
+            </td>
+        </tr>
+
+        <tr th:if="${packagesToShow == null or packagesToShow.isEmpty()}">
+            <td colspan="4">No Packages.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- ================= ACTIONS ================= -->
+
+    <div style="margin-top:16px;">
+        <input type="submit" value="Save"/>
+        <a th:href="@{/web/shipments/list}">
+            <button type="button">Cancel</button>
+        </a>
+    </div>
+
+</form>
+
+</body>
+</html>

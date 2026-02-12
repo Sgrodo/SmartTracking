@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>Create shipment</title>
+</head>
+<body>
+
+<p><a th:href="@{/web/shipments/list}">← Back to shipments</a></p>
+
+<h1>Create shipment</h1>
+<p id="error" th:if="${errorMessage}" th:text="${errorMessage}" style="color:red;"></p>
+
+<div style="margin-bottom:15px;">
+    <a th:href="@{/web/unitloads/new}">
+        <button type="button">New UnitLoad</button>
+    </a>
+    <a th:href="@{/web/packages/new}">
+        <button type="button">New Package</button>
+    </a>
+</div>
+
+<form th:action="@{/web/newShipment}" method="post">
+
+
+    <h2>Shipment info</h2>
+    <div>
+        <label for="description-textarea">Description:</label><br/>
+        <textarea id="description-textarea" name="description" rows="3" cols="60" maxlength="240" placeholder="Describe the shipment..."></textarea>
+    </div>
+
+    <hr/>
+
+    <h2>From location / To location</h2>
+    <div>
+        <label for="from-input">From:</label>
+        <input id="from-input"
+                name="fromLocation"
+                type="text"
+                maxlength="240"
+                placeholder="Origin location..."
+                th:value="${fromLocation}" />
+        <label for="to-input">To:</label>
+        <input id="to-input"
+               name="toLocation"
+               type="text"
+               maxlength="240"
+               placeholder="Destination location..."
+               th:value="${toLocation}" />
+    </div>
+
+    <hr/>
+
+    <h2>Select UnitLoads</h2>
+    <p><small>Pick one or more UnitLoads already stored in DB.</small></p>
+
+    <table id="unit-loads-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>Physical constraints”</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="ul : ${unitLoads}">
+            <td>
+                <label>
+                    <input type="checkbox" name="unitLoadIds" th:value="${ul.id}" />
+                </label>
+            </td>
+            <td th:text="${ul.id}">1</td>
+            <td th:text="${ul.description}">desc</td>
+            <td th:text="${ul.physicalConstraints != null ? #sets.size(ul.physicalConstraints) : 0}">0</td>
+        </tr>
+
+        <tr th:if="${unitLoads == null || #lists.isEmpty(unitLoads)}">
+            <td colspan="4">
+                No UnitLoads available.
+                <a th:href="@{/web/unitloads/new}"><button type="button">Create UnitLoad</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <h2>Select Packages</h2>
+    <p><small>Pick one or more Packages already stored in DB.</small></p>
+
+    <table id="packages-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+            <th>UnitLoads</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${packages}">
+            <td>
+                <label>
+                    <input type="checkbox" name="packageIds" th:value="${p.id}" />
+                </label>
+            </td>
+            <td th:text="${p.id}">1</td>
+            <td th:text="${p.description}">desc</td>
+            <td th:text="${p.unitLoads != null ? #lists.size(p.unitLoads) : 0}">0</td>
+        </tr>
+
+        <tr th:if="${packages == null || #lists.isEmpty(packages)}">
+            <td colspan="4">
+                No Packages available.
+                <a th:href="@{/web/packages/new}"><button type="button">Create Package</button></a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <input type="submit" value="Create Shipment" />
+</form>
+
+</body>
+</html>

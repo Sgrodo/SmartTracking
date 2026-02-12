@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Create UnitLoad</title>
+</head>
+<body>
+
+<p>
+    <a th:href="@{/web/newShipment}">← Back to shipment creation</a>
+    | <a th:href="@{/web/shipments/list}">Shipments</a>
+</p>
+
+<h1>Create UnitLoad</h1>
+<p id="error" style="color:red;" th:if="${error}" th:text="${error}"></p>
+
+<form method="post" th:action="@{/web/unitloads/new}">
+
+    <div>
+        <label for="description-input">Description:</label><br/>
+        <input id="description-input" maxlength="240" name="description" style="width:420px;" type="text"/>
+    </div>
+
+    <hr/>
+
+    <h2>Physical constraints</h2>
+
+    <!-- TEMPERATURE -->
+    <div style="margin-bottom:12px;">
+        <b>Temperature</b><br/>
+        <label for="temperature-value-input">Value:</label>
+        <input id="temperature-value-input" max="30"
+               min="-30"
+               name="temperatureValue"
+               placeholder="e.g. 5"
+               step="0.1"
+               style="width:140px;"
+               type="number"/>
+
+        <label for="temperature-unit-select" style="margin-left:12px;">Unit:</label>
+        <select id="temperature-unit-select" name="temperatureUnit">
+            <option selected value="CELSIUS">CELSIUS</option>
+            <option value="FAHRENHEIT">FAHRENHEIT</option>
+            <option value="KELVIN">KELVIN</option>
+        </select>
+
+        <small style="display:block; margin-top:4px;">
+            Optional. Leave empty if no temperature constraint.
+        </small>
+    </div>
+
+    <!-- HUMIDITY -->
+    <div style="margin-bottom:12px;">
+        <label for="humidity-value-input"><b>Humidity (%)</b></label><br/>
+        <input id="humidity-value-input"
+               max="100"
+               min="0"
+               name="humidityValue"
+               placeholder="e.g. 60"
+               step="1"
+               style="width:140px;"
+               type="number"/>
+        <small style="display:block; margin-top:4px;">
+            Optional. Value in percent (0–100).
+        </small>
+    </div>
+
+    <hr/>
+
+    <h2>Select LoadItems</h2>
+    <table id="load-items-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="li : ${loadItems}">
+            <td>
+                <label>
+                    <input name="loadItemIds" th:value="${li.id}" type="checkbox"/>
+                </label>
+            </td>
+            <td th:text="${li.id}">1</td>
+            <td th:text="${li.description}">desc</td>
+        </tr>
+        <tr th:if="${loadItems == null || #lists.isEmpty(loadItems)}">
+            <td colspan="3">No LoadItems available.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <h2>Select Devices (optional)</h2>
+    <table id="devices-table" th:border="1" th:cellpadding="6">
+        <thead>
+        <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Origin</th>
+            <th>Connected</th>
+            <th>Calibrated</th>
+            <th>State</th>
+            <th>Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="d : ${devices}">
+            <td>
+                <label>
+                    <input name="deviceIds" th:value="${d.id}" type="checkbox"/>
+                </label>
+            </td>
+            <td th:text="${d.id}">1</td>
+            <td th:text="${d.origin}">FORMULA</td>
+            <td th:text="${d.isConnected}">true</td>
+            <td th:text="${d.isCalibrated}">true</td>
+            <td th:text="${d.state}">true</td>
+            <td th:text="${d.price}">0.00</td>
+        </tr>
+        <tr th:if="${devices == null || #lists.isEmpty(devices)}">
+            <td colspan="7">No devices available.</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <hr/>
+
+    <input type="submit" value="Create UnitLoad"/>
+</form>
+
+</body>
+</html>
