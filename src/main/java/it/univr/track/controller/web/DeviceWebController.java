@@ -1,7 +1,7 @@
 package it.univr.track.controller.web;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 //TODO changed endpoints, is it OK? (//list devices)
 @Controller

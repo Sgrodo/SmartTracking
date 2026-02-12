@@ -5,7 +5,10 @@ import it.univr.track.entity.enumeration.TemperatureUnit;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.entity.sensor.PhysicalConstraint;
 import it.univr.track.entity.sensor.TemperatureConstraint;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.EqualsAndHashCode;
 
 @Embeddable

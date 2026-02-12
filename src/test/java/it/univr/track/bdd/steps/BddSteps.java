@@ -1,11 +1,10 @@
 package it.univr.track.bdd.steps;
 
 import io.cucumber.java.Before;
-import io.cucumber.java.PendingException;
-import io.cucumber.java.en.Given;
-import io.cucumber.java.en.When;
-import io.cucumber.java.en.Then;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import it.univr.track.bdd.TestWorld;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.data.LoadItem;
@@ -13,11 +12,13 @@ import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.repository.*;
-import it.univr.track.service.*;
+import it.univr.track.service.DeviceAssignmentService;
+import it.univr.track.service.PackageService;
+import it.univr.track.service.ShipmentService;
+import it.univr.track.service.UnitLoadService;
 import it.univr.track.web.po.*;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Assertions;
-
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -96,7 +97,7 @@ public class BddSteps {
 
     @Given("I am logged in as {string}")
     public void iAmLoggedInAs(String username) {
-        // assunzione vera
+        return;
     }
 
     @Transactional

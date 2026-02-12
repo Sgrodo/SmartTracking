@@ -1,20 +1,9 @@
-/*
-package it.univr.track.controller.web;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-//TODO changed endpoints, is it OK? (//list devices)
-*/
 package it.univr.track.controller.web;
 
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
-import it.univr.track.entity.data.LoadItem;
-import it.univr.track.entity.data.Shipment;
-import it.univr.track.entity.data.Trackable;
-import it.univr.track.entity.data.UnitLoad;
+import it.univr.track.entity.data.*;
 import it.univr.track.entity.data.Package;
-import it.univr.track.entity.enumeration.PhysicalConstraintType;
 import it.univr.track.entity.enumeration.TemperatureUnit;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.entity.sensor.HumidityConstraint;
@@ -23,7 +12,6 @@ import it.univr.track.entity.sensor.TemperatureConstraint;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.service.*;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -279,12 +267,10 @@ public class ShipmentWebController {
             }
 
             // 2) LoadItems (null-safe)
-            Set<LoadItem> loadItems = new HashSet<>();
             if(loadItemIds == null || loadItemIds.isEmpty()){
                 throw new InvalidDataException("loadItemIds is required");
-            }else{
-                loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
             }
+            Set<LoadItem> loadItems = loadItemRepository.getLoadItemsByIdIn(loadItemIds);
 
 
             // 3) Create UnitLoad
@@ -420,35 +406,6 @@ public class ShipmentWebController {
         model.addAttribute("trackingState",TrackingState.INACTIVE);
         return "redirect:/web/shipments/" + id;
     }
-
-
-
-
-    /*
-    //create new shipment
-    @RequestMapping("/web/newShipment")
-    public String newShipment() {
-        return "newShipment";
-    }
-
-    //list shipments
-    @RequestMapping("/web/shipments/list")
-    public String shipments() {
-        return "shipments";
-    }
-
-    //activate/deactivate tracking
-    @RequestMapping("/web/tracking")
-    public String tracking() {
-        return "tracking";
-    }
-
-    //allocate a device to a shipment
-    @RequestMapping("/web/shipmentAllocate")
-    public String shipmentAllocate() {
-        return "shipmentAllocate";
-    }
-*/
 
     // HELPERS
 

@@ -1,6 +1,5 @@
 package it.univr.track.entity;
 
-import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -1,6 +1,5 @@
 package it.univr.track.controller.api;
 
-import it.univr.track.controller.api.dto.trackables.unitloads.LoadItemResponse;
 import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadRequest;
 import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadResponse;
 import it.univr.track.entity.data.LoadItem;
@@ -10,7 +9,6 @@ import it.univr.track.repository.LoadItemRepository;
 import it.univr.track.service.UnitLoadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,10 +63,4 @@ public class UnitLoadController implements CrdController<UnitLoad, UnitLoadReque
         return unitLoadService.deleteUnitLoadById(trackableId);
     }
 
-    @Transactional(readOnly = true)
-    public Iterable<LoadItemResponse> getAvailableLoadItems() {
-        return Arrays.stream(loadItemRepository.findAll().toArray(new LoadItem[0]))
-                .map(LoadItemResponse::new)
-                .toList();
-    }
 }

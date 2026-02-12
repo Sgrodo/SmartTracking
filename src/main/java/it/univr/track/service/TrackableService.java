@@ -1,6 +1,5 @@
 package it.univr.track.service;
 
-import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
@@ -63,11 +62,6 @@ public class TrackableService {
                 () -> new NotFoundException("Trackable " + trackableId + " not found"));
         Shipment s = shipmentRepository.getReferenceById(shipmentId);
         trackable.setShipment(s);
-    }
-
-    @Transactional
-    public List<Trackable> getAllTrackablesNotInShipments(){
-        return trackableRepository.findAllNotInShipments();
     }
 
     @Transactional

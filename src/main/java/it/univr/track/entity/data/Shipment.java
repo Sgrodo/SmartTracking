@@ -5,7 +5,6 @@ import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.helper.Thrower;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,6 @@ import lombok.Setter;
 import org.hibernate.annotations.Check;
 
 import java.time.ZonedDateTime;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -132,7 +130,7 @@ public class Shipment extends AbstractEntity {
         switch (state){
             case COMPLETED -> this.complete(time);
             case CANCELLED -> this.cancel(time);
-            case IN_TRANSIT -> this.setInTransit(time);
+            case IN_TRANSIT -> this.setInTransit();
             case CREATED -> {
                 this.startDate = ZonedDateTime.now();
                 this.endDate = null;
@@ -147,7 +145,7 @@ public class Shipment extends AbstractEntity {
     }
 
     public void complete(ZonedDateTime now) {
-        ZonedDateTime zonedDateTime = now == null ? now = ZonedDateTime.now() : now;
+        ZonedDateTime zonedDateTime = now == null ? ZonedDateTime.now() : now;
         if (this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
         }
@@ -161,7 +159,7 @@ public class Shipment extends AbstractEntity {
     }
 
     public void cancel(ZonedDateTime now) {
-        ZonedDateTime zonedDateTime = now == null ? now = ZonedDateTime.now() : now;
+        ZonedDateTime zonedDateTime = now == null ? ZonedDateTime.now() : now;
 
         if (this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
@@ -170,11 +168,7 @@ public class Shipment extends AbstractEntity {
         this.state = ShipmentState.CANCELLED;
     }
 
-    public void setInTransit(){
-        this.setInTransit(ZonedDateTime.now());
-    }
-
-    public void setInTransit(ZonedDateTime now) {
+    public void setInTransit() {
         if(this.isFinalState()) {
             throw new IllegalStateException("Cannot change state of a final shipment");
         }

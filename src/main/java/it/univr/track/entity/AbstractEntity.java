@@ -1,9 +1,6 @@
 package it.univr.track.entity;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +18,7 @@ public abstract class AbstractEntity {
     protected Long id;
 
     // Business key equality based on 'id'
+    @Transient
     private String businessKey = UUID.randomUUID().toString();
 
 

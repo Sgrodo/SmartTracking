@@ -8,19 +8,19 @@ public interface CrdController<T, P, R> {
 
     @PostMapping({"/", ""})
     @ResponseStatus(HttpStatus.CREATED)
-    public R create(@Valid @RequestBody P request);
+    R create(@Valid @RequestBody P request);
 
     @GetMapping("/{trackableId}")
     @ResponseStatus(HttpStatus.OK)
-    public R get(@PathVariable Long trackableId);
+    R get(@PathVariable Long trackableId);
 
     @GetMapping({"/", ""})
     @ResponseStatus(HttpStatus.OK)
-    public Iterable<R> getAll();
+    Iterable<R> getAll();
 
     @DeleteMapping("/{trackableId}")
     @ResponseStatus(HttpStatus.OK)
-    public boolean deleteTrackable(@PathVariable Long trackableId);
+    boolean deleteTrackable(@PathVariable Long trackableId);
 
 
 }

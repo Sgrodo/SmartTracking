@@ -1,12 +1,12 @@
 package it.univr.track.entity;
 
+import it.univr.track.entity.enumeration.Gender;
+import it.univr.track.entity.enumeration.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import it.univr.track.entity.enumeration.Gender;
-import it.univr.track.entity.enumeration.Role;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

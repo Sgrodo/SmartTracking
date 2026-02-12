@@ -1,7 +1,6 @@
 package it.univr.track.repository;
 
 import it.univr.track.entity.data.Package;
-import it.univr.track.entity.data.UnitLoad;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

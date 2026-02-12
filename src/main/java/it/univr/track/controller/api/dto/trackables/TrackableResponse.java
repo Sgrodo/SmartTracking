@@ -2,8 +2,8 @@ package it.univr.track.controller.api.dto.trackables;
 
 import it.univr.track.controller.api.dto.trackables.packages.PackageResponse;
 import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadResponse;
-import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.Package;
+import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import lombok.Getter;
 import lombok.Setter;

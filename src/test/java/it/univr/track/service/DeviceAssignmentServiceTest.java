@@ -6,9 +6,7 @@ import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -48,12 +46,6 @@ public class DeviceAssignmentServiceTest extends BaseTest {
     @AfterEach
     public void cleanDb() {
         super.cleanBaseDb();
-    }
-
-    @Transactional
-    @Test
-    public void getActiveAssignmentsByTrackablesTest(){
-        
     }
 
 

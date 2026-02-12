@@ -1,10 +1,8 @@
 package it.univr.track.service;
 
-import io.cucumber.java.hu.De;
 import it.univr.track.BaseTest;
 import it.univr.track.entity.Device;
 import it.univr.track.entity.data.Shipment;
-import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;

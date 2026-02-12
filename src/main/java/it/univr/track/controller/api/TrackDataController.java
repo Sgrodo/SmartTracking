@@ -1,8 +1,9 @@
 package it.univr.track.controller.api;
 
+import it.univr.track.entity.TrackData;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import it.univr.track.entity.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class TrackDataController {

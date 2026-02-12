@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -105,10 +104,6 @@ public class ShipmentServiceTest extends BaseTest {
     public void testUpdateShipment() {
         Shipment shipment = shipmentService.create(ZonedDateTime.now(), "Test Shipment", "from", "to", Set.of(utSample1));
         Shipment unsavedShipment = new Shipment("Unsave Shipment", "from", "to");
-// No more need to test
-//        assertThrows(IllegalArgumentException.class, () -> {
-//            shipmentService.update(shipment, "Updated Shipment", null, null, Set.of(utSample1, utSample2));
-//        });
 
         assertThrows(InvalidDataException.class, () -> {
             shipmentService.update(shipment, "Updated Shipment","from", "to", ZonedDateTime.now(), ShipmentState.IN_TRANSIT, null);

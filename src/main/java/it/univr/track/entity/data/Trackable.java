@@ -1,15 +1,16 @@
 package it.univr.track.entity.data;
 
 import it.univr.track.entity.AbstractEntity;
-import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
-import it.univr.track.entity.enumeration.TrackingState;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /***
  * Questa classe Entity serve per gestire il binding dei device a unitloads e packages in modo univoco

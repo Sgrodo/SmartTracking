@@ -1,8 +1,8 @@
 package it.univr.track.controller.api;
 
+import it.univr.track.entity.Device;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import it.univr.track.entity.*;
 
 import java.math.BigDecimal;
 

@@ -2,7 +2,6 @@ package it.univr.track.service;
 
 import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
-import it.univr.track.entity.data.Package;
 import it.univr.track.entity.data.Shipment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
@@ -20,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -144,7 +142,7 @@ public class ShipmentService {
             throw new NotFoundException("Shipment not found: " + shipment.getId());
         }
 
-        HashSet<Trackable> toRemove = new HashSet<Trackable>(s.getTrackables());
+        HashSet<Trackable> toRemove = new HashSet<>(s.getTrackables());
         for (Trackable t : toRemove) {
             s.removeTrackable(t);
         }
@@ -189,9 +187,7 @@ public class ShipmentService {
             throw new NotFoundException("Shipment not found: " + shipmentId);
         }
         shipmentRepository.getReferenceById(shipmentId).getTrackables().
-                forEach((trackable)->{
-            trackable.setShipment(null);
-        });
+                forEach((trackable)-> trackable.setShipment(null));
         shipmentRepository.deleteById(shipmentId);
         return true;
 

@@ -1,15 +1,14 @@
 package it.univr.track.controller.api.dto.trackables.packages;
 
-import java.util.List;
-
 import it.univr.track.controller.api.dto.devices.DeviceResponse;
 import it.univr.track.controller.api.dto.trackables.TrackableResponse;
 import it.univr.track.controller.api.dto.trackables.unitloads.UnitLoadResponse;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Package;
-import it.univr.track.entity.data.Trackable;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter

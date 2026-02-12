@@ -4,9 +4,7 @@ import it.univr.track.entity.Device;
 import it.univr.track.entity.DeviceAssignment;
 import it.univr.track.entity.data.Trackable;
 import it.univr.track.entity.data.UnitLoad;
-import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.exception.InvalidDataException;
-import it.univr.track.exception.NotFoundException;
 import it.univr.track.helper.Thrower;
 import it.univr.track.repository.DeviceAssignmentRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor

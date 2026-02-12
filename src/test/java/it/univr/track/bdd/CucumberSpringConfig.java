@@ -2,8 +2,8 @@
 package it.univr.track.bdd;
 
 import io.cucumber.spring.CucumberContextConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import it.univr.track.SmartTrackApplication;
+import org.springframework.boot.test.context.SpringBootTest;
 
 @CucumberContextConfiguration
 @SpringBootTest(

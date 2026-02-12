@@ -1,8 +1,6 @@
 package it.univr.track.service;
 
 import it.univr.track.entity.Device;
-import it.univr.track.entity.data.Sending;
-import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.enumeration.TrackingState;
 import it.univr.track.exception.InvalidDataException;
 import it.univr.track.exception.NotFoundException;
@@ -12,8 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class DeviceService {

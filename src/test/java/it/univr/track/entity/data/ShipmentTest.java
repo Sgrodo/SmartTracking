@@ -4,15 +4,9 @@ import it.univr.track.BaseTest;
 import it.univr.track.entity.enumeration.ShipmentState;
 import it.univr.track.entity.sensor.HumidityConstraint;
 import it.univr.track.exception.InvalidDataException;
-import it.univr.track.repository.PackageRepository;
-import it.univr.track.repository.ShipmentRepository;
-import it.univr.track.repository.UnitLoadRepository;
-import jakarta.validation.constraints.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import java.time.ZonedDateTime;
 import java.util.List;
